@@ -46,7 +46,9 @@ class HidKeyboard(object):
 
     def to_hid_command(self):
         """
-        Method to build the HID command string.
+        Method to build the HID command string. See
+        https://files.microscan.com/helpfiles/ms4_help_file/ms-4_help-02-46.html
+
         :return: A byte string with the encoded HID command.
         """
         # Hid bytes command header, modifiers and separation

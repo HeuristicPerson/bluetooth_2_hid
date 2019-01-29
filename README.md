@@ -51,7 +51,8 @@ If you succeed setting your Raspberry Pi Zero W as a HID proxy for your Bluetoot
 
 # Credits
 
-  * [Mike Redrobe](https://github.com/mikerr/pihidproxy) for the idea and the basic code logic.
+  * [Mike Redrobe](https://github.com/mikerr/pihidproxy) for the idea and the basic code logic. This project is
+    basically a rewrite of his code.
   * [Alle Beiträge von Tobi](https://www.isticktoit.net/?p=1383) for some code clarifications.
   * [Ondřej Hruška](https://gist.github.com/MightyPork/6da26e382a7ad91b5496ee55fdc73db2) for his list of HID codes.
 

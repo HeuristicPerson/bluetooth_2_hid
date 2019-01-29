@@ -94,6 +94,10 @@ def _get_cmd_args():
     print u'[ pass ]      Log mode: %s (%s)' % (b_mode_log, u_LOG_FILE)
 
     # Input device
+    #-------------
+    # I'm not sure about this validation because I don't know what happens when you first connect the Bluetooth without
+    # any activity on the keyboard. If the keyboard doesn't activate, this validation will fail. Anyway, once the
+    # program is running, the main loop is able to keep trying the connection if it's not found.
     u_input = unicode(o_parsed_data.i)
     if not (os.access(u_input, os.F_OK) and os.access(u_input, os.R_OK)):
         print u'[ FAIL ]  Input device: %s (can\'t be read or is not found)' % u_input
@@ -102,6 +106,7 @@ def _get_cmd_args():
         print u'[ pass ]  Input device: %s' % u_input
 
     # Output device
+    #--------------
     u_output = unicode(o_parsed_data.o)
     if not (os.access(u_input, os.F_OK) and os.access(u_input, os.W_OK)):
         if b_mode_test:
@@ -132,7 +137,7 @@ def _get_input_device(pu_device):
             o_device = evdev.InputDevice(pu_device)
         except OSError:
             print u'[ WAIT ] Opening Bluetooth input (%s)...' % u_INPUT_DEV
-            time.sleep(5)
+            time.sleep(3)
 
     print u'[ pass ] Bluetooth input open (%s)' % unicode(pu_device)
     return o_device
@@ -151,11 +156,20 @@ def _get_output_device(pu_device):
             o_device = open(pu_device, 'wb+', buffering=0)
         except OSError:
             print u'[ WAIT ] Opening HID output (%s)...' % u_OUTPUT_DEV
-            time.sleep(5)
+            time.sleep(3)
 
     print u'[ pass ] HID output open (%s)' % unicode(pu_device)
     return o_device
 
+
+def _get_devices(pu_input, pu_output, po_input, po_output):
+    """
+    Function to get both devices, input and output.
+    :param pu_input:
+    :param pu_output:
+    :return:
+    """
+    pass
 
 # Main Code
 #=======================================================================================================================
@@ -164,43 +178,55 @@ if __name__ == '__main__':
     print u'=================================================='
 
     o_args = _get_cmd_args()
-    print u'--------------------------------------------------'
-
-    o_input_device = _get_input_device(o_args['u_input'])
-    o_output_device = _get_output_device(u_OUTPUT_DEV)
-    print u'--------------------------------------------------'
 
     # Initialization
     #---------------
     o_hid_keyboard = keyboard.HidKeyboard()
+    o_input_device = _get_input_device(o_args['u_input'])
+    o_output_device = _get_output_device(o_args['u_output'])
 
     # Main loop
     #----------
-    for o_event in o_input_device.read_loop():
-        if o_event.type == evdev.ecodes.EV_KEY:
-            # Pre-parsing the event so it's easier to work with it for our purposes
-            o_data = evdev.categorize(o_event)
+    while True:
+        try:
+            for o_event in o_input_device.read_loop():
+                if o_event.type == evdev.ecodes.EV_KEY:
+                    # Pre-parsing the event so it's easier to work with it for our purposes
+                    o_data = evdev.categorize(o_event)
 
-            # [1/?] Getting the HID byte for the modifier keys
-            #-------------------------------------------------
-            # The modifier status will only change when they are pressed (1) or released (0) (not when they are hold)
-            if (o_data.keystate in (0, 1)) and (o_data.keycode in hid_codes.ds_MOD_CODES):
-                o_hid_keyboard.modifier_set(o_data.keycode, o_data.keystate)
+                    # [1/?] Getting the HID byte for the modifier keys
+                    #-------------------------------------------------
+                    # The modifier status will only change when they are pressed (1) or released (0) (not when they are
+                    # hold)
+                    if (o_data.keystate in (0, 1)) and (o_data.keycode in hid_codes.ds_MOD_CODES):
+                        o_hid_keyboard.modifier_set(o_data.keycode, o_data.keystate)
 
-            # [2/?] Activating or deactivating keys in our HidKeyboard when needed
-            #---------------------------------------------------------------------
-            # We only send hid commands when there is a change, so with key-down events (1) and key-up events (0)
-            if o_data.keystate == 0:
-                o_hid_keyboard.deactivate_key(o_data.keycode)
-            elif o_data.keystate == 1:
-                o_hid_keyboard.activate_key(o_data.keycode)
+                    # [2/?] Activating or deactivating keys in our HidKeyboard when needed
+                    #---------------------------------------------------------------------
+                    # We only send hid commands when there is a change, so with key-down (1) and key-up (0) events
+                    if o_data.keystate == 0:
+                        o_hid_keyboard.deactivate_key(o_data.keycode)
+                    elif o_data.keystate == 1:
+                        o_hid_keyboard.activate_key(o_data.keycode)
 
-            # [3/?] When any change occurs, we need to send the HID command
-            #--------------------------------------------------------------
-            if o_data.keystate in (0, 1):
-                if o_args['b_mode_debug']:
-                    print o_hid_keyboard.to_debug_command()
+                    # [3/?] When any change occurs, we need to send the HID command
+                    #--------------------------------------------------------------
+                    if o_data.keystate in (0, 1):
+                        if o_args['b_mode_debug']:
+                            print o_hid_keyboard.to_debug_command()
 
-                if not o_args['b_mode_test']:
-                    s_hid_command = o_hid_keyboard.to_hid_command()
-                    o_output_device.write(s_hid_command)
+                        if not o_args['b_mode_test']:
+                            s_hid_command = o_hid_keyboard.to_hid_command()
+                            try:
+                                o_output_device.write(s_hid_command)
+                            except IOError:
+                                print u'--------------------------------------------------'
+                                _get_output_device(o_args['u_output'])
+                                print u'--------------------------------------------------'
+                                o_output_device.write(s_hid_command)
+
+        # The o_input_device cannot be read
+        except IOError:
+            print u'--------------------------------------------------'
+            o_input_device = _get_input_device(o_args['u_input'])
+            print u'--------------------------------------------------'
