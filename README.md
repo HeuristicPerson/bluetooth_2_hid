@@ -1,6 +1,6 @@
 # Bluetooth to HID
 
-![License image.](images/diagram.png)
+![Diagram of the connections](images/diagram.png)
 
 ## Introduction
 
