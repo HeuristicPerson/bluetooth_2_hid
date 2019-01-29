@@ -18,6 +18,20 @@ Bluetooth receiver) as an intermediary to convert the Bluetooth commands from th
 Device) instructions sent through the USB port. 
 
 
+## Usage
+
+(to be improved)
+
+  0. Create your output HID device (see Alle Beiträge von Tobi's reference below).
+  1. Pair your Bluetooth keyboard with the Raspberry Pi (using bluetoothctl).
+  2. Execute ''bluetooth_2_hid.py'' with sudo.
+  3. That's it...
+  
+## Known bugs
+
+If the keyboard enters energy saving mode, it stops being detected by the Raspberry and the input device
+''/dev/input/event0'' is no longer available, making the script to crash.
+
 ## Extra work to be done
 
 If you succeed setting your Raspberry Pi Zero W as a HID proxy for your Bluetooth keyboard, there is still more to do:

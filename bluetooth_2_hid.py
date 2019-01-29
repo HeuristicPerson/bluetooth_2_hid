@@ -25,6 +25,7 @@ advantages of this technique are:
     - ...not implemented, but you could create your own macros in this script that would work in any computer you plug
       the keyboard+raspberry. I'm thinking about Ctr-Shift-L to automatically send the keys of Lorem Ipsum...
 """
+
 import argparse
 import os
 import sys
