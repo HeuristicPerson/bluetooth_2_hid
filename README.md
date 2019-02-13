@@ -22,11 +22,18 @@ Device) instructions sent through the USB port.
 
 (to be improved)
 
-  0. Create your output HID device (see Alle Beiträge von Tobi's reference below).
-  1. Pair your Bluetooth keyboard with the Raspberry Pi (using bluetoothctl).
-  2. Execute ''bluetooth_2_hid.py'' with sudo.
-  3. That's it...
-  
+  0. Connect with SSH to your Raspberry Pi Zero W.
+  1. Create your output HID device (see Alle Beiträge von Tobi's reference below).
+  2. Pair your Bluetooth keyboard with the Raspberry Pi (using bluetoothctl).
+  3. Execute ''$ sudo bluetooth_2_hid.py -t -d'' to check the software is able to read your Bluetooth keyboard inputs
+     and translate them to HID commands (because we are in test mode ''-t'', the software won't send any HID signal). If
+     it's now working, check/repeat the steps 1-2-3
+  4. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
+     to your children about the dangers of learning to code... you know, the typical stuff). We need to check that the
+     keyboard is able to automatically re-connect after entering energy saving mode. If it does, CONGRATULATIONS!
+  5. We need to edit ''/etc/rc.local'' to automatically launch both scripts when the Raspberry Pi boots up: **a)** the
+     Bluetooth connecting script, and **b)** the Bluetooth 2 HID conversion script.
+     
 ## Known bugs
 
 If the keyboard enters energy saving mode, it stops being detected by the Raspberry and the input device

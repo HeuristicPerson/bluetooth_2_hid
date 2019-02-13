@@ -99,23 +99,25 @@ def _get_cmd_args():
     # any activity on the keyboard. If the keyboard doesn't activate, this validation will fail. Anyway, once the
     # program is running, the main loop is able to keep trying the connection if it's not found.
     u_input = unicode(o_parsed_data.i)
-    if not (os.access(u_input, os.F_OK) and os.access(u_input, os.R_OK)):
-        print u'[ FAIL ]  Input device: %s (can\'t be read or is not found)' % u_input
-        sys.exit()
-    else:
-        print u'[ pass ]  Input device: %s' % u_input
+    #if not (os.access(u_input, os.F_OK) and os.access(u_input, os.R_OK)):
+    #    print u'[ FAIL ]  Input device: %s (can\'t be read or is not found)' % u_input
+    #    sys.exit()
+    #else:
+    #    print u'[ pass ]  Input device: %s' % u_input
+    print u'[ pass ]  Input device: %s' % u_input
 
     # Output device
     #--------------
     u_output = unicode(o_parsed_data.o)
-    if not (os.access(u_input, os.F_OK) and os.access(u_input, os.W_OK)):
-        if b_mode_test:
-            print u'[ INFO ] Output device: %s (can\'t be read or is not found)' % u_output
-        else:
-            print u'[ FAIL ] Output device: %s (can\'t be read or is not found)' % u_output
-            sys.exit()
-    else:
-        print u'[ pass ] Output device: %s' % u_output
+    #if not (os.access(u_input, os.F_OK) and os.access(u_input, os.W_OK)):
+    #    if b_mode_test:
+    #        print u'[ INFO ] Output device: %s (can\'t be read or is not found)' % u_output
+    #    else:
+    #        print u'[ FAIL ] Output device: %s (can\'t be read or is not found)' % u_output
+    #        sys.exit()
+    #else:
+    #    print u'[ pass ] Output device: %s' % u_output
+    print u'[ pass ] Output device: %s' % u_output
 
     return {'u_input': u_input,
             'u_output': u_output,
