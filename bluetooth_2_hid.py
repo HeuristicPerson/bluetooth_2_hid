@@ -2,8 +2,8 @@
 
 """
 Author:     @PixelGordo
-Date:       2019-01-27
-Version:    0.1
+Date:       2021-12-15
+Version:    0.2
 References: https://www.isticktoit.net/?p=1383
             https://github.com/mikerr/pihidproxy
 ========================================================================================================================
@@ -30,6 +30,7 @@ import argparse
 import os
 import sys
 import time
+import atexit
 
 import evdev
 
@@ -89,35 +90,35 @@ def _get_cmd_args():
     b_mode_test = o_parsed_data.t
     b_mode_log = o_parsed_data.l
 
-    print u'[ pass ]    Debug mode: %s' % b_mode_debug
-    print u'[ pass ]     Test mode: %s' % b_mode_test
-    print u'[ pass ]      Log mode: %s (%s)' % (b_mode_log, u_LOG_FILE)
+    print('[ pass ]    Debug mode: %s' % b_mode_debug)
+    print('[ pass ]     Test mode: %s' % b_mode_test)
+    print('[ pass ]      Log mode: %s (%s)' % (b_mode_log, u_LOG_FILE))
 
     # Input device
     #-------------
     # I'm not sure about this validation because I don't know what happens when you first connect the Bluetooth without
     # any activity on the keyboard. If the keyboard doesn't activate, this validation will fail. Anyway, once the
     # program is running, the main loop is able to keep trying the connection if it's not found.
-    u_input = unicode(o_parsed_data.i)
+    u_input = str(o_parsed_data.i)
     #if not (os.access(u_input, os.F_OK) and os.access(u_input, os.R_OK)):
-    #    print u'[ FAIL ]  Input device: %s (can\'t be read or is not found)' % u_input
+    #    print('[ FAIL ]  Input device: %s (can\'t be read or is not found)' % u_input)
     #    sys.exit()
     #else:
-    #    print u'[ pass ]  Input device: %s' % u_input
-    print u'[ pass ]  Input device: %s' % u_input
+    #    print('[ pass ]  Input device: %s' % u_input)
+    print('[ pass ]  Input device: %s' % u_input)
 
     # Output device
     #--------------
-    u_output = unicode(o_parsed_data.o)
+    u_output = str(o_parsed_data.o)
     #if not (os.access(u_input, os.F_OK) and os.access(u_input, os.W_OK)):
     #    if b_mode_test:
-    #        print u'[ INFO ] Output device: %s (can\'t be read or is not found)' % u_output
+    #        print('[ INFO ] Output device: %s (can\'t be read or is not found)' % u_output)
     #    else:
-    #        print u'[ FAIL ] Output device: %s (can\'t be read or is not found)' % u_output
+    #        print('[ FAIL ] Output device: %s (can\'t be read or is not found)' % u_output)
     #        sys.exit()
     #else:
-    #    print u'[ pass ] Output device: %s' % u_output
-    print u'[ pass ] Output device: %s' % u_output
+    #    print('[ pass ] Output device: %s' % u_output)
+    print('[ pass ] Output device: %s' % u_output)
 
     return {'u_input': u_input,
             'u_output': u_output,
@@ -138,10 +139,10 @@ def _get_input_device(pu_device):
         try:
             o_device = evdev.InputDevice(pu_device)
         except OSError:
-            print u'[ WAIT ] Opening Bluetooth input (%s)...' % u_INPUT_DEV
+            print('[ WAIT ] Opening Bluetooth input (%s)...' % u_INPUT_DEV)
             time.sleep(3)
 
-    print u'[ pass ] Bluetooth input open (%s)' % unicode(pu_device)
+    print('[ pass ] Bluetooth input open (%s)' % str(pu_device))
     return o_device
 
 
@@ -157,10 +158,10 @@ def _get_output_device(pu_device):
         try:
             o_device = open(pu_device, 'wb+', buffering=0)
         except OSError:
-            print u'[ WAIT ] Opening HID output (%s)...' % u_OUTPUT_DEV
+            print('[ WAIT ] Opening HID output (%s)...' % u_OUTPUT_DEV)
             time.sleep(3)
 
-    print u'[ pass ] HID output open (%s)' % unicode(pu_device)
+    print('[ pass ] HID output open (%s)' % str(pu_device))
     return o_device
 
 
@@ -173,18 +174,28 @@ def _get_devices(pu_input, pu_output, po_input, po_output):
     """
     pass
 
+def _grab_device(device):
+    device.grab()
+
+def _ungrab_device(device):
+    device.ungrab()
+
 # Main Code
 #=======================================================================================================================
 if __name__ == '__main__':
-    print u'Bluetooth to HID events translator v0.1 2019-01-29'
-    print u'=================================================='
+    print('Bluetooth to HID events translator v0.1 2019-01-29')
+    print('==================================================')
 
     o_args = _get_cmd_args()
 
     # Initialization
     #---------------
+    is_debug_enabled = bool(o_args['b_mode_debug'])
+    is_test_mode_enabled = bool(o_args['b_mode_test'])
     o_hid_keyboard = keyboard.HidKeyboard()
     o_input_device = _get_input_device(o_args['u_input'])
+    _grab_device(o_input_device)
+    atexit.register(_ungrab_device, device = o_input_device)
     o_output_device = _get_output_device(o_args['u_output'])
 
     # Main loop
@@ -214,21 +225,21 @@ if __name__ == '__main__':
                     # [3/?] When any change occurs, we need to send the HID command
                     #--------------------------------------------------------------
                     if o_data.keystate in (0, 1):
-                        if o_args['b_mode_debug']:
-                            print o_hid_keyboard.to_debug_command()
+                        if is_debug_enabled:
+                            print(o_hid_keyboard.to_debug_command())
 
-                        if not o_args['b_mode_test']:
+                        if not is_test_mode_enabled:
                             s_hid_command = o_hid_keyboard.to_hid_command()
                             try:
-                                o_output_device.write(s_hid_command)
+                                o_output_device.write(s_hid_command.encode('utf-8'))
                             except IOError:
-                                print u'--------------------------------------------------'
+                                print('--------------------------------------------------')
                                 _get_output_device(o_args['u_output'])
-                                print u'--------------------------------------------------'
-                                o_output_device.write(s_hid_command)
+                                print('--------------------------------------------------')
+                                o_output_device.write(s_hid_command.encode('utf-8'))
 
         # The o_input_device cannot be read
         except IOError:
-            print u'--------------------------------------------------'
+            print('--------------------------------------------------')
             o_input_device = _get_input_device(o_args['u_input'])
-            print u'--------------------------------------------------'
+            print('--------------------------------------------------')

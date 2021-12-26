@@ -1,4 +1,4 @@
-import hid_codes
+from libs import hid_codes
 
 # Constants
 #=======================================================================================================================
@@ -197,7 +197,7 @@ class HidKeyboard(object):
         """
         i_mod_byte = 0
 
-        for s_mod_name, b_mod_active in self._db_modifiers.iteritems():
+        for s_mod_name, b_mod_active in self._db_modifiers.items():
             i_mod_value = ord(hid_codes.ds_MOD_CODES[s_mod_name])
             if b_mod_active:
                 i_mod_byte += i_mod_value

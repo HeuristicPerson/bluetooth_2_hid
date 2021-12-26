@@ -294,5 +294,5 @@ ds_KEY_TO_HID = {
 
 # Reverse dictionary that I use in my debug functions
 ds_HID_TO_KEY = {}
-for s_key, s_value in ds_KEY_TO_HID.iteritems():
+for s_key, s_value in ds_KEY_TO_HID.items():
     ds_HID_TO_KEY[s_value] = s_key
