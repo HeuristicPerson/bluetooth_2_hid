@@ -37,8 +37,8 @@ ls /sys/class/udc > UDC’ > /usr/bin/isticktoit_usb
 #sudo chown root:root /etc/systemd/system/bluetooth_2_hid.service
 #sudo chmod 644 /etc/systemd/system/bluetooth_2_hid.service
 
-sudo ln -s /home/pi/bluetooth_2_hid/bluetooth_2_hid.service /etc/systemd/system/
+ln -s /home/pi/bluetooth_2_hid/bluetooth_2_hid.service /etc/systemd/system/
 
-sudo pip3 install evdev
+pip3 install evdev
 
 
