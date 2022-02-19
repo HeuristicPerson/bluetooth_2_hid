@@ -26,8 +26,14 @@ Device) instructions sent through the USB port.
   1. Connect with SSH to your Raspberry Pi Zero W, `sudo apt-get update && sudo apt-get upgrade -y`
   2. Clone this repository in your `pi` default user home directory.
   3. Create your output HID device (see Alle Beiträge von Tobi's reference below). `install.sh` should help.
-  4. Pair your Bluetooth keyboard with the Raspberry Pi (using `bluetoothctl`).
-  5. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
+  4. Pair your Bluetooth keyboard with the Raspberry Pi, using `bluetoothctl` :
+     1. `scan on`
+     2. Turn your keyboard in pairing mode
+     3. You should see your device in discovered devices and note his MAC address
+     4. `pair {your-device-mac}`
+     5. `connect {your-device-mac}`
+     6. `trust {your-device-mac}`
+  6. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
      and translate them to HID commands (because we are in test mode `-t`, the software won't send any HID signal). If
      it's now working, check/repeat the steps 1-2-3
   5. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
