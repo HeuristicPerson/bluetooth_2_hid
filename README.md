@@ -23,23 +23,24 @@ Device) instructions sent through the USB port.
 (to be improved)
 
   0. Prepare your Raspberry Pi Zero W. with the [Raspberry Pi Imager](https://youtu.be/ntaXWS8Lk34), with correct wifi settings & ssh enabled.
-  1. Connect with SSH to your Raspberry Pi Zero W.
-  2. Create your output HID device (see Alle Beiträge von Tobi's reference below). ''install.sh'' should help.
-  3. Pair your Bluetooth keyboard with the Raspberry Pi (using bluetoothctl).
-  4. Execute ''$ sudo bluetooth_2_hid.py -t -d'' to check the software is able to read your Bluetooth keyboard inputs
-     and translate them to HID commands (because we are in test mode ''-t'', the software won't send any HID signal). If
+  1. Connect with SSH to your Raspberry Pi Zero W, `sudo apt-get update && sudo apt-get upgrade -y`
+  2. Clone this repository in your `pi` default user home directory.
+  3. Create your output HID device (see Alle Beiträge von Tobi's reference below). `install.sh` should help.
+  4. Pair your Bluetooth keyboard with the Raspberry Pi (using `bluetoothctl`).
+  5. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
+     and translate them to HID commands (because we are in test mode `-t`, the software won't send any HID signal). If
      it's now working, check/repeat the steps 1-2-3
   5. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
      to your children about the dangers of learning to code... you know, the typical stuff). We need to check that the
      keyboard is able to automatically re-connect after entering energy saving mode. If it does, CONGRATULATIONS!
-  6. To run ''bluetooth_2_hid'' as a service, you can use ''bluetooth_2_hid.service'' and add it to ''systemd''.
-     ''install.sh'' add a link in  from ''pi'' user in ''systemd'' services directory.
-     Run ''sudo systemctl start bluetooth_2_hid.service && sudo systemctl enable bluetooth_2_hid.service''.
+  6. To run `bluetooth_2_hid` as a service, you can use `bluetooth_2_hid.service` and add it to `systemd`.
+     `install.sh` add a link in  from `pi` user in `systemd` services directory.
+     Run `sudo systemctl start bluetooth_2_hid.service && sudo systemctl enable bluetooth_2_hid.service`.
      
 ## Known bugs
  
 If the keyboard enters energy saving mode, it stops being detected by the Raspberry and the input device
-''/dev/input/event0'' is no longer available, making the script to crash.
+`/dev/input/event0` is no longer available, making the script to crash.
 
 ## Extra work to be done
 
