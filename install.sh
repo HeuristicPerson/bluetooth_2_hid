@@ -33,11 +33,6 @@ ln -s functions/hid.usb0 configs/c.1/
 # End functions
 ls /sys/class/udc > UDC’ > /usr/bin/isticktoit_usb
 
-cd ~
-git clone https://github.com/HeuristicPerson/bluetooth_2_hid
-
-cd bluetooth_2_hid
-
 #sudo cp bluetooth_2_hid.service /etc/systemd/system/
 #sudo chown root:root /etc/systemd/system/bluetooth_2_hid.service
 #sudo chmod 644 /etc/systemd/system/bluetooth_2_hid.service
