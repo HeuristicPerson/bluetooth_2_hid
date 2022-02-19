@@ -26,6 +26,10 @@ Device) instructions sent through the USB port.
   1. Connect with SSH to your Raspberry Pi Zero W, `sudo apt-get update && sudo apt-get upgrade -y`
   2. Clone this repository in your `pi` default user home directory.
   3. Create your output HID device (see Alle Beiträge von Tobi's reference below). `install.sh` should help.
+     1. `cd ~/bluetooth_2_hid`
+     2. `chmod u+x install.sh`
+     3. Edit the `install.sh` if you want
+     4. `sudo ./install.sh` 
   4. Pair your Bluetooth keyboard with the Raspberry Pi, using `bluetoothctl` :
      1. `scan on`
      2. Turn your keyboard in pairing mode
@@ -33,13 +37,13 @@ Device) instructions sent through the USB port.
      4. `pair {your-device-mac}`
      5. `connect {your-device-mac}`
      6. `trust {your-device-mac}`
-  6. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
+  5. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
      and translate them to HID commands (because we are in test mode `-t`, the software won't send any HID signal). If
      it's now working, check/repeat the steps 1-2-3
-  5. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
+  6. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
      to your children about the dangers of learning to code... you know, the typical stuff). We need to check that the
      keyboard is able to automatically re-connect after entering energy saving mode. If it does, CONGRATULATIONS!
-  6. To run `bluetooth_2_hid` as a service, you can use `bluetooth_2_hid.service` and add it to `systemd`.
+  7. To run `bluetooth_2_hid` as a service, you can use `bluetooth_2_hid.service` and add it to `systemd`.
      `install.sh` add a link in  from `pi` user in `systemd` services directory.
      Run `sudo systemctl start bluetooth_2_hid.service && sudo systemctl enable bluetooth_2_hid.service`.
      
