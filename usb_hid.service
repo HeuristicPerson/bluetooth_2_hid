@@ -1,0 +1,10 @@
+[Unit]
+Description=pizero usb as hid
+
+[Service]
+User=root
+WorkingDirectory=/usr/bin/
+ExecStart=/usr/bin/usb_hid.sh
+
+[Install]
+WantedBy=multi-user.target

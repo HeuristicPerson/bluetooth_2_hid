@@ -1,10 +1,4 @@
 #!/bin/bash
-#touch /usr/bin/isticktoit_usb
-#chmod +x /usr/bin/isticktoit_usb
-
-#sed -i '/^exit/i /usr/bin/isticktoit_usb' /etc/rc.local
-
-# Begin of device configuration
 
 cd /sys/kernel/config/usb_gadget/
 mkdir -p isticktoit
@@ -35,13 +29,3 @@ ln -s functions/hid.usb0 configs/c.1/
 ls /sys/class/udc > UDC
 
 # End of device configuration
-
-#sudo cp bluetooth_2_hid.service /etc/systemd/system/
-#sudo chown root:root /etc/systemd/system/bluetooth_2_hid.service
-#sudo chmod 644 /etc/systemd/system/bluetooth_2_hid.service
-
-#ln -s /home/pi/bluetooth_2_hid/bluetooth_2_hid.service /etc/systemd/system/
-
-#pip3 install evdev
-
-
