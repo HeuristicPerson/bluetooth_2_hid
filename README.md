@@ -33,11 +33,11 @@ Device) instructions sent through the USB port.
   5. Reboot
   6. Run `install2.sh` to create the device
   7. Pair your Bluetooth keyboard with the Raspberry Pi, using `bluetoothctl` :
-     1. `scan on`
+     1. `scan on` (you need this to pair your device even if you know the MAC address)
      2. Turn your keyboard in pairing mode
      3. You should see your device in discovered devices and note his MAC address
      4. `pair {your-device-mac}`
-     5. `connect {your-device-mac}`
+     5. `connect {your-device-mac}` when the device is still trying to pair
      6. `trust {your-device-mac}`
   8. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
      and translate them to HID commands (because we are in test mode `-t`, the software won't send any HID signal). If
