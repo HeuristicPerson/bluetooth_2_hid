@@ -3,7 +3,6 @@ Description=pizero usb as hid
 
 [Service]
 User=root
-WorkingDirectory=/tmp/usb_hid
 ExecStart=/usr/bin/usb_hid.sh
 
 [Install]
