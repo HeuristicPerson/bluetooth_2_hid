@@ -1,5 +1,6 @@
 [Unit]
 Description=pizero bluetooth to usb hid
+After=usb_hid.service
 
 [Service]
 User=root

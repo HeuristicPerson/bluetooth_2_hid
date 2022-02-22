@@ -7,14 +7,12 @@
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
 
-chmod u+x $currentScriptDirectory/usb_hid.service
-ln -s $currentScriptDirectory/usb_hid.service /etc/systemd/system/
-chmod u+x $currentScriptDirectory/usb_hid.sh
+chmod 744 $currentScriptDirectory/usb_hid.sh
 ln -s $currentScriptDirectory/usb_hid.sh /usr/bin/
+ln -s $currentScriptDirectory/usb_hid.service /etc/systemd/system/
 
-chmod u+x $currentScriptDirectory/bluetooth_2_hid.py
+chmod 744 $currentScriptDirectory/bluetooth_2_hid.py
 ln -s $currentScriptDirectory/bluetooth_2_hid.py /usr/bin/
-chmod u+x $currentScriptDirectory/bluetooth_2_hid.service
 ln -s $currentScriptDirectory/bluetooth_2_hid.service /etc/systemd/system/
 
 systemctl enable usb_hid.service
