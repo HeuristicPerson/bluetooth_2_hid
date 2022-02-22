@@ -25,20 +25,20 @@ Device) instructions sent through the USB port.
   1. Prepare your Raspberry Pi Zero W. with the [Raspberry Pi Imager](https://youtu.be/ntaXWS8Lk34), with correct wifi settings & ssh enabled.
   2. Connect with SSH to your Raspberry Pi Zero W, `sudo apt-get update && sudo apt-get upgrade -y`
   3. Clone this repository in your `pi` default user home directory.
-  4. Run the `sudo install.sh`. It will end by with a reboot.
-  5. Pair your Bluetooth keyboard with the Raspberry Pi, using `bluetoothctl` :
+  4. Pair your Bluetooth keyboard with the Raspberry Pi, using `bluetoothctl` :
      1. `scan on` (you need this to pair your device even if you know the MAC address)
      2. Turn your keyboard in pairing mode
      3. You should see your device in discovered devices and note his MAC address
      4. `pair {your-device-mac}`
      5. `connect {your-device-mac}` when the device is still trying to pair
      6. `trust {your-device-mac}`
-  6. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
+  5. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
      and translate them to HID commands (because we are in test mode `-t`, the software won't send any HID signal). If
      it's now working, check/repeat the steps 1-2-3
-  7. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
+  6. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
      to your children about the dangers of learning to code... you know, the typical stuff). We need to check that the
      keyboard is able to automatically re-connect after entering energy saving mode. If it does, CONGRATULATIONS!
+  7. To automate everything at startup, run the `sudo install.sh`. It will end by with a reboot.
      
 ## Known bugs
  
