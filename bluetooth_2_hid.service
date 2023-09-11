@@ -1,12 +1,14 @@
+
 [Unit]
-Description=pizero bluetooth to usb hid
-After=usb_hid.service
+Description=Bluetooth to USB HID proxy
 
 [Service]
 User=root
-ExecStart=python3 /usr/bin/bluetooth_2_hid.py -l -i /dev/input/event1
+ExecStart=python3 /usr/bin/bluetooth_2_hid.py --keyboard /dev/input/event3 --mouse /dev/input/event4
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
+Documentation=https://github.com/quaxalber/bluetooth_2_hid
+ProtectSystem=strict
 
 [Install]
 WantedBy=multi-user.target
