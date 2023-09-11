@@ -1,22 +1,43 @@
 #!/usr/bin/env python
-#
-# Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux gadget mode 
-#
+"""
+Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux gadget mode 
+"""
+
+import argparse
+import logging
+import sys
+import signal
 import usb_hid
 from select import select
+
 from evdev import InputDevice, ecodes
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
+
 from evdev_2_hid import Converter
+
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
+
+def signal_handler(sig, frame):
+    logging.info('Exiting gracefully')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 class ComboDeviceHidProxy:
     def __init__(self, keyboard_in: str, mouse_in: str):
-        self.keyboard_in = InputDevice(keyboard_in)
-        self.keyboard_out = Keyboard(usb_hid.devices) 
-        self.mouse_in = InputDevice(mouse_in)
-        self.mouse_out =  Mouse(usb_hid.devices)
-        self.converter = Converter()
-        self.input_devices = {dev.fd: dev for dev in [self.keyboard_in, self.mouse_in] if dev is not None}
+        try:
+            self.keyboard_in = InputDevice(keyboard_in)
+            self.keyboard_out = Keyboard(usb_hid.devices) 
+            self.mouse_in = InputDevice(mouse_in)
+            self.mouse_out =  Mouse(usb_hid.devices)
+            self.converter = Converter()
+            self.input_devices = {dev.fd: dev for dev in [self.keyboard_in, self.mouse_in] if dev is not None}
+        except Exception as e:
+            logging.error(f"Failed to initialize devices: {e}")
+            sys.exit(1)
 
     def handle_key(self, event):
         if self.is_mouse_button(event):
@@ -84,5 +105,10 @@ class ComboDeviceHidProxy:
                 self.move_mouse(event)
 
 if __name__ == "__main__":
-    proxy = ComboDeviceHidProxy(keyboard_in='/dev/input/event3', mouse_in='/dev/input/event4')
+    parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
+    parser.add_argument('--keyboard', type=str, required=True, help='Input device path for keyboard')
+    parser.add_argument('--mouse', type=str, required=True, help='Input device path for mouse')
+    args = parser.parse_args()
+    
+    proxy = ComboDeviceHidProxy(keyboard_in=args.keyboard, mouse_in=args.mouse)
     proxy.combined_event_loop()
