@@ -1,11 +1,11 @@
-# Bluetooth to HID
+# Bluetooth to USB
 
 ![License image.](images/diagram.png)
 
 ## Introduction
 
-This package contains a set of scripts to turn your **Raspberry Pi Zero W** into a HID proxy capable Bluetooth dongle
-for keyboards.
+This package contains a set of scripts to turn your **Raspberry Pi** into a HID proxy capable Bluetooth dongle
+for keyboards and mice.
 
 No worries if you don't understand a word, here is the explanation of the project in plain words: Imagine you have a
 Bluetooth keyboard. You pair it in with your Bluetooth receiver in Windows, Linux, or Mac OS using the appropiate
@@ -13,8 +13,7 @@ software and you simply use it, right? But what happens if you need to use that 
 or operating system select menu (GRUB)? or an old device that accepts USB keyboards but no Bluetooth devices?
 **You are done!**
 
-To solve those issues, we will use a Raspberry Pi Zero W (it's important that it's the **W** model because it has a
-Bluetooth receiver) as an intermediary to convert the Bluetooth commands from the keyboard to plain HID (Human Interface
+To solve those issues, we will use a Raspberry Pi as an intermediary to convert the Bluetooth commands from the keyboard or mouse to plain HID (Human Interface
 Device) instructions sent through the USB port. 
 
 
@@ -22,8 +21,8 @@ Device) instructions sent through the USB port.
 
 (to be improved)
 
-  1. Prepare your Raspberry Pi Zero W. with the [Raspberry Pi Imager](https://youtu.be/ntaXWS8Lk34), with correct wifi settings & ssh enabled.
-  2. Connect with SSH to your Raspberry Pi Zero W, `sudo apt-get update && sudo apt-get upgrade -y`
+  1. Prepare your Raspberry Pi. with the [Raspberry Pi Imager](https://youtu.be/ntaXWS8Lk34), with correct wifi settings & ssh enabled.
+  2. Connect with SSH to your Raspberry Pi, `sudo apt-get update && sudo apt-get upgrade -y`
   3. Clone this repository in your `pi` default user home directory.
   4. Pair your Bluetooth keyboard with the Raspberry Pi, using `bluetoothctl` :
      1. `scan on` (you need this to pair your device even if you know the MAC address)
@@ -32,13 +31,7 @@ Device) instructions sent through the USB port.
      4. `pair {your-device-mac}`
      5. `connect {your-device-mac}` when the device is still trying to pair
      6. `trust {your-device-mac}`
-  5. Execute `$ sudo bluetooth_2_hid.py -t -d` to check the software is able to read your Bluetooth keyboard inputs
-     and translate them to HID commands (because we are in test mode `-t`, the software won't send any HID signal). If
-     it's now working, check/repeat the steps 1-2-3
-  6. If it's working fine, don't touch your Bluetooth keyboard for 10-15 minutes (have a coffee with your partner, speak
-     to your children about the dangers of learning to code... you know, the typical stuff). We need to check that the
-     keyboard is able to automatically re-connect after entering energy saving mode. If it does, CONGRATULATIONS!
-  7. To automate everything at startup, run the `sudo install.sh`. It will end by with a reboot.
+  5. To automate everything at startup, run the `sudo install.sh`. It will end by with a reboot.
      
 ## Known bugs
  
@@ -47,16 +40,11 @@ If the keyboard enters energy saving mode, it stops being detected by the Raspbe
 
 ## Extra work to be done
 
-If you succeed setting your Raspberry Pi Zero W as a HID proxy for your Bluetooth keyboard, there is still more to do:
+If you succeed setting your Raspberry Pi as a HID proxy for your Bluetooth keyboard, there is still more to do:
 
   1. Set Raspbian as read-only. That will help preventing the SD card from getting corrupted when powering off the
      Raspberry. Remember we won't properly shut down the Pi, we'll simply cut its power when shutting down your PC. If
      that happens while the Pi is writing any file, the entire system could get corrupted.
-     
-  2. During the configuration of the Raspberry Pi we would access it through SSH over WiFi network connection. Those
-     services require a lot of time to start when powering up the Pi (around 12 seconds). That means that you could
-     never access the BIOS of your computer with this setup because it's likely the system is not yet ready to execute
-     our Bluetooth-to-HID script.
      
   3. **VERY IMPORTANT:** Once everything is working, make a backup of the Pi's SD card. You don't want to repeat all the
      setup if anything fails, do you? **;)**
