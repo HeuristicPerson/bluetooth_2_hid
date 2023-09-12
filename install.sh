@@ -36,13 +36,13 @@ pip3 install evdev adafruit-circuitpython-hid
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
 
-mkdir /tmp/bluetooth_2_hid
+mkdir /tmp/bluetooth_2_usb
 
-chmod 744 $currentScriptDirectory/bluetooth_2_hid.py
-ln -s $currentScriptDirectory/bluetooth_2_hid.py /usr/bin/
-ln -s $currentScriptDirectory/bluetooth_2_hid.service /etc/systemd/system/
+chmod 744 $currentScriptDirectory/bluetooth_2_usb.py
+ln -s $currentScriptDirectory/bluetooth_2_usb.py /usr/bin/
+ln -s $currentScriptDirectory/bluetooth_2_usb.service /etc/systemd/system/
 
-systemctl enable bluetooth_2_hid.service
+systemctl enable bluetooth_2_usb.service
 
 # Notify user about the reboot
 read -p "The system needs to reboot to complete the installation. Reboot now? (y/n) " -n 1 -r
