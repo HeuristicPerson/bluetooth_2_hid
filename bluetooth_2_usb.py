@@ -94,27 +94,25 @@ class ComboDeviceHidProxy:
         
     def run_event_loop(self):
         if self.keyboard_in is not None:
-            asyncio.run(self.read_keyboard_events())
+            asyncio.ensure_future(self.read_keyboard_events())
         if self.mouse_in is not None:
-            asyncio.run(self.read_mouse_events())
+            asyncio.ensure_future(self.read_mouse_events())
+        loop = asyncio.get_event_loop()
+        loop.run_forever()
            
     async def read_keyboard_events(self):
-        while True:
-            events = await self.keyboard_in.async_read()
-            for event in events:
-                if event is None: continue
-                if event.type == ecodes.EV_KEY and event.value < 2:
-                    self.handle_keyboard_key(event)
+        async for event in self.keyboard_in.async_read():
+            if event is None: continue
+            if event.type == ecodes.EV_KEY and event.value < 2:
+                self.handle_keyboard_key(event)
     
     async def read_mouse_events(self):
-        while True:
-            events = await self.mouse_in.async_read()
-            for event in events:
-                if event is None: continue
-                if event.type == ecodes.EV_KEY and event.value < 2:
-                    self.handle_mouse_button(event)
-                elif event.type == ecodes.EV_REL:
-                    self.move_mouse(event)
+        async for event in self.mouse_in.async_read():
+            if event is None: continue
+            if event.type == ecodes.EV_KEY and event.value < 2:
+                self.handle_mouse_button(event)
+            elif event.type == ecodes.EV_REL:
+                self.move_mouse(event)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
