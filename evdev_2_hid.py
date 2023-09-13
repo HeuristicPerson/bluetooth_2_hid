@@ -1,11 +1,10 @@
-import logging
-
 from evdev import ecodes
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
 
-logging.basicConfig(level=logging.INFO, filename='/var/log/bluetooth_2_usb/event.log')
+from logger import get_logger
 
+logger = get_logger()
 
 _EVDEV_TO_HID_MAPPING  = {
     ecodes.KEY_RESERVED: 0x00,
@@ -176,7 +175,7 @@ class Converter:
     def to_hid_key(cls, event):
         key = _EVDEV_TO_HID_MAPPING.get(event.code, None)
         if key is None:
-            logging.warning(f"Unsupported key pressed: {event}")
+            logger.warning(f"Unsupported key pressed: {event}")
         return key
     
     @classmethod   
@@ -191,5 +190,5 @@ class Converter:
             button = Mouse.MIDDLE_BUTTON  
 
         if button is None:
-            logging.warning(f"Unsupported mouse button pressed: {event}")
+            logger.warning(f"Unsupported mouse button pressed: {event}")
         return button
