@@ -14,7 +14,7 @@ def get_logger() -> logging.Logger:
         stdout_handler = logging.StreamHandler()
 
         # Create a formatter and set it for both handlers
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
         file_handler.setFormatter(formatter)
         stdout_handler.setFormatter(formatter)
 
