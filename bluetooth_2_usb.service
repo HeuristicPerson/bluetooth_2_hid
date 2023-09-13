@@ -9,7 +9,6 @@ ExecStart=python3 /usr/bin/bluetooth_2_usb.py --keyboard /dev/input/event2 --mou
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 Documentation=https://github.com/quaxalber/bluetooth_2_usb
-ProtectSystem=strict
 
 [Install]
 WantedBy=multi-user.target

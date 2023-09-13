@@ -50,7 +50,6 @@ class ComboDeviceHidProxy:
                 logging.info(f'Mouse (in): {self.mouse_in}')
                 self.mouse_out = Mouse(usb_hid.devices)
                 logging.info(f'Mouse (out): {self.device_repr(self.mouse_out._mouse_device)}')
-            self.converter = Converter()
         except Exception as e:
             logging.error(f"Failed to initialize devices. [Message: {e}]")
             sys.exit(1)
@@ -59,7 +58,7 @@ class ComboDeviceHidProxy:
         return dev.get_device_path(None)
 
     def handle_keyboard_key(self, event):
-        key = self.converter.to_hid_key(event) 
+        key = Converter.to_hid_key(event) 
         if key is None: return
         try:
             if event.value == 0:
@@ -70,7 +69,7 @@ class ComboDeviceHidProxy:
             logging.error(f"Error at keyboard event: {event} [Message: {e}]")           
 
     def handle_mouse_button(self, event):
-        button = self.converter.to_hid_mouse_button(event)
+        button = Converter.to_hid_mouse_button(event)
         if button is None: return
         try:
             if event.value == 0:
@@ -95,25 +94,21 @@ class ComboDeviceHidProxy:
         
     def run_event_loop(self):
         if self.keyboard_in is not None:
-            asyncio.ensure_future(self.read_keyboard_events())
+            asyncio.run(self.read_keyboard_events())
         if self.mouse_in is not None:
-            asyncio.ensure_future(self.read_mouse_events())
-        loop = asyncio.get_event_loop()
-        loop.run_forever()
-
-    @asyncio.coroutine            
-    def read_keyboard_events(self):
+            asyncio.run(self.read_mouse_events())
+           
+    async def read_keyboard_events(self):
         while True:
-            events = yield from self.keyboard_in.async_read()
+            events = await self.keyboard_in.async_read()
             for event in events:
                 if event is None: continue
                 if event.type == ecodes.EV_KEY and event.value < 2:
                     self.handle_keyboard_key(event)
-
-    @asyncio.coroutine            
-    def read_mouse_events(self):
+    
+    async def read_mouse_events(self):
         while True:
-            events = yield from self.mouse_in.async_read()
+            events = await self.mouse_in.async_read()
             for event in events:
                 if event is None: continue
                 if event.type == ecodes.EV_KEY and event.value < 2:
