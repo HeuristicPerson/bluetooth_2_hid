@@ -101,13 +101,13 @@ class ComboDeviceHidProxy:
         loop.run_forever()
            
     async def read_keyboard_events(self):
-        async for event in self.keyboard_in.async_read():
+        async for event in self.keyboard_in.async_read_loop():
             if event is None: continue
             if event.type == ecodes.EV_KEY and event.value < 2:
                 self.handle_keyboard_key(event)
     
     async def read_mouse_events(self):
-        async for event in self.mouse_in.async_read():
+        async for event in self.mouse_in.async_read_loop():
             if event is None: continue
             if event.type == ecodes.EV_KEY and event.value < 2:
                 self.handle_mouse_button(event)
