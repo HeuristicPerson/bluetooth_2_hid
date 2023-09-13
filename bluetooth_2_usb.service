@@ -1,10 +1,11 @@
 
 [Unit]
 Description=Bluetooth to USB HID proxy
+After=multi-user.target
 
 [Service]
 User=root
-ExecStart=python3 /usr/bin/bluetooth_2_usb.py --keyboard /dev/input/event3 --mouse /dev/input/event4
+ExecStart=python3 /usr/bin/bluetooth_2_usb.py --keyboard /dev/input/event2 --mouse /dev/input/event3
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 Documentation=https://github.com/quaxalber/bluetooth_2_hid
