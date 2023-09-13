@@ -4,15 +4,17 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 """
 
 import argparse
+import asyncio
 import logging
-import sys
-import signal
-import usb_hid
 from select import select
+import signal
+import sys
+import usb_hid
+from usb_hid import Device
 
-from evdev import InputDevice, ecodes
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
+from evdev import InputDevice, ecodes
 
 from evdev_2_hid import Converter
 
@@ -26,7 +28,7 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 try:
-    usb_hid.enable((usb_hid.Device.KEYBOARD, usb_hid.Device.MOUSE))
+    usb_hid.enable((Device.KEYBOARD, Device.MOUSE))
 except Exception as e:
     logging.error(f"Failed to enable devices. [Message: {e}]")   
 
@@ -49,19 +51,12 @@ class ComboDeviceHidProxy:
                 self.mouse_out = Mouse(usb_hid.devices)
                 logging.info(f'Mouse (out): {self.device_repr(self.mouse_out._mouse_device)}')
             self.converter = Converter()
-            self.input_devices = {dev.fd: dev for dev in [self.keyboard_in, self.mouse_in] if dev is not None}
         except Exception as e:
             logging.error(f"Failed to initialize devices. [Message: {e}]")
             sys.exit(1)
 
-    def device_repr(self, dev: usb_hid.Device) -> str:
+    def device_repr(self, dev: Device) -> str:
         return dev.get_device_path(None)
-
-    def handle_key(self, event):
-        if self.is_mouse_button(event):
-            self.handle_mouse_button(event)
-        else:
-            self.handle_keyboard_key(event) 
 
     def handle_keyboard_key(self, event):
         key = self.converter.to_hid_key(event) 
@@ -85,9 +80,6 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logging.error(f"Error at mouse button event: {event} [Message: {e}]")        
 
-    def is_mouse_button(self, event):
-        return event.code in [ecodes.BTN_LEFT, ecodes.BTN_RIGHT, ecodes.BTN_MIDDLE]
-
     def move_mouse(self, event):
         x, y, mwheel = 0
         if event.code == ecodes.REL_X:
@@ -101,38 +93,33 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logging.error(f"Error at mouse move event: {event} [Message: {e}]")   
         
-    def combined_event_loop(self):
-        while True:
-            ready_devices = self.get_ready_devices()
-            for device in ready_devices:
-                self.read_input_events(device)
+    def run_event_loop(self):
+        if self.keyboard_in is not None:
+            asyncio.ensure_future(self.read_keyboard_events())
+        if self.mouse_in is not None:
+            asyncio.ensure_future(self.read_mouse_events())
+        loop = asyncio.get_event_loop()
+        loop.run_forever()
 
-    def get_ready_devices(self):
-        try:
-            device_fds = select(self.input_devices, [], [])[0]
-        except Exception as e:
-            logging.error(f"Error getting ready devices. [Message: {e}]")   
-        return [self.input_devices[fd] for fd in device_fds if fd is not None]
-    
-    def read_input_events(self, device):
-        if device == self.keyboard_in:
-            self.read_keyboard_events()
-        else:
-            self.read_mouse_events()
-
+    @asyncio.coroutine            
     def read_keyboard_events(self):
-        for event in self.keyboard_in.read():
-            if event is None: continue
-            if event.type == ecodes.EV_KEY and event.value < 2:
-                self.handle_key(event)
+        while True:
+            events = yield from self.keyboard_in.async_read()
+            for event in events:
+                if event is None: continue
+                if event.type == ecodes.EV_KEY and event.value < 2:
+                    self.handle_keyboard_key(event)
 
+    @asyncio.coroutine            
     def read_mouse_events(self):
-        for event in self.mouse_in.read():
-            if event is None: continue
-            if event.type == ecodes.EV_KEY and event.value < 2:
-                self.handle_key(event)
-            elif event.type == ecodes.EV_REL:
-                self.move_mouse(event)
+        while True:
+            events = yield from self.mouse_in.async_read()
+            for event in events:
+                if event is None: continue
+                if event.type == ecodes.EV_KEY and event.value < 2:
+                    self.handle_mouse_button(event)
+                elif event.type == ecodes.EV_REL:
+                    self.move_mouse(event)
 
 def setup_logging(log_level, log_file):
     numeric_level = getattr(logging, log_level.upper(), None)
@@ -157,6 +144,6 @@ if __name__ == "__main__":
   
     proxy = ComboDeviceHidProxy(keyboard_in=args.keyboard, mouse_in=args.mouse)
     try:
-        proxy.combined_event_loop()
+        proxy.run_event_loop()
     except Exception as e:
         logging.error(f"Unhandled error while processing input events. Abort mission. [Message: {e}]")   
