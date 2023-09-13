@@ -36,7 +36,7 @@ pip3 install evdev adafruit-circuitpython-hid
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
 
-mkdir /tmp/bluetooth_2_usb
+mkdir /var/log/bluetooth_2_usb
 
 chmod 744 $currentScriptDirectory/bluetooth_2_usb.py
 ln -s $currentScriptDirectory/bluetooth_2_usb.py /usr/bin/
