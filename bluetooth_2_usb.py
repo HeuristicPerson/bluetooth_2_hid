@@ -18,7 +18,7 @@ from evdev import InputDevice, ecodes
 
 from evdev_2_hid import Converter
 
-logging.basicConfig(level=logging.INFO, filename='/var/log/bluetooth_2_usb.log')
+logging.basicConfig(level=logging.INFO, filename='/var/log/bluetooth_2_usb/event.log')
 
 def signal_handler(sig, frame):
     logging.info('Exiting gracefully.')
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument('--keyboard', '-k', type=str, default=None, help='Input device path for keyboard')
     parser.add_argument('--mouse', '-m', type=str, default=None, help='Input device path for mouse')
     parser.add_argument('--log_level', '-l', type=str, default='INFO', help='Logging level')
-    parser.add_argument('--log_file', '-f', type=str, default='/var/log/bluetooth_2_usb.log', help='Log file path')
+    parser.add_argument('--log_file', '-f', type=str, default='/var/log/bluetooth_2_usb/event.log', help='Log file path')
     args = parser.parse_args()
 
     try:

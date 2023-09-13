@@ -4,7 +4,7 @@ from evdev import ecodes
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
 
-logging.basicConfig(level=logging.INFO, filename='/var/log/bluetooth_2_usb.log')
+logging.basicConfig(level=logging.INFO, filename='/var/log/bluetooth_2_usb/event.log')
 
 class Converter:
     def __init__(self):
