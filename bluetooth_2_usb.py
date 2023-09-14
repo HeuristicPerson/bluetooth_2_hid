@@ -78,19 +78,22 @@ class ComboDeviceHidProxy:
         loop.run_forever()
            
     async def read_keyboard_events(self):
-        logger.debug(f"Error at mouse move event: {event} [Message: {e}]")   
+        logger.info(f"Started keyboard event loop")   
         async for event in self.keyboard_in.async_read_loop():
             if event is None: continue
+            logger.debug(f"Received keyboard event: [{event}]") 
             if self.should_handle_key(event):
-                self.handle_keyboard_key(event)
+                self.handle_key_event(event, self.keyboard_out)
     
     async def read_mouse_events(self):
+        logger.info(f"Started mouse event loop") 
         async for event in self.mouse_in.async_read_loop():
             if event is None: continue
+            logger.debug(f"Received mouse event: [{event}]") 
             if self.should_handle_key(event):
-                self.handle_mouse_button(event)
+                self.handle_key_event(event, self.mouse_out)
             elif self.should_handle_mouse_move(event):
-                self.move_mouse(event) 
+                self.handle_move_mouse_event(event, self.mouse_out) 
 
     def should_handle_key(self, event):
         return self.is_key_up_or_down(event) and not self.is_sandbox
@@ -104,29 +107,18 @@ class ComboDeviceHidProxy:
     def is_mouse_move(self, event):
         return event.type == ecodes.EV_REL 
 
-    def handle_keyboard_key(self, event):
-        key = Converter.to_hid_key(event) 
+    def handle_key_event(self, event, device_out: Device):
+        key = Converter.to_hid_key(event.code) 
         if key is None: return
         try:
             if event.value == 0:
-                self.keyboard_out.release(key)
+                device_out.release(key)
             elif event.value == 1:
-                self.keyboard_out.press(key)
+                device_out.press(key)
         except Exception as e:
-            logger.error(f"Error at keyboard event: {event} [Message: {e}]")           
+            logger.error(f"Error sending key event [{event}] to device {self.device_repr(device_out)} [{e}]")
 
-    def handle_mouse_button(self, event):
-        button = Converter.to_hid_mouse_button(event)
-        if button is None: return
-        try:
-            if event.value == 0:
-                self.mouse_out.release(button)
-            elif event.value == 1:
-                self.mouse_out.press(button)
-        except Exception as e:
-            logger.error(f"Error at mouse button event: {event} [Message: {e}]")        
-
-    def move_mouse(self, event):
+    def handle_move_mouse_event(self, event, device_out: Device):
         x, y, mwheel = 0
         if event.code == ecodes.REL_X:
             x = event.value
@@ -135,9 +127,9 @@ class ComboDeviceHidProxy:
         elif event.code == ecodes.REL_WHEEL:
             mwheel = event.value
         try:
-            self.mouse_out.move(x, y, mwheel)
+            device_out.move(x, y, mwheel)
         except Exception as e:
-            logger.error(f"Error at mouse move event: {event} [Message: {e}]")   
+            logger.error(f"Error sending mouse move event [{event}] to device {self.device_repr(device_out)} [{e}]")
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')

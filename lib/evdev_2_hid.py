@@ -165,6 +165,9 @@ _EVDEV_TO_HID_MAPPING  = {
     ecodes.KEY_SLEEP: 0xF8,
     ecodes.KEY_REFRESH: 0xFA,
     ecodes.KEY_CALC: 0xFB,
+    ecodes.BTN_LEFT: Mouse.LEFT_BUTTON,
+    ecodes.BTN_RIGHT: Mouse.RIGHT_BUTTON,
+    ecodes.BTN_MIDDLE: Mouse.MIDDLE_BUTTON,    
 }
 """
 Mapping from evdev ecode to HID Keycode
@@ -172,23 +175,9 @@ Mapping from evdev ecode to HID Keycode
 
 class Converter:
     @classmethod
-    def to_hid_key(cls, event):
-        key = _EVDEV_TO_HID_MAPPING.get(event.code, None)
-        if key is None:
-            logger.warning(f"Unsupported key pressed: {event}")
-        return key
-    
-    @classmethod   
-    def to_hid_mouse_button(cls, event):
-        button = None  
-
-        if event.code == ecodes.BTN_LEFT:
-            button = Mouse.LEFT_BUTTON
-        elif event.code == ecodes.BTN_RIGHT:
-            button = Mouse.RIGHT_BUTTON
-        elif event.code == ecodes.BTN_MIDDLE:
-            button = Mouse.MIDDLE_BUTTON  
-
-        if button is None:
-            logger.warning(f"Unsupported mouse button pressed: {event}")
-        return button
+    def to_hid_key(cls, ecode : int) -> int:
+        hid_key = _EVDEV_TO_HID_MAPPING.get(ecode, None)
+        logger.debug(f"Converted ecode {ecode} to HID keycode {hid_key}")
+        if hid_key is None:
+            logger.warning(f"Unsupported key pressed: {ecode}")
+        return hid_key
