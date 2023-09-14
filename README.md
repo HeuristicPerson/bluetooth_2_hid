@@ -4,26 +4,18 @@
 
 ## Introduction
 
-This package contains a set of scripts to turn your **Raspberry Pi** into a HID proxy capable Bluetooth dongle
-for keyboards and mice.
+Convert a Raspberry Pi into a HID proxy that relays Bluetooth keyboard and mouse input to USB. Minimal configuration. Zero hassle. 
 
-No worries if you don't understand a word, here is the explanation of the project in plain words: Imagine you have a
-Bluetooth keyboard. You pair it in with your Bluetooth receiver in Windows, Linux, or Mac OS using the appropiate
-software and you simply use it, right? But what happens if you need to use that keyboard to access the computer BIOS
-or operating system select menu (GRUB)? or an old device that accepts USB keyboards but no Bluetooth devices?
-**You are done!**
+Imagine you have a Bluetooth keyboard. You pair it in with your Bluetooth receiver in Windows, Linux, or macOS using the appropiate software and you simply use it, right? But what happens if you need to use that keyboard to access the computer BIOS or OS select menu (GRUB)? Or what about devices without a Bluetooth interface? 
+**This is the solution!**
 
-To solve those issues, we will use a Raspberry Pi as an intermediary to convert the Bluetooth commands from the keyboard or mouse to plain HID (Human Interface
-Device) instructions sent through the USB port. 
-
+To solve those issues, we will use a Raspberry Pi as an intermediary to convert the Bluetooth commands from the keyboard or mouse to plain HID (Human Interface Device) instructions sent through the USB port. 
 
 ## Usage
 
-(to be improved)
-
-  1. Prepare your Raspberry Pi. with the [Raspberry Pi Imager](https://youtu.be/ntaXWS8Lk34), with correct wifi settings & ssh enabled.
-  2. Connect with SSH to your Raspberry Pi, `sudo apt-get update && sudo apt-get upgrade -y`
-  3. Clone this repository in your `pi` default user home directory.
+  1. Prepare your Raspberry Pi. with the [Raspberry Pi Imager](https://youtu.be/ntaXWS8Lk34), with correct WI-FI settings & SSH enabled.
+  2. Connect with SSH to your Raspberry Pi, `sudo apt update && sudo apt upgrade -y`
+  3. Clone this repository & `cd` into the directory.
   4. Pair your Bluetooth keyboard with the Raspberry Pi, using `bluetoothctl` :
      1. `scan on` (you need this to pair your device even if you know the MAC address)
      2. Turn your keyboard in pairing mode
@@ -45,10 +37,6 @@ If you succeed setting your Raspberry Pi as a HID proxy for your Bluetooth keybo
   1. Set Raspbian as read-only. That will help preventing the SD card from getting corrupted when powering off the
      Raspberry. Remember we won't properly shut down the Pi, we'll simply cut its power when shutting down your PC. If
      that happens while the Pi is writing any file, the entire system could get corrupted.
-     
-  3. **VERY IMPORTANT:** Once everything is working, make a backup of the Pi's SD card. You don't want to repeat all the
-     setup if anything fails, do you? **;)**
-
 
 # Credits
 
