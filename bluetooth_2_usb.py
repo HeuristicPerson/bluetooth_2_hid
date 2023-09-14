@@ -15,7 +15,7 @@ from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
 from evdev import InputDevice, categorize, ecodes
 
-from lib.evdev_2_hid import Converter
+import lib.evdev_converter as converter
 import lib.logger
 
 logger = lib.logger.get_logger()
@@ -121,7 +121,7 @@ class ComboDeviceHidProxy:
         return event.type == ecodes.EV_REL 
 
     def handle_key_event(self, event, device_out: Device):
-        key = Converter.to_hid_key(event.code) 
+        key = converter.to_hid_key(event.code) 
         if key is None or self.is_sandbox: 
             return
         try:
