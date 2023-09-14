@@ -121,7 +121,7 @@ class ComboDeviceHidProxy:
             logger.error(f"Error sending key event [{categorize(event)}] to device {self.device_repr(device_out)} [{e}]")
 
     def handle_move_mouse_event(self, event, device_out: Device):
-        x, y, mwheel = 0
+        x, y, mwheel = 0, 0, 0
         if event.code == ecodes.REL_X:
             x = event.value
         elif event.code == ecodes.REL_Y:
