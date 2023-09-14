@@ -27,12 +27,12 @@ class ComboDeviceHidProxy:
         self.mouse_in = None     
         self.mouse_out = None
         self.is_sandbox = False
-        self._enable_devices(keyboard_in, mouse_in)
+        self._enable_usb_gadget_devices(keyboard_in, mouse_in)
         self._init_devices(keyboard_in, mouse_in)
         if is_sandbox:
             self._enable_sandbox()
 
-    def _enable_devices(self, keyboard_in: str=None, mouse_in: str=None):
+    def _enable_usb_gadget_devices(self, keyboard_in: str=None, mouse_in: str=None):
         requested_devices = []
         if keyboard_in is not None:
             requested_devices.append(Device.KEYBOARD)
@@ -46,17 +46,17 @@ class ComboDeviceHidProxy:
 
     def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
         try:
-            logger.info(f'Available output devices: {self.available_devices_repr()}')
+            logger.info(f'Available output devices: {self.available_out_devices_repr()}')
             if keyboard_in is not None:
                 self.keyboard_in = InputDevice(keyboard_in)               
                 logger.info(f'Keyboard (in): {self.keyboard_in}')
                 self.keyboard_out = Keyboard(usb_hid.devices)
-                logger.info(f'Keyboard (out): {self.keyboard_repr()}')
+                logger.info(f'Keyboard (out): {self.keyboard_out_repr()}')
             if mouse_in is not None:
                 self.mouse_in = InputDevice(mouse_in)
                 logger.info(f'Mouse (in): {self.mouse_in}')
                 self.mouse_out = Mouse(usb_hid.devices)
-                logger.info(f'Mouse (out): {self.mouse_repr()}')
+                logger.info(f'Mouse (out): {self.mouse_out_repr()}')
         except Exception as e:
             logger.error(f"Failed to initialize devices. [{e}]")
             sys.exit(1)
@@ -67,18 +67,18 @@ class ComboDeviceHidProxy:
         self.mouse_out = None
         logger.warning('Sandbox mode enabled! All output devices deactivated.')
   
-    def available_devices_repr(self) -> str:
+    def available_out_devices_repr(self) -> str:
         return [self.device_repr(dev) for dev in usb_hid.devices]
+
+    def keyboard_out_repr(self) -> str:
+        return self.device_repr(self.keyboard_out._keyboard_device)
+
+    def mouse_out_repr(self) -> str:
+        return self.device_repr(self.mouse_out._mouse_device)
 
     def device_repr(self, dev: Device) -> str:
         return dev.get_device_path(None)
     
-    def keyboard_repr(self) -> str:
-        return self.device_repr(self.keyboard_out._keyboard_device)
-
-    def mouse_repr(self) -> str:
-        return self.device_repr(self.mouse_out._mouse_device)
-     
     def run_event_loop(self):
         if self.keyboard_in is not None:
             asyncio.ensure_future(self.read_keyboard_events())
@@ -151,7 +151,7 @@ def parse_args():
     return args
 
 def signal_handler(sig, frame):
-    logger.info(f'Exiting gracefully. sig: {sig}, frame: {frame}')
+    logger.info(f'Exiting gracefully. Received signal: {sig}, frame: {frame}')
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
