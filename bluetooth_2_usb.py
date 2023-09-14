@@ -26,11 +26,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-try:
-    usb_hid.enable((Device.KEYBOARD, Device.MOUSE))
-except Exception as e:
-    logger.error(f"Failed to enable devices. [Message: {e}]")   
-
 class ComboDeviceHidProxy:
     def __init__(self, keyboard_in: str=None, mouse_in: str=None, is_sandbox: bool=False):
         self.keyboard_in = None            
@@ -38,11 +33,24 @@ class ComboDeviceHidProxy:
         self.mouse_in = None     
         self.mouse_out = None
         self.is_sandbox = False
+        self._enable_devices(keyboard_in, mouse_in)
         self._init_devices(keyboard_in, mouse_in)
         if is_sandbox:
             self._enable_sandbox()
 
-    def _init_devices(self, keyboard_in, mouse_in):
+    def _enable_devices(self, keyboard_in: str=None, mouse_in: str=None):
+        requested_devices = []
+        if keyboard_in is not None:
+            requested_devices.append(Device.KEYBOARD)
+        if mouse_in is not None:
+            requested_devices.append(Device.MOUSE)
+        try:
+            usb_hid.enable(requested_devices)
+        except Exception as e:
+            logger.error(f"Failed to enable devices. [{e}]")
+            sys.exit(1)
+
+    def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
         try:
             logger.info(f'Available output devices: {self.available_devices_repr()}')
             if keyboard_in is not None:
@@ -56,7 +64,7 @@ class ComboDeviceHidProxy:
                 self.mouse_out = Mouse(usb_hid.devices)
                 logger.info(f'Mouse (out): {self.mouse_repr()}')
         except Exception as e:
-            logger.error(f"Failed to initialize devices. [Message: {e}]")
+            logger.error(f"Failed to initialize devices. [{e}]")
             sys.exit(1)
 
     def _enable_sandbox(self):
@@ -88,7 +96,8 @@ class ComboDeviceHidProxy:
     async def read_keyboard_events(self):
         logger.info(f"Started keyboard event loop")   
         async for event in self.keyboard_in.async_read_loop():
-            if event is None: continue
+            if event is None: 
+                continue
             logger.debug(f"Received keyboard event: [{categorize(event)}]") 
             if self.is_key_up_or_down(event):
                 self.handle_key_event(event, self.keyboard_out)
@@ -96,7 +105,8 @@ class ComboDeviceHidProxy:
     async def read_mouse_events(self):
         logger.info(f"Started mouse event loop") 
         async for event in self.mouse_in.async_read_loop():
-            if event is None: continue
+            if event is None: 
+                continue
             logger.debug(f"Received mouse event: [{categorize(event)}]") 
             if self.is_key_up_or_down(event):
                 self.handle_key_event(event, self.mouse_out)
@@ -111,7 +121,8 @@ class ComboDeviceHidProxy:
 
     def handle_key_event(self, event, device_out: Device):
         key = Converter.to_hid_key(event.code) 
-        if key is None or self.is_sandbox: return
+        if key is None or self.is_sandbox: 
+            return
         try:
             if event.value == 0:
                 device_out.release(key)
@@ -129,7 +140,8 @@ class ComboDeviceHidProxy:
         elif event.code == ecodes.REL_WHEEL:
             mwheel = event.value
         logger.debug(f"Sending mouse event: x, y, mwheel = {(x, y, mwheel)}")
-        if self.is_sandbox: return
+        if self.is_sandbox: 
+            return
         try:
             device_out.move(x, y, mwheel)
         except Exception as e:
@@ -150,4 +162,4 @@ if __name__ == "__main__":
     try:
         proxy.run_event_loop()
     except Exception as e:
-        logger.error(f"Unhandled error while processing input events. Abort mission. [Message: {e}]")   
+        logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]")   
