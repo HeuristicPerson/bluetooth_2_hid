@@ -90,7 +90,7 @@ class ComboDeviceHidProxy:
         async for event in self.keyboard_in.async_read_loop():
             if event is None: continue
             logger.debug(f"Received keyboard event: [{categorize(event)}]") 
-            if self.should_handle_key(event):
+            if self.is_key_up_or_down(event):
                 self.handle_key_event(event, self.keyboard_out)
     
     async def read_mouse_events(self):
@@ -98,16 +98,10 @@ class ComboDeviceHidProxy:
         async for event in self.mouse_in.async_read_loop():
             if event is None: continue
             logger.debug(f"Received mouse event: [{categorize(event)}]") 
-            if self.should_handle_key(event):
+            if self.is_key_up_or_down(event):
                 self.handle_key_event(event, self.mouse_out)
-            elif self.should_handle_mouse_move(event):
+            elif self.is_mouse_move(event):
                 self.handle_move_mouse_event(event, self.mouse_out) 
-
-    def should_handle_key(self, event):
-        return self.is_key_up_or_down(event) and not self.is_sandbox
-    
-    def should_handle_mouse_move(self, event):
-        return self.is_mouse_move(event) and not self.is_sandbox
     
     def is_key_up_or_down(self, event):
         return event.type == ecodes.EV_KEY and event.value < 2    
@@ -117,7 +111,7 @@ class ComboDeviceHidProxy:
 
     def handle_key_event(self, event, device_out: Device):
         key = Converter.to_hid_key(event.code) 
-        if key is None: return
+        if key is None or self.is_sandbox: return
         try:
             if event.value == 0:
                 device_out.release(key)
@@ -134,6 +128,8 @@ class ComboDeviceHidProxy:
             y = event.value
         elif event.code == ecodes.REL_WHEEL:
             mwheel = event.value
+        logger.debug(f"Sending mouse event: x, y, mwheel = {(x, y, mwheel)}")
+        if self.is_sandbox: return
         try:
             device_out.move(x, y, mwheel)
         except Exception as e:
