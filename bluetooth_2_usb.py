@@ -12,7 +12,7 @@ from usb_hid import Device
 
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
-from evdev import InputDevice, ecodes
+from evdev import InputDevice, categorize, ecodes
 
 from lib.evdev_2_hid import Converter
 import lib.logger
@@ -81,7 +81,7 @@ class ComboDeviceHidProxy:
         logger.info(f"Started keyboard event loop")   
         async for event in self.keyboard_in.async_read_loop():
             if event is None: continue
-            logger.debug(f"Received keyboard event: [{event}]") 
+            logger.debug(f"Received keyboard event: [{categorize(event)}]") 
             if self.should_handle_key(event):
                 self.handle_key_event(event, self.keyboard_out)
     
@@ -89,7 +89,7 @@ class ComboDeviceHidProxy:
         logger.info(f"Started mouse event loop") 
         async for event in self.mouse_in.async_read_loop():
             if event is None: continue
-            logger.debug(f"Received mouse event: [{event}]") 
+            logger.debug(f"Received mouse event: [{categorize(event)}]") 
             if self.should_handle_key(event):
                 self.handle_key_event(event, self.mouse_out)
             elif self.should_handle_mouse_move(event):
@@ -116,7 +116,7 @@ class ComboDeviceHidProxy:
             elif event.value == 1:
                 device_out.press(key)
         except Exception as e:
-            logger.error(f"Error sending key event [{event}] to device {self.device_repr(device_out)} [{e}]")
+            logger.error(f"Error sending key event [{categorize(event)}] to device {self.device_repr(device_out)} [{e}]")
 
     def handle_move_mouse_event(self, event, device_out: Device):
         x, y, mwheel = 0
@@ -129,7 +129,7 @@ class ComboDeviceHidProxy:
         try:
             device_out.move(x, y, mwheel)
         except Exception as e:
-            logger.error(f"Error sending mouse move event [{event}] to device {self.device_repr(device_out)} [{e}]")
+            logger.error(f"Error sending mouse move event [{categorize(event)}] to device {self.device_repr(device_out)} [{e}]")
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
