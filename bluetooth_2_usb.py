@@ -38,6 +38,9 @@ class ComboDeviceHidProxy:
         self.mouse_in = None     
         self.mouse_out = None
         self.is_sandbox = is_sandbox
+        self._init_devices(keyboard_in, mouse_in)
+
+    def _init_devices(self, keyboard_in, mouse_in):
         try:
             logger.info(f'Available output devices: {[self.device_repr(dev) for dev in usb_hid.devices]}')
             if keyboard_in is not None:
@@ -54,14 +57,49 @@ class ComboDeviceHidProxy:
             logger.error(f"Failed to initialize devices. [Message: {e}]")
             sys.exit(1)
 
-    def keyboard_repr(self):
-        return self.device_repr(self.keyboard_out._keyboard_device)
-
-    def mouse_repr(self):
-        return self.device_repr(self.mouse_out._mouse_device)
-
     def device_repr(self, dev: Device) -> str:
         return dev.get_device_path(None)
+    
+    def keyboard_repr(self) -> str:
+        return self.device_repr(self.keyboard_out._keyboard_device)
+
+    def mouse_repr(self) -> str:
+        return self.device_repr(self.mouse_out._mouse_device)
+       
+    def run_event_loop(self):
+        if self.keyboard_in is not None:
+            asyncio.ensure_future(self.read_keyboard_events())
+        if self.mouse_in is not None:
+            asyncio.ensure_future(self.read_mouse_events())
+        loop = asyncio.get_event_loop()
+        loop.run_forever()
+           
+    async def read_keyboard_events(self):
+        logger.debug(f"Error at mouse move event: {event} [Message: {e}]")   
+        async for event in self.keyboard_in.async_read_loop():
+            if event is None: continue
+            if self.should_handle_key(event):
+                self.handle_keyboard_key(event)
+    
+    async def read_mouse_events(self):
+        async for event in self.mouse_in.async_read_loop():
+            if event is None: continue
+            if self.should_handle_key(event):
+                self.handle_mouse_button(event)
+            elif self.should_handle_mouse_move(event):
+                self.move_mouse(event) 
+
+    def should_handle_key(self, event):
+        return self.is_key_up_or_down(event) and not self.is_sandbox
+    
+    def should_handle_mouse_move(self, event):
+        return self.is_mouse_move(event) and not self.is_sandbox
+    
+    def is_key_up_or_down(self, event):
+        return event.type == ecodes.EV_KEY and event.value < 2    
+    
+    def is_mouse_move(self, event):
+        return event.type == ecodes.EV_REL 
 
     def handle_keyboard_key(self, event):
         key = Converter.to_hid_key(event) 
@@ -97,41 +135,6 @@ class ComboDeviceHidProxy:
             self.mouse_out.move(x, y, mwheel)
         except Exception as e:
             logger.error(f"Error at mouse move event: {event} [Message: {e}]")   
-        
-    def run_event_loop(self):
-        if self.keyboard_in is not None:
-            asyncio.ensure_future(self.read_keyboard_events())
-        if self.mouse_in is not None:
-            asyncio.ensure_future(self.read_mouse_events())
-        loop = asyncio.get_event_loop()
-        loop.run_forever()
-           
-    async def read_keyboard_events(self):
-        logger.debug(f"Error at mouse move event: {event} [Message: {e}]")   
-        async for event in self.keyboard_in.async_read_loop():
-            if event is None: continue
-            if self.should_handle_key(event):
-                self.handle_keyboard_key(event)
-    
-    async def read_mouse_events(self):
-        async for event in self.mouse_in.async_read_loop():
-            if event is None: continue
-            if self.should_handle_key(event):
-                self.handle_mouse_button(event)
-            elif self.should_handle_mouse_move(event):
-                self.move_mouse(event) 
-
-    def should_handle_key(self, event):
-        return self.is_key_up_or_down(event) and not self.is_sandbox
-    
-    def should_handle_mouse_move(self, event):
-        return self.is_mouse_move(event) and not self.is_sandbox
-    
-    def is_key_up_or_down(self, event):
-        return event.type == ecodes.EV_KEY and event.value < 2    
-    
-    def is_mouse_move(self, event):
-        return event.type == ecodes.EV_REL 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
