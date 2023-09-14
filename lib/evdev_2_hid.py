@@ -2,9 +2,9 @@ from evdev import ecodes
 from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
 
-from logger import get_logger
+import lib.logger
 
-logger = get_logger()
+logger = lib.logger.get_logger()
 
 _EVDEV_TO_HID_MAPPING  = {
     ecodes.KEY_RESERVED: 0x00,

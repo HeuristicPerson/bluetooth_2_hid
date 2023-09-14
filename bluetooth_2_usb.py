@@ -5,7 +5,6 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 
 import argparse
 import asyncio
-from select import select
 import signal
 import sys
 import usb_hid
@@ -15,10 +14,10 @@ from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
 from evdev import InputDevice, ecodes
 
-from evdev_2_hid import Converter
-from logger import get_logger
+from lib.evdev_2_hid import Converter
+import lib.logger
 
-logger = get_logger()
+logger = lib.logger.get_logger()
 
 def signal_handler(sig, frame):
     logger.info('Exiting gracefully.')
@@ -33,26 +32,33 @@ except Exception as e:
     logger.error(f"Failed to enable devices. [Message: {e}]")   
 
 class ComboDeviceHidProxy:
-    def __init__(self, keyboard_in: str=None, mouse_in: str=None):
+    def __init__(self, keyboard_in: str=None, mouse_in: str=None, is_sandbox: bool=False):
         self.keyboard_in = None            
         self.keyboard_out = None
         self.mouse_in = None     
         self.mouse_out = None
+        self.is_sandbox = is_sandbox
         try:
             logger.info(f'Available output devices: {[self.device_repr(dev) for dev in usb_hid.devices]}')
             if keyboard_in is not None:
                 self.keyboard_in = InputDevice(keyboard_in)               
                 logger.info(f'Keyboard (in): {self.keyboard_in}')
                 self.keyboard_out = Keyboard(usb_hid.devices)
-                logger.info(f'Keyboard (out): {self.device_repr(self.keyboard_out._keyboard_device)}')
+                logger.info(f'Keyboard (out): {self.keyboard_repr()}')
             if mouse_in is not None:
                 self.mouse_in = InputDevice(mouse_in)
                 logger.info(f'Mouse (in): {self.mouse_in}')
                 self.mouse_out = Mouse(usb_hid.devices)
-                logger.info(f'Mouse (out): {self.device_repr(self.mouse_out._mouse_device)}')
+                logger.info(f'Mouse (out): {self.mouse_repr()}')
         except Exception as e:
             logger.error(f"Failed to initialize devices. [Message: {e}]")
             sys.exit(1)
+
+    def keyboard_repr(self):
+        return self.device_repr(self.keyboard_out._keyboard_device)
+
+    def mouse_repr(self):
+        return self.device_repr(self.mouse_out._mouse_device)
 
     def device_repr(self, dev: Device) -> str:
         return dev.get_device_path(None)
@@ -101,26 +107,44 @@ class ComboDeviceHidProxy:
         loop.run_forever()
            
     async def read_keyboard_events(self):
+        logger.debug(f"Error at mouse move event: {event} [Message: {e}]")   
         async for event in self.keyboard_in.async_read_loop():
             if event is None: continue
-            if event.type == ecodes.EV_KEY and event.value < 2:
+            if self.should_handle_key(event):
                 self.handle_keyboard_key(event)
     
     async def read_mouse_events(self):
         async for event in self.mouse_in.async_read_loop():
             if event is None: continue
-            if event.type == ecodes.EV_KEY and event.value < 2:
+            if self.should_handle_key(event):
                 self.handle_mouse_button(event)
-            elif event.type == ecodes.EV_REL:
-                self.move_mouse(event)
+            elif self.should_handle_mouse_move(event):
+                self.move_mouse(event) 
 
-if __name__ == "__main__":
+    def should_handle_key(self, event):
+        return self.is_key_up_or_down(event) and not self.is_sandbox
+    
+    def should_handle_mouse_move(self, event):
+        return self.is_mouse_move(event) and not self.is_sandbox
+    
+    def is_key_up_or_down(self, event):
+        return event.type == ecodes.EV_KEY and event.value < 2    
+    
+    def is_mouse_move(self, event):
+        return event.type == ecodes.EV_REL 
+
+def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
     parser.add_argument('--keyboard', '-k', type=str, default=None, help='Input device path for keyboard')
     parser.add_argument('--mouse', '-m', type=str, default=None, help='Input device path for mouse')
-    args = parser.parse_args()  
+    parser.add_argument('--sandbox', '-s', type=bool, default=False, help='Only read input events but do not forward them to the output devices.')
+    args = parser.parse_args()
+    return args
+
+if __name__ == "__main__":
+    args = parse_args()  
   
-    proxy = ComboDeviceHidProxy(keyboard_in=args.keyboard, mouse_in=args.mouse)
+    proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
     try:
         proxy.run_event_loop()
     except Exception as e:

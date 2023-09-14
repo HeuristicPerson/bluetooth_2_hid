@@ -1,5 +1,4 @@
-
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check for superuser privileges
 if [[ $EUID -ne 0 ]]; then
