@@ -20,13 +20,6 @@ import lib.logger
 
 logger = lib.logger.get_logger()
 
-def signal_handler(sig, frame):
-    logger.info('Exiting gracefully.')
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-signal.signal(signal.SIGTERM, signal_handler)
-
 class ComboDeviceHidProxy:
     def __init__(self, keyboard_in: str=None, mouse_in: str=None, is_sandbox: bool=False):
         self.keyboard_in = None            
@@ -156,6 +149,13 @@ def parse_args():
     parser.add_argument('--debug', '-d', action='store_true', default=False, help='Increase log verbosity.')
     args = parser.parse_args()
     return args
+
+def signal_handler(sig, frame):
+    logger.info('Exiting gracefully.')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 if __name__ == "__main__":
     args = parse_args()  
