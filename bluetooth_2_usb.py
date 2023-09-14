@@ -151,7 +151,7 @@ def parse_args():
     return args
 
 def signal_handler(sig, frame):
-    logger.info('Exiting gracefully.')
+    logger.info(f'Exiting gracefully. sig: {sig}, frame: {frame}')
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
