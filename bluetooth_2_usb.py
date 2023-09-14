@@ -37,8 +37,10 @@ class ComboDeviceHidProxy:
         self.keyboard_out = None
         self.mouse_in = None     
         self.mouse_out = None
-        self.is_sandbox = is_sandbox
+        self.is_sandbox = False
         self._init_devices(keyboard_in, mouse_in)
+        if is_sandbox:
+            self._enable_sandbox()
 
     def _init_devices(self, keyboard_in, mouse_in):
         try:
@@ -57,6 +59,12 @@ class ComboDeviceHidProxy:
             logger.error(f"Failed to initialize devices. [Message: {e}]")
             sys.exit(1)
 
+    def _enable_sandbox(self):
+        self.is_sandbox = True
+        self.keyboard_out = None
+        self.mouse_out = None
+        logger.warning('Sandbox mode enabled! All output devices deactivated.')
+  
     def available_devices_repr(self) -> str:
         return [self.device_repr(dev) for dev in usb_hid.devices]
 
@@ -68,7 +76,7 @@ class ComboDeviceHidProxy:
 
     def mouse_repr(self) -> str:
         return self.device_repr(self.mouse_out._mouse_device)
-       
+     
     def run_event_loop(self):
         if self.keyboard_in is not None:
             asyncio.ensure_future(self.read_keyboard_events())
