@@ -42,7 +42,7 @@ class ComboDeviceHidProxy:
 
     def _init_devices(self, keyboard_in, mouse_in):
         try:
-            logger.info(f'Available output devices: {[self.device_repr(dev) for dev in usb_hid.devices]}')
+            logger.info(f'Available output devices: {self.available_devices_repr()}')
             if keyboard_in is not None:
                 self.keyboard_in = InputDevice(keyboard_in)               
                 logger.info(f'Keyboard (in): {self.keyboard_in}')
@@ -56,6 +56,9 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logger.error(f"Failed to initialize devices. [Message: {e}]")
             sys.exit(1)
+
+    def available_devices_repr(self) -> str:
+        return [self.device_repr(dev) for dev in usb_hid.devices]
 
     def device_repr(self, dev: Device) -> str:
         return dev.get_device_path(None)
