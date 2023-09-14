@@ -5,6 +5,7 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 
 import argparse
 import asyncio
+import logging
 import signal
 import sys
 import usb_hid
@@ -152,12 +153,14 @@ def parse_args():
     parser.add_argument('--keyboard', '-k', type=str, default=None, help='Input device path for keyboard')
     parser.add_argument('--mouse', '-m', type=str, default=None, help='Input device path for mouse')
     parser.add_argument('--sandbox', '-s', action='store_true', default=False, help='Only read input events but do not forward them to the output devices.')
+    parser.add_argument('--debug', '-d', action='store_true', default=False, help='Increase log verbosity.')
     args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
     args = parse_args()  
-  
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
     proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
     try:
         proxy.run_event_loop()

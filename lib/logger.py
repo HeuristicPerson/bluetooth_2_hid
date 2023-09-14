@@ -4,7 +4,7 @@ def get_logger() -> logging.Logger:
     logger = logging.getLogger('bluetooth_2_usb')
 
     if not logger.handlers:
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
 
         file_handler = logging.FileHandler('/var/log/bluetooth_2_usb/bluetooth_2_usb.log')
         stdout_handler = logging.StreamHandler()
