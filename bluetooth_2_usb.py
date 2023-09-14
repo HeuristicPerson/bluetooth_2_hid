@@ -143,7 +143,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
     parser.add_argument('--keyboard', '-k', type=str, default=None, help='Input device path for keyboard')
     parser.add_argument('--mouse', '-m', type=str, default=None, help='Input device path for mouse')
-    parser.add_argument('--sandbox', '-s', type=bool, default=False, action='store_true', help='Only read input events but do not forward them to the output devices.')
+    parser.add_argument('--sandbox', '-s', action='store_true', default=False, help='Only read input events but do not forward them to the output devices.')
     args = parser.parse_args()
     return args
 
