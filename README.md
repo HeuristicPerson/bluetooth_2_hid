@@ -16,6 +16,7 @@
   - [6.2. The installation was successful, but I don't see any output on the target device](#62-the-installation-was-successful-but-i-dont-see-any-output-on-the-target-device)
   - [6.3. After being afk for a while, it stops working](#63-after-being-afk-for-a-while-it-stops-working)
   - [6.4. I have a different issue](#64-i-have-a-different-issue)
+  - [6.5. Everything is working, but can it help me with Bitcoin mining?](#65-everything-is-working-but-can-it-help-me-with-bitcoin-mining)
 - [7. Known issues](#7-known-issues)
   - [7.1. Mouse is crashing](#71-mouse-is-crashing)
 - [8. Bonus points](#8-bonus-points)
@@ -69,6 +70,7 @@ Follow these steps to install and configure the project:
    ```
    cd bluetooth_2_usb
    ```
+
 6. Run the installation script as root:  
    ```
    sudo bash install.sh
@@ -77,15 +79,26 @@ Follow these steps to install and configure the project:
 7. Restart the Pi (prompt at the end of `install.sh`)
    
 8. Check which Linux input devices your Bluetooth devices are mapped to:
+   
+   8.1. Start an interactive Python session:
+   ``` bash
+   python3
+   ```
+
+   8.2. Copy & paste these commands:
    ``` python
-   $ python
-   >>> import evdev
-   >>> devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-   >>> for device in devices:
-   ...     print(device.path, device.name, device.phys)
-   ...
+   import evdev
+   devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+   for device in devices:
+       print(device.path, device.name, device.phys)
+
+
+   ```
+
+   8.3. Note the device paths of the devices you want to use:
+   ``` bash
    /dev/input/event3 AceRK Mouse xx:xx:xx:xx:xx:xx
-   /dev/input/event2 AceRK Keyboard xx:xx:xx:xx:xx:xx
+   /dev/input/event2 AceRK Keyboard yy:yy:yy:yy:yy:yy
    /dev/input/event1 vc4-hdmi-1 vc4-hdmi-1/input0
    /dev/input/event0 vc4-hdmi-0 vc4-hdmi-0/input0
    ```
@@ -95,11 +108,11 @@ Follow these steps to install and configure the project:
    nano bluetooth_2_usb.service
    ```
 
-   And change `event3` and `event2` according to **8.** 
+   And change `event3` and `event2` according to **8.3.** 
    
    (`Ctrl + X` > `Y` > `Enter` to exit)
 
-10. (*optional*) If you wish to test first, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
+10. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
 11. Reload and restart service:
     ``` bash
@@ -122,7 +135,7 @@ Follow these steps to install and configure the project:
 
    Sep 15 09:12:34 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
    Sep 15 09:12:34 raspberrypi python3[43296]: 23-09-15 09:12:34 [INFO] Available output devices: ['/dev/hidg0', '/dev/hidg1']
-   Sep 15 09:12:34 raspberrypi python3[43296]: 23-09-15 09:12:34 [INFO] Keyboard (in): device /dev/input/event2, name "AceRK Keyboard", phys "xx:xx:xx:xx:xx:xx"
+   Sep 15 09:12:34 raspberrypi python3[43296]: 23-09-15 09:12:34 [INFO] Keyboard (in): device /dev/input/event2, name "AceRK Keyboard", phys "yy:yy:yy:yy:yy:yy"
    Sep 15 09:12:35 raspberrypi python3[43296]: 23-09-15 09:12:35 [INFO] Keyboard (out): /dev/hidg0
    Sep 15 09:12:35 raspberrypi python3[43296]: 23-09-15 09:12:35 [INFO] Mouse (in): device /dev/input/event3, name "AceRK Mouse", phys "xx:xx:xx:xx:xx:xx"
    Sep 15 09:12:36 raspberrypi python3[43296]: 23-09-15 09:12:36 [INFO] Mouse (out): /dev/hidg1
@@ -149,7 +162,7 @@ This could be due to a number of reasons. Try these steps:
   sudo service bluetooth_2_usb status
   ```
 - Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
-- Check the log files at `/var/log/bluetooth_2_usb/bluetooth_2_usb.log` for errors 
+- Check the log files at `/var/log/bluetooth_2_usb/` for errors 
 - Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth_2_usb.service`. 
 - Reload and restart service:
   ``` bash
@@ -187,6 +200,9 @@ Here's a few things you could try:
 - Try connecting to a different host 
 - Double-check the [Installation instructions](#4-installation)
 - For more help, open an [issue](https://github.com/quaxalber/bluetooth_2_usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth_2_usb)
+
+## 6.5. Everything is working, but can it help me with Bitcoin mining? 
+Absolutely! [Here's how](https://bit.ly/42BTC). 
 
 # 7. Known issues 
 
