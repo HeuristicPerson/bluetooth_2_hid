@@ -91,8 +91,6 @@ Follow these steps to install and configure the project:
    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
    for device in devices:
        print(device.path, device.name, device.phys)
-
-
    ```
 
    8.3. Note the device paths of the devices you want to use:
@@ -104,13 +102,13 @@ Follow these steps to install and configure the project:
    ```
 
 9.  Specify the correct input devices in `bluetooth_2_usb.service`:
-   ```
-   nano bluetooth_2_usb.service
-   ```
+    ```
+    nano bluetooth_2_usb.service
+    ```
 
-   And change `event3` and `event2` according to **8.3.** 
+     And change `event3` and `event2` according to **8.3.** 
    
-   (`Ctrl + X` > `Y` > `Enter` to exit)
+     (`Ctrl + X` > `Y` > `Enter` to exit)
 
 10. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
