@@ -46,7 +46,9 @@ Follow these steps to install and configure the project:
 ## 4.1. Prerequisites 
 1. Prepare your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34)) and connect to WI-FI & enable SSH, if you intend to access the Pi remotely.
 2. Connect to the Pi and update the packages:
-   `sudo apt update && sudo apt upgrade -y`
+   ```
+   sudo apt update && sudo apt upgrade -y
+   ```
 3. Pair and trust any Bluetooth devices you wish to relay, either via GUI or:
    ``` bash
    bluetoothctl
@@ -57,11 +59,17 @@ Follow these steps to install and configure the project:
 
 ## 4.2. Setup 
 4. On the Pi, clone the repository:  
-   `git clone https://github.com/quaxalber/bluetooth_2_usb.git`
+   ```
+   git clone https://github.com/quaxalber/bluetooth_2_usb.git
+   ```
 5. Navigate to the project folder:  
-   `cd bluetooth_2_usb`
+   ```
+   cd bluetooth_2_usb
+   ```
 6. Run the installation script as root:  
-   `sudo bash install.sh`
+   ```
+   sudo bash install.sh
+   ```
 7. Restart the Pi
 8. Check which Linux input devices your Bluetooth devices are mapped to:
    ``` python
@@ -76,9 +84,10 @@ Follow these steps to install and configure the project:
    /dev/input/event1 vc4-hdmi-1 vc4-hdmi-1/input0
    /dev/input/event0 vc4-hdmi-0 vc4-hdmi-0/input0
    ```
-9. Specify the correct input devices in `bluetooth_2_usb.service`:
-   
-   `nano bluetooth_2_usb.service` 
+9.  Specify the correct input devices in `bluetooth_2_usb.service`:
+   ```
+   nano bluetooth_2_usb.service
+   ```
 
    And change `event3` and `event2` in `bluetooth_2_usb.service` according to **8.** (`Ctrl + X` > `Y` > `Enter` to exit)
 10. (*optional*) If you wish to test first, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
@@ -142,7 +151,9 @@ This could be due to a number of reasons. Try these steps:
 
 ## 6.3. After being afk for a while, it stops working 
 If the device enters energy saving mode, the Pi may lose connection causing the device `/dev/input/eventX` to become unavailable. Restarting the service should fix this:
-`sudo service bluetooth_2_usb restart`
+```
+sudo service bluetooth_2_usb restart
+```
 
 You may also consider deactivating energy saving mode, if your device allows. 
 
