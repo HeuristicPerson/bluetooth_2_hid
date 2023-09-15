@@ -144,8 +144,12 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
 
 ## 6.2. The installation was successful, but I don't see any output on the target device 
 This could be due to a number of reasons. Try these steps:
-- Verify that you specified the correct input devices in `bluetooth_2_usb.service`
-- Check the log files at `/var/log/bluetooth_2_usb/bluetooth_2_usb.log`
+- Verify that the service is running:
+  ``` bash
+  sudo service bluetooth_2_usb status
+  ```
+- Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
+- Check the log files at `/var/log/bluetooth_2_usb/bluetooth_2_usb.log` for errors 
 - Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth_2_usb.service`. 
 - Reload and restart service:
   ``` bash
