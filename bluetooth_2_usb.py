@@ -179,14 +179,14 @@ class ComboDeviceHidProxy:
                 logger.info(f"Successfully reconnected to {self.device_repr(device_in)}")
                 break
             else:
-                self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
+                last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
                 time.sleep(wait_seconds) 
 
     def _log_failed_reconnection_attempt(
             self, 
             device_in: InputDevice, 
             start_time: datetime, 
-            last_log_time: datetime):
+            last_log_time: datetime) -> datetime:
         
         current_time = datetime.now()
         elapsed_minutes = (current_time - start_time).total_seconds() / 60
@@ -200,6 +200,8 @@ class ComboDeviceHidProxy:
         if should_write_log:
             logger.info(f"Still trying to reconnect to {self.device_repr(device_in)}...")
             last_log_time = current_time
+
+        return last_log_time
  
 def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
