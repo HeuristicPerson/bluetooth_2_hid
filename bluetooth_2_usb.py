@@ -233,7 +233,7 @@ def restart_daemon():
         # Optional: Explicitly run garbage collection to remove unreferenced objects
         gc.collect()
 
-        time.sleep(3)
+        usb_hid.enable([])
 
         # Step 4: Execute the script again
         python_executable = sys.executable
