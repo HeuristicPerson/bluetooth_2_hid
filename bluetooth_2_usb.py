@@ -61,7 +61,7 @@ class ComboDeviceHidProxy:
 
     def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
         try:
-            logger.info(f'Available output devices: {self._device_repr((dev for dev in usb_hid.devices))}')
+            logger.info(f'Available output devices: {self._device_repr(usb_hid.devices)}')
             if keyboard_in is not None:
                 self._init_keyboard(keyboard_in)
             if mouse_in is not None:
