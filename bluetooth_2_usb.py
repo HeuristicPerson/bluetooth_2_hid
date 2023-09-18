@@ -6,11 +6,15 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 import argparse
 import asyncio
 from datetime import datetime
+import gc
 import logging
+import os
 import signal
 import sys
+import threading
 import time
 from typing import Union
+import psutil
 import usb_hid
 from usb_hid import Device as OutputDevice
 
@@ -103,17 +107,16 @@ class ComboDeviceHidProxy:
     
     def run_event_loop(self):
         if self.keyboard_in is not None:
-            asyncio.ensure_future(
-                self.async_read_and_handle_events(self.keyboard_in, self.keyboard_out)
-            )
+            self.ensure_future(self.keyboard_in, self.keyboard_out)
         if self.mouse_in is not None:
-            asyncio.ensure_future(
-                self.async_read_and_handle_events(self.mouse_in, self.mouse_out)
-            )
+            self.ensure_future(self.mouse_in, self.mouse_out)
         loop = asyncio.get_event_loop()
         loop.run_forever()
+
+    def ensure_future(self, device_in: InputDevice, device_out: OutputDevice):
+        asyncio.ensure_future(self.async_run_event_loop(device_in, device_out))
     
-    async def async_read_and_handle_events(self, device_in: InputDevice, device_out: OutputDevice):
+    async def async_run_event_loop(self, device_in: InputDevice, device_out: OutputDevice):
         logger.info(f"Started event loop for {self.device_repr(device_in)}")
         try:
             async for event in device_in.async_read_loop():
@@ -122,9 +125,9 @@ class ComboDeviceHidProxy:
                 self.handle_event(event, device_out) 
         except OSError as e:
             if e.errno == errno.OSError.NO_SUCH_DEVICE:
-                self.reconnect_input_device(device_in)
+                await self.async_reconnect_device(device_in)
             else:
-                raise e
+                raise
         except Exception as e:
             logger.error(f"Failed reading events from {self.device_repr(device_in)} [{e}]") 
 
@@ -169,18 +172,18 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logger.error(f"Error sending mouse move event [{categorize(event)}] to {self.device_repr(mouse_out)} [{e}]")
 
-    def reconnect_input_device(self, device_in: InputDevice, wait_seconds: float=5):
+    async def async_reconnect_device(self, device_in: InputDevice, wait_seconds: float=5):
         start_time = datetime.now()
         last_log_time = start_time
-        logger.warn(f"Lost connection to {self.device_repr(device_in)}. Trying to reconnect...")
+        logger.critical(f"Lost connection to {self.device_repr(device_in)}. Trying to reconnect...")
 
         while True:
             if device_in.path in list_devices():
-                logger.info(f"Successfully reconnected to {self.device_repr(device_in)}")
-                break
+                logger.info(f"Successfully reconnected to {self.device_repr(device_in)}. Restarting daemon... ")
+                restart_daemon()
             else:
                 last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
-                time.sleep(wait_seconds) 
+                asyncio.sleep(wait_seconds) 
 
     def _log_failed_reconnection_attempt(
             self, 
@@ -202,7 +205,53 @@ class ComboDeviceHidProxy:
             last_log_time = current_time
 
         return last_log_time
- 
+    
+def close_threads():
+    """
+    Attempts to close all running threads except the main thread.
+    """
+    main_thread = threading.main_thread()
+    for thread in threading.enumerate():
+        if thread is main_thread:
+            continue
+        try:
+            thread.join(1)
+        except Exception as e:
+            logger.error(f"Failed to join thread {thread.name}. [{e}]")
+
+def restart_daemon():
+    """
+    Restarts the current program, performing cleanup operations to minimize resource leaks.
+
+    Steps:
+    1. Retrieve the current process using its PID.
+    2. Close all open file handlers.
+    3. Close all threads.
+    4. Execute the script again.
+    """
+    try:
+        # Step 1: Get current process using PID
+        p = psutil.Process(os.getpid())
+
+        # Step 2: Close all open file handlers
+        for handler in p.open_files() + p.connections():
+            try:
+                os.close(handler.fd)
+            except Exception as e_fd:
+                logger.error(f"Failed to close file descriptor {handler.fd}. [{e_fd}]")
+        
+        # Step 3: Close all threads
+        close_threads()
+
+        # Optional: Explicitly run garbage collection to remove unreferenced objects
+        gc.collect()
+
+        # Step 4: Execute the script again
+        python_executable = sys.executable
+        os.execl(python_executable, python_executable, *sys.argv)
+    except Exception as e:
+        logger.error(f"Failed to restart daemon. [{e}]")
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
     parser.add_argument('--keyboard', '-k', type=str, default=None, help='Input device path for keyboard')
