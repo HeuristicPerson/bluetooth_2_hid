@@ -100,6 +100,8 @@ class ComboDeviceHidProxy:
                 elif device == OutputDevice.MOUSE:
                     device_strings.append(f'Mouse gadget ({device_path})')
             elif isinstance(device, Keyboard):
+                logger.info(f'1: {device}')
+                logger.info(f'2: {device._keyboard_device}')
                 device_strings.append(self._device_repr(device._keyboard_device))
             elif isinstance(device, Mouse):
                 device_strings.append(self._device_repr(device._mouse_device))
