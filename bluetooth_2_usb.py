@@ -91,6 +91,7 @@ class ComboDeviceHidProxy:
     def _device_repr(self, *devices: Union[InputDevice, OutputDevice, Keyboard, Mouse]) -> str:
         device_strings = []
         for device in devices:
+            logger.warning(device)
             if isinstance(device, InputDevice):
                 device_strings.append(f'{device.name} ({device.path})')
             elif isinstance(device, OutputDevice):
