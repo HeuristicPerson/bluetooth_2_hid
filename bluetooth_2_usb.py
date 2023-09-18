@@ -61,7 +61,7 @@ class ComboDeviceHidProxy:
 
     def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
         try:
-            logger.info(f'Available output devices: {self._device_repr(usb_hid.devices)}')
+            logger.info(f'Available output devices: {self._device_repr(*usb_hid.devices)}')
             if keyboard_in is not None:
                 self._init_keyboard(keyboard_in)
             if mouse_in is not None:
@@ -72,13 +72,13 @@ class ComboDeviceHidProxy:
 
     def _init_keyboard(self, keyboard_in: str):
         self.keyboard_in = InputDevice(keyboard_in)
-        logger.info(f'Keyboard (in): {self._device_repr(self.keyboard_in)}')
+        logger.info(f'Keyboard (in): {self.keyboard_in}')
         self.keyboard_out = Keyboard(usb_hid.devices)
         logger.info(f'Keyboard (out): {self._device_repr(self.keyboard_out)}')
 
     def _init_mouse(self, mouse_in: str):
         self.mouse_in = InputDevice(mouse_in)
-        logger.info(f'Mouse (in): {self._device_repr(self.mouse_in)}')
+        logger.info(f'Mouse (in): {self.mouse_in}')
         self.mouse_out = Mouse(usb_hid.devices)
         logger.info(f'Mouse (out): {self._device_repr(self.mouse_out)}')
 
@@ -91,7 +91,6 @@ class ComboDeviceHidProxy:
     def _device_repr(self, *devices: Union[InputDevice, OutputDevice, Keyboard, Mouse]) -> str:
         device_strings = []
         for device in devices:
-            logger.warning(device)
             if isinstance(device, InputDevice):
                 device_strings.append(f'{device.name} ({device.path})')
             elif isinstance(device, OutputDevice):
