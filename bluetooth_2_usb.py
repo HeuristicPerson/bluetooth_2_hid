@@ -205,19 +205,6 @@ class ComboDeviceHidProxy:
             last_log_time = current_time
 
         return last_log_time
-    
-def close_threads():
-    """
-    Attempts to close all running threads except the main thread.
-    """
-    main_thread = threading.main_thread()
-    for thread in threading.enumerate():
-        if thread is main_thread:
-            continue
-        try:
-            thread.join(1)
-        except Exception as e:
-            logger.error(f"Failed to join thread {thread.name}. [{e}]")
 
 def restart_daemon():
     """
@@ -246,11 +233,26 @@ def restart_daemon():
         # Optional: Explicitly run garbage collection to remove unreferenced objects
         gc.collect()
 
+        time.sleep(3)
+
         # Step 4: Execute the script again
         python_executable = sys.executable
         os.execl(python_executable, python_executable, *sys.argv)
     except Exception as e:
         logger.error(f"Failed to restart daemon. [{e}]")
+    
+def close_threads():
+    """
+    Attempts to close all running threads except the main thread.
+    """
+    main_thread = threading.main_thread()
+    for thread in threading.enumerate():
+        if thread is main_thread:
+            continue
+        try:
+            thread.join(1)
+        except Exception as e:
+            logger.error(f"Failed to join thread {thread.name}. [{e}]")
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
