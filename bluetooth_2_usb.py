@@ -183,7 +183,7 @@ class ComboDeviceHidProxy:
                 restart_daemon()
             else:
                 last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
-                asyncio.sleep(wait_seconds) 
+                await asyncio.sleep(wait_seconds) 
 
     def _log_failed_reconnection_attempt(
             self, 
