@@ -297,7 +297,7 @@ async def __async_main():
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
         proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox, is_main=True)
-        await proxy.async_process_events()
+        await proxy.async_run_event_loop()
     except Exception as e:
         logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]")   
 
