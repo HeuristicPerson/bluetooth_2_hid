@@ -608,7 +608,18 @@ def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
     )  # Multifunction Composite Gadget
     Path("%s/idVendor" % this.gadget_root).write_text(
         "%s" % 0x1D6B, encoding="utf-8"
-    )  # Linux Foundation
+    )
+    Path("%s/strings/0x409" % this.gadget_root).mkdir(parents=True, exist_ok=True)
+    Path("%s/strings/0x409/serialnumber" % this.gadget_root).write_text(
+        "0123456789", encoding="utf-8"
+    )
+    Path("%s/strings/0x409/manufacturer" % this.gadget_root).write_text(
+        "quaxalber", encoding="utf-8"
+    )
+    Path("%s/strings/0x409/product" % this.gadget_root).write_text(
+        "USB device", encoding="utf-8"
+    )
+    # Linux Foundation
     # """
     # 2. Creating the configurations
     # ------------------------------
@@ -645,17 +656,8 @@ def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
         config_root = "%s/configs/device.1" % this.gadget_root
         Path("%s/" % config_root).mkdir(parents=True, exist_ok=True)
         Path("%s/strings/0x409" % config_root).mkdir(parents=True, exist_ok=True)
-        # Path("%s/strings/0x409/configuration" % config_root).write_text(
-        #     "my configuration", encoding="utf-8"
-        # )
-        Path("%s/strings/0x409/serialnumber" % config_root).write_text(
-            "0123456789", encoding="utf-8"
-        )
-        Path("%s/strings/0x409/manufacturer" % config_root).write_text(
-            "quaxalber", encoding="utf-8"
-        )
-        Path("%s/strings/0x409/product" % config_root).write_text(
-            "USB device", encoding="utf-8"
+        Path("%s/strings/0x409/configuration" % config_root).write_text(
+            "my configuration", encoding="utf-8"
         )
         Path("%s/MaxPower" % config_root).write_text("150", encoding="utf-8")
         Path("%s/bmAttributes" % config_root).write_text("%s" % 0x080, encoding="utf-8")
