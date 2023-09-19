@@ -272,7 +272,9 @@ def __parse_args():
     parser.add_argument('--keyboard', '-k', type=str, default=None, help='Input device path for keyboard')
     parser.add_argument('--mouse', '-m', type=str, default=None, help='Input device path for mouse')
     parser.add_argument('--sandbox', '-s', action='store_true', default=False, help='Only read input events but do not forward them to the output devices.')
-    parser.add_argument('--debug', '-d', action='store_true', default=False, help='Increase log verbosity.')
+    parser.add_argument('--debug', '-d', action='store_true', default=False, help='Increase log verbosity')
+    parser.add_argument('--log_to_file', '-f', action='store_true', default=False, help='Add a handler that logs to file')
+    parser.add_argument('--log_path', '-p', type=str, default='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', help='The path of the log file')
     args = parser.parse_args()
     return args
 
@@ -288,6 +290,8 @@ if __name__ == "__main__":
         args = __parse_args()  
         if args.debug:
             logger.setLevel(logging.DEBUG)
+        if args.log_to_file:
+            lib.logger.add_file_handler(args.log_path)
         proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
         proxy.async_process_events()
     except Exception as e:
