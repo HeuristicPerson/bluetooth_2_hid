@@ -57,7 +57,7 @@ class ComboDeviceHidProxy:
         if keyboard_in is not None:
             requested_devices.append(OutputDevice.KEYBOARD)
         if mouse_in is not None:
-            requested_devices.append(OutputDevice.MOUSE)
+            requested_devices.append(OutputDevice.BOOT_MOUSE)
         return requested_devices
 
     def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
@@ -98,7 +98,7 @@ class ComboDeviceHidProxy:
                 device_path = device.get_device_path(None)
                 if device == OutputDevice.KEYBOARD:
                     device_strings.append(f'Keyboard gadget ({device_path})')
-                elif device == OutputDevice.MOUSE:
+                elif device == OutputDevice.BOOT_MOUSE:
                     device_strings.append(f'Mouse gadget ({device_path})')
             elif isinstance(device, Keyboard):
                 device_strings.append(self._device_repr(device._keyboard_device))

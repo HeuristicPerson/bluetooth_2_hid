@@ -653,13 +653,13 @@ def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
     #     """
 
     for device in requested_devices:
-        config_root = "%s/configs/device.1" % this.gadget_root
+        config_root = "%s/configs/c.1" % this.gadget_root
         Path("%s/" % config_root).mkdir(parents=True, exist_ok=True)
         Path("%s/strings/0x409" % config_root).mkdir(parents=True, exist_ok=True)
         Path("%s/strings/0x409/configuration" % config_root).write_text(
-            "my configuration", encoding="utf-8"
+            "Config 1: ECM network", encoding="utf-8"
         )
-        Path("%s/MaxPower" % config_root).write_text("150", encoding="utf-8")
+        Path("%s/MaxPower" % config_root).write_text("250", encoding="utf-8")
         Path("%s/bmAttributes" % config_root).write_text("%s" % 0x080, encoding="utf-8")
         this.devices.append(device)
         # """
