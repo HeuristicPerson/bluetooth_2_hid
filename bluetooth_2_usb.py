@@ -5,6 +5,7 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 
 import argparse
 import asyncio
+from asyncio import TaskGroup, Task
 from datetime import datetime
 import gc
 import logging
@@ -12,7 +13,6 @@ import os
 import signal
 import sys
 import threading
-import time
 from typing import Union
 import psutil
 import usb_hid
@@ -119,7 +119,7 @@ class ComboDeviceHidProxy:
                 logger.debug(f"Created task: [{mouse_task}]")
         logger.critical(f"Event loop closed..")
 
-    def _create_task(self, device_in: InputDevice, device_out: OutputDevice, task_group: asyncio.TaskGroup) -> asyncio.Task:
+    def _create_task(self, device_in: InputDevice, device_out: OutputDevice, task_group: TaskGroup) -> Task:
         return task_group.create_task(self.async_process_events(device_in, device_out))
     
     async def async_process_events(self, device_in: InputDevice, device_out: OutputDevice):
