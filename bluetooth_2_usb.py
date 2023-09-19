@@ -29,19 +29,20 @@ import lib.logger
 logger = lib.logger.get_logger()
 
 class ComboDeviceHidProxy:
-    def __init__(self, keyboard_in: str=None, mouse_in: str=None, is_sandbox: bool=False):
-        self._init_variables()
+    def __init__(self, keyboard_in: str=None, mouse_in: str=None, is_sandbox: bool=False, is_main: bool=False):
+        self._init_variables(is_sandbox, is_main)
         self._enable_usb_gadgets(keyboard_in, mouse_in)
         self._init_devices(keyboard_in, mouse_in)
-        if is_sandbox:
+        if self._is_sandbox:
             self._enable_sandbox()
 
-    def _init_variables(self):
-        self.keyboard_in = None            
-        self.keyboard_out = None
-        self.mouse_in = None     
-        self.mouse_out = None
-        self.is_sandbox = False
+    def _init_variables(self, is_sandbox: bool=False, is_main: bool=False):
+        self._keyboard_in = None            
+        self._keyboard_out = None
+        self._mouse_in = None     
+        self._mouse_out = None
+        self._is_sandbox = is_sandbox
+        self._is_main = is_main
 
     def _enable_usb_gadgets(self, keyboard_in: str=None, mouse_in: str=None):
         try:
@@ -71,21 +72,21 @@ class ComboDeviceHidProxy:
             sys.exit(1)
 
     def _init_keyboard(self, keyboard_in: str):
-        self.keyboard_in = InputDevice(keyboard_in)
-        logger.info(f'Keyboard (in): {self.keyboard_in}')
-        self.keyboard_out = Keyboard(usb_hid.devices)
-        logger.info(f'Keyboard (out): {self._device_repr(self.keyboard_out)}')
+        self._keyboard_in = InputDevice(keyboard_in)
+        logger.info(f'Keyboard (in): {self._keyboard_in}')
+        self._keyboard_out = Keyboard(usb_hid.devices)
+        logger.info(f'Keyboard (out): {self._device_repr(self._keyboard_out)}')
 
     def _init_mouse(self, mouse_in: str):
-        self.mouse_in = InputDevice(mouse_in)
-        logger.info(f'Mouse (in): {self.mouse_in}')
-        self.mouse_out = Mouse(usb_hid.devices)
-        logger.info(f'Mouse (out): {self._device_repr(self.mouse_out)}')
+        self._mouse_in = InputDevice(mouse_in)
+        logger.info(f'Mouse (in): {self._mouse_in}')
+        self._mouse_out = Mouse(usb_hid.devices)
+        logger.info(f'Mouse (out): {self._device_repr(self._mouse_out)}')
 
     def _enable_sandbox(self):
-        self.is_sandbox = True
-        self.keyboard_out = None
-        self.mouse_out = None
+        self._is_sandbox = True
+        self._keyboard_out = None
+        self._mouse_out = None
         logger.warning('Sandbox mode enabled! All output devices deactivated.')
 
     def _device_repr(self, *devices: Union[InputDevice, OutputDevice, Keyboard, Mouse]) -> str:
@@ -111,11 +112,11 @@ class ComboDeviceHidProxy:
     
     async def async_run_event_loop(self):
         async with asyncio.TaskGroup() as task_group:
-            if self.keyboard_in is not None:
-                keyboard_task = self._create_task(self.keyboard_in, self.keyboard_out, task_group)
+            if self._keyboard_in is not None:
+                keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, task_group)
                 logger.debug(f"Created task: [{keyboard_task}]") 
-            if self.mouse_in is not None:
-                mouse_task = self._create_task(self.mouse_in, self.mouse_out, task_group)
+            if self._mouse_in is not None:
+                mouse_task = self._create_task(self._mouse_in, self._mouse_out, task_group)
                 logger.debug(f"Created task: [{mouse_task}]")
         logger.critical(f"Event loop closed..")
 
@@ -152,7 +153,7 @@ class ComboDeviceHidProxy:
 
     async def async_send_key(self, event: InputEvent, device_out: OutputDevice):
         key = converter.to_hid_key(event.code) 
-        if key is None or self.is_sandbox: 
+        if key is None or self._is_sandbox: 
             return
         try:
             if event.value == key_event.DOWN:
@@ -171,14 +172,14 @@ class ComboDeviceHidProxy:
         elif event.code == ecodes.REL_WHEEL:
             mwheel = event.value
         logger.debug(f"Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {self._device_repr(mouse_out)}")
-        if self.is_sandbox: 
+        if self._is_sandbox: 
             return
         try:
             mouse_out.move(x, y, mwheel)
         except Exception as e:
             logger.error(f"Error sending mouse move event [{categorize(event)}] to {self._device_repr(mouse_out)} [{e}]")
 
-    async def async_reconnect_device(self, device_in: InputDevice, wait_seconds: float=5):
+    async def async_reconnect_device(self, device_in: InputDevice, wait_seconds: float=5) -> bool:
         start_time = datetime.now()
         last_log_time = start_time
         logger.critical(f"Lost connection to {self._device_repr(device_in)}. Trying to reconnect...")
@@ -186,7 +187,10 @@ class ComboDeviceHidProxy:
         while True:
             if device_in.path in list_devices():
                 logger.info(f"Successfully reconnected to {self._device_repr(device_in)}. Restarting daemon... ")
-                __restart_daemon()
+                if self._is_main:
+                    __restart_daemon()
+                else:
+                    return True
             else:
                 last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
                 await asyncio.sleep(wait_seconds) 
@@ -285,14 +289,17 @@ def __signal_handler(sig, frame):
 signal.signal(signal.SIGINT, __signal_handler)
 signal.signal(signal.SIGTERM, __signal_handler)
 
-if __name__ == "__main__":
+async def __async_main():
     try:
         args = __parse_args()  
         if args.debug:
             logger.setLevel(logging.DEBUG)
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
-        proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
-        proxy.async_process_events()
+        proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox, is_main=True)
+        await proxy.async_process_events()
     except Exception as e:
         logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]")   
+
+if __name__ == "__main__":
+    asyncio.run(__async_main())
