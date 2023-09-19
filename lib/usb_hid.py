@@ -13,9 +13,10 @@ For now using report ids in the descriptor
 
 from typing import Sequence
 from pathlib import Path
-import os
+import os, stat
 import atexit
 import sys
+import shutil
 
 for module in ["dwc2", "libcomposite"]:
     if Path("/proc/modules").read_text(encoding="utf-8").find(module) == -1:
@@ -455,6 +456,10 @@ Device.BOOT_MOUSE = Device(
     out_report_lengths=[0],
 )
 
+def remove_readonly(func, path, _):
+    "Clear the readonly bit and reattempt the removal"
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
 
 def disable() -> None:
     """Do not present any USB HID devices to the host computer.
@@ -468,32 +473,35 @@ def disable() -> None:
         Path("%s/UDC" % this.gadget_root).write_text("", encoding="utf-8")
     except FileNotFoundError:
         pass
-    for symlink in Path(this.gadget_root).glob("configs/**/hid.usb*"):
-        symlink.unlink()
 
-    for strings_file in Path(this.gadget_root).rglob("strings/*/*"):
-        if strings_file.is_file():
-            strings_file.unlink()
-        if strings_file.is_dir():
-            strings_file.rmdir()
+    shutil.rmtree(Path(this.gadget_root), onerror=remove_readonly)
 
-    for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*/*"):
-        if strings_file.is_dir():
-            strings_file.rmdir()
+    # for symlink in Path(this.gadget_root).glob("configs/**/hid.usb*"):
+    #     symlink.unlink()
 
-    for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*"):
-        if strings_file.is_dir():
-            strings_file.rmdir()
-    for config_dir in Path(this.gadget_root).rglob("configs/*"):
-        if config_dir.is_dir():
-            config_dir.rmdir()
-    for function_dir in Path(this.gadget_root).rglob("functions/*"):
-        if function_dir.is_dir():
-            function_dir.rmdir()
-    try:
-        Path(this.gadget_root).rmdir()
-    except FileNotFoundError:
-        pass
+    # for strings_file in Path(this.gadget_root).rglob("strings/*/*"):
+    #     if strings_file.is_file():
+    #         strings_file.unlink()
+    #     if strings_file.is_dir():
+    #         strings_file.rmdir()
+
+    # for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*/*"):
+    #     if strings_file.is_dir():
+    #         strings_file.rmdir()
+
+    # for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*"):
+    #     if strings_file.is_dir():
+    #         strings_file.rmdir()
+    # for config_dir in Path(this.gadget_root).rglob("configs/*"):
+    #     if config_dir.is_dir():
+    #         config_dir.rmdir()
+    # for function_dir in Path(this.gadget_root).rglob("functions/*"):
+    #     if function_dir.is_dir():
+    #         function_dir.rmdir()
+    # try:
+    #     Path(this.gadget_root).rmdir()
+    # except FileNotFoundError:
+    #     pass
     this.devices = []
 
 
