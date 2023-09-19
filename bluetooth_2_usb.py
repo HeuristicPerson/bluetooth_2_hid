@@ -15,8 +15,6 @@ import sys
 import threading
 from typing import Union
 import psutil
-import usb_hid
-from usb_hid import Device as OutputDevice
 
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
@@ -25,6 +23,8 @@ from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
 from lib.constants import errno, key_event
 import lib.evdev_converter as converter
 import lib.logger
+import lib.usb_hid
+from lib.usb_hid import Device as OutputDevice
 
 logger = lib.logger.get_logger()
 
@@ -47,7 +47,7 @@ class ComboDeviceHidProxy:
     def _enable_usb_gadgets(self, keyboard_in: str=None, mouse_in: str=None):
         try:
             requested_devices = self._get_requested_devices(keyboard_in, mouse_in)
-            usb_hid.enable(requested_devices)
+            lib.usb_hid.enable(requested_devices)
         except Exception as e:
             logger.error(f"Failed to enable devices. [{e}]")
             sys.exit(1)
@@ -62,7 +62,7 @@ class ComboDeviceHidProxy:
 
     def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
         try:
-            logger.info(f'Available output devices: {self._device_repr(*usb_hid.devices)}')
+            logger.info(f'Available output devices: {self._device_repr(*lib.usb_hid.devices)}')
             if keyboard_in is not None:
                 self._init_keyboard(keyboard_in)
             if mouse_in is not None:
@@ -74,13 +74,13 @@ class ComboDeviceHidProxy:
     def _init_keyboard(self, keyboard_in: str):
         self._keyboard_in = InputDevice(keyboard_in)
         logger.info(f'Keyboard (in): {self._keyboard_in}')
-        self._keyboard_out = Keyboard(usb_hid.devices)
+        self._keyboard_out = Keyboard(lib.usb_hid.devices)
         logger.info(f'Keyboard (out): {self._device_repr(self._keyboard_out)}')
 
     def _init_mouse(self, mouse_in: str):
         self._mouse_in = InputDevice(mouse_in)
         logger.info(f'Mouse (in): {self._mouse_in}')
-        self._mouse_out = Mouse(usb_hid.devices)
+        self._mouse_out = Mouse(lib.usb_hid.devices)
         logger.info(f'Mouse (out): {self._device_repr(self._mouse_out)}')
 
     def _enable_sandbox(self):
@@ -259,7 +259,7 @@ def __close_threads():
             logger.error(f"Failed to join thread {thread.name}. [{e}]")
 
 def __disable_usb_gadgets():
-    usb_hid.disable()
+    lib.usb_hid.disable()
 
 def __explicitly_run_gc():
     """
