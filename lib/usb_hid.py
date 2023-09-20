@@ -496,8 +496,9 @@ def disable() -> None:
         if function_dir.is_dir():
             function_dir.rmdir()
     for strings_file in Path(this.gadget_root).rglob("strings/*/*"):
-        if strings_file.is_file():
-            strings_file.unlink()
+        if strings_file.is_dir():
+            strings_file.rmdir()
+    for strings_file in Path(this.gadget_root).rglob("strings/*"):
         if strings_file.is_dir():
             strings_file.rmdir()
     try:
