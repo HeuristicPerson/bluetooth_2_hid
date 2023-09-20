@@ -303,7 +303,8 @@ async def __async_main():
         proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox, is_main=True)
         await proxy.async_run_event_loop()
     except Exception as e:
-        logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]")   
+        logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]") 
+        raise  
 
 if __name__ == "__main__":
     asyncio.run(__async_main())
