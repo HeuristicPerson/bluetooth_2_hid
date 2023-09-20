@@ -121,7 +121,7 @@ class ComboDeviceHidProxy:
                     mouse_task = self._create_task(self._mouse_in, self._mouse_out, task_group)
                     logger.debug(f"Created task: [{mouse_task}]")
         except* Exception as e:
-            logger.error(f"Error in TaskGroup. [{e}]")
+            logger.error(f"Errors in TaskGroup: [{e.exceptions}]")
         logger.critical(f"Event loop closed..")
 
     def _create_task(self, device_in: InputDevice, device_out: OutputDevice, task_group: TaskGroup) -> Task:
