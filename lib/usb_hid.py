@@ -11,12 +11,15 @@ For now using report ids in the descriptor
 * Author(s): Björn Bösel
 """
 
+import time
 from typing import Sequence
 from pathlib import Path
 import os, stat
 import atexit
 import sys
 import shutil
+
+from lib.evdev_converter import Keycode
 
 for module in ["dwc2", "libcomposite"]:
     if Path("/proc/modules").read_text(encoding="utf-8").find(module) == -1:
@@ -625,13 +628,13 @@ def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
     )
     Path("%s/strings/0x409" % this.gadget_root).mkdir(parents=True, exist_ok=True)
     Path("%s/strings/0x409/serialnumber" % this.gadget_root).write_text(
-        "0123456789", encoding="utf-8"
+        "213374badcafe", encoding="utf-8"
     )
     Path("%s/strings/0x409/manufacturer" % this.gadget_root).write_text(
         "quaxalber", encoding="utf-8"
     )
     Path("%s/strings/0x409/product" % this.gadget_root).write_text(
-        "USB device", encoding="utf-8"
+        "USB Combo Device", encoding="utf-8"
     )
     # Linux Foundation
     # """
@@ -748,3 +751,381 @@ def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
     # $ echo s3c-hsotg > UDC  """
     udc = next(Path("/sys/class/udc/").glob("*"))
     Path("%s/UDC" % this.gadget_root).write_text("%s" % udc.name, encoding="utf-8")
+
+# SPDX-FileCopyrightText: 2017 Scott Shawcroft for Adafruit Industries
+#
+# SPDX-License-Identifier: MIT
+
+"""
+`adafruit_hid`
+====================================================
+
+This driver simulates USB HID devices.
+
+* Author(s): Scott Shawcroft, Dan Halbert
+
+Implementation Notes
+--------------------
+**Software and Dependencies:**
+* Adafruit CircuitPython firmware for the supported boards:
+  https://github.com/adafruit/circuitpython/releases
+"""
+
+def find_device(
+    devices: Sequence[Device], *, usage_page: int, usage: int
+) -> Device:
+    """Search through the provided sequence of devices to find the one with the matching
+    usage_page and usage."""
+    if hasattr(devices, "send_report"):
+        devices = [devices]  # type: ignore
+    for device in devices:
+        if (
+            device.usage_page == usage_page
+            and device.usage == usage
+            and hasattr(device, "send_report")
+        ):
+            return device
+    raise ValueError("Could not find matching HID device.")
+
+# SPDX-FileCopyrightText: 2017 Dan Halbert for Adafruit Industries
+#
+# SPDX-License-Identifier: MIT
+
+"""
+`adafruit_hid.keyboard.Keyboard`
+====================================================
+
+* Author(s): Scott Shawcroft, Dan Halbert
+"""
+
+_MAX_KEYPRESSES = 6
+
+class Keyboard:
+    """Send HID keyboard reports."""
+
+    LED_NUM_LOCK = 0x01
+    """LED Usage ID for Num Lock"""
+    LED_CAPS_LOCK = 0x02
+    """LED Usage ID for Caps Lock"""
+    LED_SCROLL_LOCK = 0x04
+    """LED Usage ID for Scroll Lock"""
+    LED_COMPOSE = 0x08
+    """LED Usage ID for Compose"""
+
+    # No more than _MAX_KEYPRESSES regular keys may be pressed at once.
+
+    def __init__(self, devices: Sequence[Device]) -> None:
+        """Create a Keyboard object that will send keyboard HID reports.
+
+        Devices can be a sequence of devices that includes a keyboard device or a keyboard device
+        itself. A device is any object that implements ``send_report()``, ``usage_page`` and
+        ``usage``.
+        """
+        self._keyboard_device = find_device(devices, usage_page=0x1, usage=0x06)
+
+        # Reuse this bytearray to send keyboard reports.
+        self.report = bytearray(8)
+
+        # report[0] modifiers
+        # report[1] unused
+        # report[2:8] regular key presses
+
+        # View onto byte 0 in report.
+        self.report_modifier = memoryview(self.report)[0:1]
+
+        # List of regular keys currently pressed.
+        # View onto bytes 2-7 in report.
+        self.report_keys = memoryview(self.report)[2:]
+
+        # No keyboard LEDs on.
+        self._led_status = b"\x00"
+
+        # Do a no-op to test if HID device is ready.
+        # If not, wait a bit and try once more.
+        try:
+            self.release_all()
+        except OSError:
+            time.sleep(1)
+            self.release_all()
+
+    def press(self, *keycodes: int) -> None:
+        """Send a report indicating that the given keys have been pressed.
+
+        :param keycodes: Press these keycodes all at once.
+        :raises ValueError: if more than six regular keys are pressed.
+
+        Keycodes may be modifiers or regular keys.
+        No more than six regular keys may be pressed simultaneously.
+
+        Examples::
+
+            from adafruit_hid.keycode import Keycode
+
+            # Press ctrl-x.
+            kbd.press(Keycode.LEFT_CONTROL, Keycode.X)
+
+            # Or, more conveniently, use the CONTROL alias for LEFT_CONTROL:
+            kbd.press(Keycode.CONTROL, Keycode.X)
+
+            # Press a, b, c keys all at once.
+            kbd.press(Keycode.A, Keycode.B, Keycode.C)
+        """
+        for keycode in keycodes:
+            self._add_keycode_to_report(keycode)
+        self._keyboard_device.send_report(self.report)
+
+    def release(self, *keycodes: int) -> None:
+        """Send a USB HID report indicating that the given keys have been released.
+
+        :param keycodes: Release these keycodes all at once.
+
+        If a keycode to be released was not pressed, it is ignored.
+
+        Example::
+
+            # release SHIFT key
+            kbd.release(Keycode.SHIFT)
+        """
+        for keycode in keycodes:
+            self._remove_keycode_from_report(keycode)
+        self._keyboard_device.send_report(self.report)
+
+    def release_all(self) -> None:
+        """Release all pressed keys."""
+        for i in range(8):
+            self.report[i] = 0
+        self._keyboard_device.send_report(self.report)
+
+    def send(self, *keycodes: int) -> None:
+        """Press the given keycodes and then release all pressed keys.
+
+        :param keycodes: keycodes to send together
+        """
+        self.press(*keycodes)
+        self.release_all()
+
+    def _add_keycode_to_report(self, keycode: int) -> None:
+        """Add a single keycode to the USB HID report."""
+        modifier = Keycode.modifier_bit(keycode)
+        if modifier:
+            # Set bit for this modifier.
+            self.report_modifier[0] |= modifier
+        else:
+            report_keys = self.report_keys
+            # Don't press twice.
+            for i in range(_MAX_KEYPRESSES):
+                report_key = report_keys[i]
+                if report_key == 0:
+                    # Put keycode in first empty slot. Since the report_keys
+                    # are compact and unique, this is not a repeated key
+                    report_keys[i] = keycode
+                    return
+                if report_key == keycode:
+                    # Already pressed.
+                    return
+            # All slots are filled. Shuffle down and reuse last slot
+            for i in range(_MAX_KEYPRESSES - 1):
+                report_keys[i] = report_keys[i + 1]
+            report_keys[-1] = keycode
+
+    def _remove_keycode_from_report(self, keycode: int) -> None:
+        """Remove a single keycode from the report."""
+        modifier = Keycode.modifier_bit(keycode)
+        if modifier:
+            # Turn off the bit for this modifier.
+            self.report_modifier[0] &= ~modifier
+        else:
+            report_keys = self.report_keys
+            # Clear the at most one matching slot and move remaining keys down
+            j = 0
+            for i in range(_MAX_KEYPRESSES):
+                pressed = report_keys[i]
+                if not pressed:
+                    break  # Handled all used report slots
+                if pressed == keycode:
+                    continue  # Remove this entry
+                if i != j:
+                    report_keys[j] = report_keys[i]
+                j += 1
+            # Clear any remaining slots
+            while j < _MAX_KEYPRESSES and report_keys[j]:
+                report_keys[j] = 0
+                j += 1
+
+    @property
+    def led_status(self) -> bytes:
+        """Returns the last received report"""
+        # get_last_received_report() returns None when nothing was received
+        led_report = self._keyboard_device.get_last_received_report()
+        if led_report is not None:
+            self._led_status = led_report
+        return self._led_status
+
+    def led_on(self, led_code: int) -> bool:
+        """Returns whether an LED is on based on the led code
+
+        Examples::
+
+            import usb_hid
+            from adafruit_hid.keyboard import Keyboard
+            from adafruit_hid.keycode import Keycode
+            import time
+
+            # Initialize Keyboard
+            kbd = Keyboard(usb_hid.devices)
+
+            # Press and release CapsLock.
+            kbd.press(Keycode.CAPS_LOCK)
+            time.sleep(.09)
+            kbd.release(Keycode.CAPS_LOCK)
+
+            # Check status of the LED_CAPS_LOCK
+            print(kbd.led_on(Keyboard.LED_CAPS_LOCK))
+
+        """
+        return bool(self.led_status[0] & led_code)
+
+
+# SPDX-FileCopyrightText: 2017 Dan Halbert for Adafruit Industries
+#
+# SPDX-License-Identifier: MIT
+
+"""
+`adafruit_hid.mouse.Mouse`
+====================================================
+
+* Author(s): Dan Halbert
+"""
+
+
+class Mouse:
+    """Send USB HID mouse reports."""
+
+    LEFT_BUTTON = 1
+    """Left mouse button."""
+    RIGHT_BUTTON = 2
+    """Right mouse button."""
+    MIDDLE_BUTTON = 4
+    """Middle mouse button."""
+
+    def __init__(self, devices: Sequence[Device]):
+        """Create a Mouse object that will send USB mouse HID reports.
+
+        Devices can be a sequence of devices that includes a keyboard device or a keyboard device
+        itself. A device is any object that implements ``send_report()``, ``usage_page`` and
+        ``usage``.
+        """
+        self._mouse_device = find_device(devices, usage_page=0x1, usage=0x02)
+
+        # Reuse this bytearray to send mouse reports.
+        # report[0] buttons pressed (LEFT, MIDDLE, RIGHT)
+        # report[1] x movement
+        # report[2] y movement
+        # report[3] wheel movement
+        self.report = bytearray(4)
+
+        # Do a no-op to test if HID device is ready.
+        # If not, wait a bit and try once more.
+        try:
+            self._send_no_move()
+        except OSError:
+            time.sleep(1)
+            self._send_no_move()
+
+    def press(self, buttons: int) -> None:
+        """Press the given mouse buttons.
+
+        :param buttons: a bitwise-or'd combination of ``LEFT_BUTTON``,
+            ``MIDDLE_BUTTON``, and ``RIGHT_BUTTON``.
+
+        Examples::
+
+            # Press the left button.
+            m.press(Mouse.LEFT_BUTTON)
+
+            # Press the left and right buttons simultaneously.
+            m.press(Mouse.LEFT_BUTTON | Mouse.RIGHT_BUTTON)
+        """
+        self.report[0] |= buttons
+        self._send_no_move()
+
+    def release(self, buttons: int) -> None:
+        """Release the given mouse buttons.
+
+        :param buttons: a bitwise-or'd combination of ``LEFT_BUTTON``,
+            ``MIDDLE_BUTTON``, and ``RIGHT_BUTTON``.
+        """
+        self.report[0] &= ~buttons
+        self._send_no_move()
+
+    def release_all(self) -> None:
+        """Release all the mouse buttons."""
+        self.report[0] = 0
+        self._send_no_move()
+
+    def click(self, buttons: int) -> None:
+        """Press and release the given mouse buttons.
+
+        :param buttons: a bitwise-or'd combination of ``LEFT_BUTTON``,
+            ``MIDDLE_BUTTON``, and ``RIGHT_BUTTON``.
+
+        Examples::
+
+            # Click the left button.
+            m.click(Mouse.LEFT_BUTTON)
+
+            # Double-click the left button.
+            m.click(Mouse.LEFT_BUTTON)
+            m.click(Mouse.LEFT_BUTTON)
+        """
+        self.press(buttons)
+        self.release(buttons)
+
+    def move(self, x: int = 0, y: int = 0, wheel: int = 0) -> None:
+        """Move the mouse and turn the wheel as directed.
+
+        :param x: Move the mouse along the x axis. Negative is to the left, positive
+            is to the right.
+        :param y: Move the mouse along the y axis. Negative is upwards on the display,
+            positive is downwards.
+        :param wheel: Rotate the wheel this amount. Negative is toward the user, positive
+            is away from the user. The scrolling effect depends on the host.
+
+        Examples::
+
+            # Move 100 to the left. Do not move up and down. Do not roll the scroll wheel.
+            m.move(-100, 0, 0)
+            # Same, with keyword arguments.
+            m.move(x=-100)
+
+            # Move diagonally to the upper right.
+            m.move(50, 20)
+            # Same.
+            m.move(x=50, y=-20)
+
+            # Roll the mouse wheel away from the user.
+            m.move(wheel=1)
+        """
+        # Send multiple reports if necessary to move or scroll requested amounts.
+        while x != 0 or y != 0 or wheel != 0:
+            partial_x = self._limit(x)
+            partial_y = self._limit(y)
+            partial_wheel = self._limit(wheel)
+            self.report[1] = partial_x & 0xFF
+            self.report[2] = partial_y & 0xFF
+            self.report[3] = partial_wheel & 0xFF
+            self._mouse_device.send_report(self.report)
+            x -= partial_x
+            y -= partial_y
+            wheel -= partial_wheel
+
+    def _send_no_move(self) -> None:
+        """Send a button-only report."""
+        self.report[1] = 0
+        self.report[2] = 0
+        self.report[3] = 0
+        self._mouse_device.send_report(self.report)
+
+    @staticmethod
+    def _limit(dist: int) -> int:
+        return min(127, max(-127, dist))
