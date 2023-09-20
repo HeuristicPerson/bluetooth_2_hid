@@ -477,34 +477,34 @@ def disable() -> None:
     except FileNotFoundError:
         pass
 
-    shutil.rmtree(Path(this.gadget_root), onerror=remove_readonly)
+    # shutil.rmtree(Path(this.gadget_root), onerror=remove_readonly)
 
-    # for symlink in Path(this.gadget_root).glob("configs/**/hid.usb*"):
-    #     symlink.unlink()
+    for symlink in Path(this.gadget_root).glob("configs/**/hid.usb*"):
+        symlink.unlink()
 
-    # for strings_file in Path(this.gadget_root).rglob("strings/*/*"):
-    #     if strings_file.is_file():
-    #         strings_file.unlink()
-    #     if strings_file.is_dir():
-    #         strings_file.rmdir()
+    for strings_file in Path(this.gadget_root).rglob("strings/*/*"):
+        if strings_file.is_file():
+            strings_file.unlink()
+        if strings_file.is_dir():
+            strings_file.rmdir()
 
-    # for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*/*"):
-    #     if strings_file.is_dir():
-    #         strings_file.rmdir()
+    for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*/*"):
+        if strings_file.is_dir():
+            strings_file.rmdir()
 
-    # for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*"):
-    #     if strings_file.is_dir():
-    #         strings_file.rmdir()
-    # for config_dir in Path(this.gadget_root).rglob("configs/*"):
-    #     if config_dir.is_dir():
-    #         config_dir.rmdir()
-    # for function_dir in Path(this.gadget_root).rglob("functions/*"):
-    #     if function_dir.is_dir():
-    #         function_dir.rmdir()
-    # try:
-    #     Path(this.gadget_root).rmdir()
-    # except FileNotFoundError:
-    #     pass
+    for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*"):
+        if strings_file.is_dir():
+            strings_file.rmdir()
+    for config_dir in Path(this.gadget_root).rglob("configs/*"):
+        if config_dir.is_dir():
+            config_dir.rmdir()
+    for function_dir in Path(this.gadget_root).rglob("functions/*"):
+        if function_dir.is_dir():
+            function_dir.rmdir()
+    try:
+        Path(this.gadget_root).rmdir()
+    except FileNotFoundError:
+        pass
     this.devices = []
 
 
