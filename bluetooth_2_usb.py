@@ -109,19 +109,19 @@ class ComboDeviceHidProxy:
             elif isinstance(device, Mouse):
                 device_strings.append(self._device_repr(device._mouse_device))
         
-        if len(device_strings) == 1:
-            return device_strings[0]
-        else:
-            return f"[{', '.join(device_strings)}]"
+        return f"[{', '.join(device_strings)}]"
     
     async def async_run_event_loop(self):
-        async with asyncio.TaskGroup() as task_group:
-            if self._keyboard_in is not None:
-                keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, task_group)
-                logger.debug(f"Created task: [{keyboard_task}]") 
-            if self._mouse_in is not None:
-                mouse_task = self._create_task(self._mouse_in, self._mouse_out, task_group)
-                logger.debug(f"Created task: [{mouse_task}]")
+        try:
+            async with asyncio.TaskGroup() as task_group:
+                if self._keyboard_in is not None:
+                    keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, task_group)
+                    logger.debug(f"Created task: [{keyboard_task}]") 
+                if self._mouse_in is not None:
+                    mouse_task = self._create_task(self._mouse_in, self._mouse_out, task_group)
+                    logger.debug(f"Created task: [{mouse_task}]")
+        except Exception as e:
+            logger.error(f"Error in TaskGroup. [{e}]")
         logger.critical(f"Event loop closed..")
 
     def _create_task(self, device_in: InputDevice, device_out: OutputDevice, task_group: TaskGroup) -> Task:
