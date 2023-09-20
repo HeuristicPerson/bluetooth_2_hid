@@ -56,19 +56,21 @@ class ComboDeviceHidProxy:
 
     def _get_requested_devices(self, keyboard_in: str=None, mouse_in: str=None):
         requested_devices = []
-        if keyboard_in is not None:
-            requested_devices.append(OutputDevice.KEYBOARD)
         if mouse_in is not None:
             requested_devices.append(OutputDevice.BOOT_MOUSE)
+        if keyboard_in is not None:
+            requested_devices.append(OutputDevice.KEYBOARD)
+
         return requested_devices
 
     def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
         try:
             logger.info(f'Available output devices: {self._device_repr(*lib.usb_hid.devices)}')
-            if keyboard_in is not None:
-                self._init_keyboard(keyboard_in)
             if mouse_in is not None:
                 self._init_mouse(mouse_in)
+            if keyboard_in is not None:
+                self._init_keyboard(keyboard_in)
+
         except Exception as e:
             logger.error(f"Failed to initialize devices. [{e}]")
             sys.exit(1)
