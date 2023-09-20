@@ -57,7 +57,7 @@ class ComboDeviceHidProxy:
     def _get_requested_devices(self, keyboard_in: str=None, mouse_in: str=None):
         requested_devices = []
         if keyboard_in is not None:
-            requested_devices.append(OutputDevice.BOOT_KEYBOARD)
+            requested_devices.append(OutputDevice.KEYBOARD)
         if mouse_in is not None:
             requested_devices.append(OutputDevice.BOOT_MOUSE)
         return requested_devices
