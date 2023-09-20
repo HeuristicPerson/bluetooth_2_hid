@@ -192,7 +192,7 @@ class ComboDeviceHidProxy:
             if device_in.path in list_devices():
                 logger.info(f"Successfully reconnected to {self._device_repr(device_in)}. Restarting daemon... ")
                 if self._is_main:
-                    __restart_daemon()
+                    _restart_daemon()
                 else:
                     return True
             else:
@@ -220,7 +220,7 @@ class ComboDeviceHidProxy:
 
         return last_log_time
 
-def __restart_daemon():
+def _restart_daemon():
     """
     Restarts the current program, performing cleanup operations to minimize resource leaks.
 
