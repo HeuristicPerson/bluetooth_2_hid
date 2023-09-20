@@ -1,7 +1,7 @@
 from evdev import ecodes
 
 import lib.logger
-from lib.usb_hid import Mouse
+import lib.usb_hid 
 
 logger = lib.logger.get_logger()
 
@@ -472,9 +472,9 @@ _EVDEV_TO_HID_MAPPING  = {
     ecodes.KEY_SLEEP: 0xF8,
     ecodes.KEY_REFRESH: 0xFA,
     ecodes.KEY_CALC: 0xFB,
-    ecodes.BTN_LEFT: Mouse.LEFT_BUTTON,
-    ecodes.BTN_RIGHT: Mouse.RIGHT_BUTTON,
-    ecodes.BTN_MIDDLE: Mouse.MIDDLE_BUTTON,    
+    ecodes.BTN_LEFT: lib.usb_hid.Mouse.LEFT_BUTTON,
+    ecodes.BTN_RIGHT: lib.usb_hid.Mouse.RIGHT_BUTTON,
+    ecodes.BTN_MIDDLE: lib.usb_hid.Mouse.MIDDLE_BUTTON,    
 }
 """
 Mapping from evdev ecode to HID Keycode
