@@ -482,12 +482,6 @@ def disable() -> None:
     for symlink in Path(this.gadget_root).glob("configs/**/hid.usb*"):
         symlink.unlink()
 
-    for strings_file in Path(this.gadget_root).rglob("strings/*/*"):
-        if strings_file.is_file():
-            strings_file.unlink()
-        if strings_file.is_dir():
-            strings_file.rmdir()
-
     for strings_file in Path(this.gadget_root).rglob("configs/*/strings/*/*"):
         if strings_file.is_dir():
             strings_file.rmdir()
@@ -501,6 +495,11 @@ def disable() -> None:
     for function_dir in Path(this.gadget_root).rglob("functions/*"):
         if function_dir.is_dir():
             function_dir.rmdir()
+    for strings_file in Path(this.gadget_root).rglob("strings/*/*"):
+        if strings_file.is_file():
+            strings_file.unlink()
+        if strings_file.is_dir():
+            strings_file.rmdir()
     try:
         Path(this.gadget_root).rmdir()
     except FileNotFoundError:
