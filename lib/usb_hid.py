@@ -19,7 +19,7 @@ import atexit
 import sys
 import shutil
 
-from lib.evdev_converter import Keycode
+import lib.evdev_converter
 
 for module in ["dwc2", "libcomposite"]:
     if Path("/proc/modules").read_text(encoding="utf-8").find(module) == -1:
@@ -906,7 +906,7 @@ class Keyboard:
 
     def _add_keycode_to_report(self, keycode: int) -> None:
         """Add a single keycode to the USB HID report."""
-        modifier = Keycode.modifier_bit(keycode)
+        modifier = lib.evdev_converter.Keycode.modifier_bit(keycode)
         if modifier:
             # Set bit for this modifier.
             self.report_modifier[0] |= modifier
@@ -930,7 +930,7 @@ class Keyboard:
 
     def _remove_keycode_from_report(self, keycode: int) -> None:
         """Remove a single keycode from the report."""
-        modifier = Keycode.modifier_bit(keycode)
+        modifier = lib.evdev_converter.Keycode.modifier_bit(keycode)
         if modifier:
             # Turn off the bit for this modifier.
             self.report_modifier[0] &= ~modifier
