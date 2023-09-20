@@ -100,7 +100,7 @@ class ComboDeviceHidProxy:
                 device_strings.append(f'{device.name} ({device.path})')
             elif isinstance(device, OutputDevice):
                 device_path = device.get_device_path(None)
-                if device == OutputDevice.BOOT_KEYBOARD:
+                if device == OutputDevice.KEYBOARD:
                     device_strings.append(f'Keyboard gadget ({device_path})')
                 elif device == OutputDevice.BOOT_MOUSE:
                     device_strings.append(f'Mouse gadget ({device_path})')
