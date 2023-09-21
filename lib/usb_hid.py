@@ -625,16 +625,16 @@ def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
     Path("%s/idVendor" % this.gadget_root).write_text(
         "%s" % 0x1D6B, encoding="utf-8"
     )   # Linux Foundation
-    # Path("%s/strings/0x409" % this.gadget_root).mkdir(parents=True, exist_ok=True)
-    # Path("%s/strings/0x409/serialnumber" % this.gadget_root).write_text(
-    #     "213374badcafe", encoding="utf-8"
-    # )
-    # Path("%s/strings/0x409/manufacturer" % this.gadget_root).write_text(
-    #     "quaxalber", encoding="utf-8"
-    # )
-    # Path("%s/strings/0x409/product" % this.gadget_root).write_text(
-    #     "USB Combo Device", encoding="utf-8"
-    # )
+    Path("%s/strings/0x409" % this.gadget_root).mkdir(parents=True, exist_ok=True)
+    Path("%s/strings/0x409/serialnumber" % this.gadget_root).write_text(
+        "213374badcafe", encoding="utf-8"
+    )
+    Path("%s/strings/0x409/manufacturer" % this.gadget_root).write_text(
+        "quaxalber", encoding="utf-8"
+    )
+    Path("%s/strings/0x409/product" % this.gadget_root).write_text(
+        "USB Combo Device", encoding="utf-8"
+    )
     # """
     # 2. Creating the configurations
     # ------------------------------
