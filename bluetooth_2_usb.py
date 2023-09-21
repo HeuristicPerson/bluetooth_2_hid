@@ -43,14 +43,13 @@ class ComboDeviceHidProxy:
             self._enable_sandbox()
 
     def _init_variables(self, 
-            is_sandbox: bool=False, 
-            is_main: bool=False):
+            is_sandbox: bool=False):
         self._keyboard_in = None            
         self._keyboard_out = None
         self._mouse_in = None     
         self._mouse_out = None
         self._is_sandbox = is_sandbox
-        self._is_main = is_main
+        self._task_group = None
 
     def _enable_usb_gadgets(self, 
             keyboard_in: str=None, 
@@ -132,13 +131,12 @@ class ComboDeviceHidProxy:
     
     async def async_run_event_loop(self):
         try:
-            async with TaskGroup() as task_group:
+            async with TaskGroup() as self._task_group:
                 if self._keyboard_in is not None:
-                    keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, task_group, "Keyboard")
-                    logger.debug(f"Created task: [{keyboard_task}]") 
+                    self._create_task(self._keyboard_in, self._keyboard_out, "Keyboard")
                 if self._mouse_in is not None:
-                    mouse_task = self._create_task(self._mouse_in, self._mouse_out, task_group, "Mouse")
-                    logger.debug(f"Created task: [{mouse_task}]")
+                    self._create_task(self._mouse_in, self._mouse_out, "Mouse")
+                logger.debug(f"Running tasks: {self._task_group}")
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
         logger.critical(f"Event loop closed..")
@@ -146,10 +144,9 @@ class ComboDeviceHidProxy:
     def _create_task(self, 
             device_in: InputDevice, 
             device_out: OutputDevice, 
-            task_group: TaskGroup,
             task_name: str=None
             ) -> Task:
-        return task_group.create_task(
+        return self._task_group.create_task(
             coro=self.async_process_events(device_in, device_out),
             name=task_name
             )
@@ -231,10 +228,7 @@ class ComboDeviceHidProxy:
         while True:
             if device_in.path in list_devices():
                 logger.info(f"Successfully reconnected to {self._device_repr(device_in)}. Restarting daemon... ")
-                if self._is_main:
-                    _restart_daemon()
-                else:
-                    return True
+                return True
             else:
                 last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
                 await asyncio.sleep(wait_seconds) 
@@ -258,61 +252,6 @@ class ComboDeviceHidProxy:
             last_log_time = current_time
 
         return last_log_time
-
-def _restart_daemon():
-    """
-    Restarts the current program, performing cleanup operations to minimize resource leaks.
-
-    It tries to close all open file handlers, connections and threads, before executing this script again.
-    """
-    try:
-        process_id = psutil.Process(os.getpid())
-
-        __close_files_and_connections(process_id)
-
-        __close_threads()
-
-        __disable_usb_gadgets()
-
-        __explicitly_run_gc()
-
-        __rerun_this_script()
-    except Exception as e:
-        logger.error(f"Failed to restart daemon. [{e}]")
-        sys.exit(1)
-
-def __close_files_and_connections(p):
-    for handler in p.open_files() + p.connections():
-        try:
-            os.close(handler.fd)
-        except Exception as e_fd:
-            logger.error(f"Failed to close file descriptor {handler.fd}. [{e_fd}]")
-    
-def __close_threads():
-    """
-    Attempts to close all running threads except the main thread.
-    """
-    main_thread = threading.main_thread()
-    for thread in threading.enumerate():
-        if thread is main_thread:
-            continue
-        try:
-            thread.join(1)
-        except Exception as e:
-            logger.error(f"Failed to join thread {thread.name}. [{e}]")
-
-def __disable_usb_gadgets():
-    lib.usb_hid.disable()
-
-def __explicitly_run_gc():
-    """
-    Explicitly run garbage collection to remove unreferenced objects
-    """
-    gc.collect()
-
-def __rerun_this_script():
-    python_executable = sys.executable
-    os.execl(python_executable, python_executable, *sys.argv)
 
 def __parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')
