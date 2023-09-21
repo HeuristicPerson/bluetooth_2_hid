@@ -34,9 +34,8 @@ class ComboDeviceHidProxy:
     def __init__(self, 
             keyboard_in: str=None, 
             mouse_in: str=None, 
-            is_sandbox: bool=False, 
-            is_main: bool=False):
-        self._init_variables(is_sandbox, is_main)
+            is_sandbox: bool=False):
+        self._init_variables(is_sandbox)
         self._enable_usb_gadgets(keyboard_in, mouse_in)
         self._init_devices(keyboard_in, mouse_in)
         if self._is_sandbox:
@@ -278,7 +277,7 @@ async def __async_main():
             logger.setLevel(logging.DEBUG)
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
-        proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox, is_main=True)
+        proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
         await proxy.async_run_event_loop()
     except Exception as e:
         logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]") 
