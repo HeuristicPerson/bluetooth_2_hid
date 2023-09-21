@@ -31,14 +31,20 @@ except ImportError as e:
 logger = lib.logger.get_logger()
 
 class ComboDeviceHidProxy:
-    def __init__(self, keyboard_in: str=None, mouse_in: str=None, is_sandbox: bool=False, is_main: bool=False):
+    def __init__(self, 
+            keyboard_in: str=None, 
+            mouse_in: str=None, 
+            is_sandbox: bool=False, 
+            is_main: bool=False):
         self._init_variables(is_sandbox, is_main)
         self._enable_usb_gadgets(keyboard_in, mouse_in)
         self._init_devices(keyboard_in, mouse_in)
         if self._is_sandbox:
             self._enable_sandbox()
 
-    def _init_variables(self, is_sandbox: bool=False, is_main: bool=False):
+    def _init_variables(self, 
+            is_sandbox: bool=False, 
+            is_main: bool=False):
         self._keyboard_in = None            
         self._keyboard_out = None
         self._mouse_in = None     
@@ -46,7 +52,9 @@ class ComboDeviceHidProxy:
         self._is_sandbox = is_sandbox
         self._is_main = is_main
 
-    def _enable_usb_gadgets(self, keyboard_in: str=None, mouse_in: str=None):
+    def _enable_usb_gadgets(self, 
+            keyboard_in: str=None, 
+            mouse_in: str=None):
         try:
             requested_devices = self._get_requested_devices(keyboard_in, mouse_in)
             lib.usb_hid.enable(requested_devices)
@@ -54,7 +62,9 @@ class ComboDeviceHidProxy:
             logger.error(f"Failed to enable devices. [{e}]")
             sys.exit(1)
 
-    def _get_requested_devices(self, keyboard_in: str=None, mouse_in: str=None):
+    def _get_requested_devices(self, 
+            keyboard_in: str=None, 
+            mouse_in: str=None):
         requested_devices = []
         if mouse_in is not None:
             requested_devices.append(OutputDevice.BOOT_MOUSE)
@@ -63,7 +73,9 @@ class ComboDeviceHidProxy:
 
         return requested_devices
 
-    def _init_devices(self, keyboard_in: str=None, mouse_in: str=None):
+    def _init_devices(self, 
+            keyboard_in: str=None, 
+            mouse_in: str=None):
         try:
             logger.info(f'Available output devices: {self._device_repr(*lib.usb_hid.devices)}')
             if mouse_in is not None:
@@ -75,13 +87,15 @@ class ComboDeviceHidProxy:
             logger.error(f"Failed to initialize devices. [{e}]")
             sys.exit(1)
 
-    def _init_keyboard(self, keyboard_in: str):
+    def _init_keyboard(self, 
+            keyboard_in: str):
         self._keyboard_in = InputDevice(keyboard_in)
         logger.info(f'Keyboard (in): {self._keyboard_in}')
         self._keyboard_out = Keyboard(lib.usb_hid.devices)
         logger.info(f'Keyboard (out): {self._device_repr(self._keyboard_out)}')
 
-    def _init_mouse(self, mouse_in: str):
+    def _init_mouse(self, 
+            mouse_in: str):
         self._mouse_in = InputDevice(mouse_in)
         logger.info(f'Mouse (in): {self._mouse_in}')
         self._mouse_out = Mouse(lib.usb_hid.devices)
@@ -93,7 +107,9 @@ class ComboDeviceHidProxy:
         self._mouse_out = None
         logger.warning('Sandbox mode enabled! All output devices deactivated.')
 
-    def _device_repr(self, *devices: Union[InputDevice, OutputDevice, Keyboard, Mouse]) -> str:
+    def _device_repr(self, 
+            *devices: Union[InputDevice, OutputDevice, Keyboard, Mouse]
+            ) -> str:
         device_strings = []
         for device in devices:
             if isinstance(device, InputDevice):
@@ -109,25 +125,38 @@ class ComboDeviceHidProxy:
             elif isinstance(device, Mouse):
                 device_strings.append(self._device_repr(device._mouse_device))
         
-        return f"[{', '.join(device_strings)}]"
+        if len(device_strings) == 1:
+            return device_strings[0]
+        else:
+            return f"[{', '.join(device_strings)}]"
     
     async def async_run_event_loop(self):
         try:
-            async with asyncio.TaskGroup() as task_group:
+            async with TaskGroup() as task_group:
                 if self._keyboard_in is not None:
-                    keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, task_group)
+                    keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, task_group, "Keyboard")
                     logger.debug(f"Created task: [{keyboard_task}]") 
                 if self._mouse_in is not None:
-                    mouse_task = self._create_task(self._mouse_in, self._mouse_out, task_group)
+                    mouse_task = self._create_task(self._mouse_in, self._mouse_out, task_group, "Mouse")
                     logger.debug(f"Created task: [{mouse_task}]")
         except* Exception as e:
-            logger.error(f"Errors in TaskGroup: [{e.exceptions}]")
+            logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
         logger.critical(f"Event loop closed..")
 
-    def _create_task(self, device_in: InputDevice, device_out: OutputDevice, task_group: TaskGroup) -> Task:
-        return task_group.create_task(self.async_process_events(device_in, device_out))
+    def _create_task(self, 
+            device_in: InputDevice, 
+            device_out: OutputDevice, 
+            task_group: TaskGroup,
+            task_name: str=None
+            ) -> Task:
+        return task_group.create_task(
+            coro=self.async_process_events(device_in, device_out),
+            name=task_name
+            )
     
-    async def async_process_events(self, device_in: InputDevice, device_out: OutputDevice):
+    async def async_process_events(self, 
+            device_in: InputDevice, 
+            device_out: OutputDevice):
         logger.info(f"Started event loop for {self._device_repr(device_in)}")
         try:
             async for event in device_in.async_read_loop():
@@ -142,20 +171,26 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logger.error(f"Failed reading events from {self._device_repr(device_in)} [{e}]") 
 
-    async def async_handle_event(self, event: InputEvent, device_out: OutputDevice):
+    async def async_handle_event(self, 
+            event: InputEvent, 
+            device_out: OutputDevice):
         logger.debug(f"Received event: [{categorize(event)}] for {self._device_repr(device_out)}") 
         if self.is_key_up_or_down(event):
             await self.async_send_key(event, device_out)
         elif self.is_mouse_move(event):
             await self.async_send_mouse_move(event, device_out)   
     
-    def is_key_up_or_down(self, event: InputEvent):
+    def is_key_up_or_down(self, 
+            event: InputEvent):
         return event.type == ecodes.EV_KEY and event.value in [key_event.DOWN, key_event.UP]   
     
-    def is_mouse_move(self, event: InputEvent):
+    def is_mouse_move(self, 
+            event: InputEvent):
         return event.type == ecodes.EV_REL 
 
-    async def async_send_key(self, event: InputEvent, device_out: OutputDevice):
+    async def async_send_key(self, 
+            event: InputEvent, 
+            device_out: OutputDevice):
         key = converter.to_hid_key(event.code) 
         if key is None or self._is_sandbox: 
             return
@@ -167,7 +202,9 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logger.error(f"Error sending key event [{categorize(event)}] to {self._device_repr(device_out)} [{e}]")
 
-    async def async_send_mouse_move(self, event: InputEvent, mouse_out: Mouse):
+    async def async_send_mouse_move(self, 
+            event: InputEvent, 
+            mouse_out: Mouse):
         x, y, mwheel = 0, 0, 0
         if event.code == ecodes.REL_X:
             x = event.value
@@ -183,7 +220,10 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logger.error(f"Error sending mouse move event [{categorize(event)}] to {self._device_repr(mouse_out)} [{e}]")
 
-    async def async_reconnect_device(self, device_in: InputDevice, wait_seconds: float=5) -> bool:
+    async def async_reconnect_device(self, 
+            device_in: InputDevice, 
+            wait_seconds: float=5
+            ) -> bool:
         start_time = datetime.now()
         last_log_time = start_time
         logger.critical(f"Lost connection to {self._device_repr(device_in)}. Trying to reconnect...")
@@ -199,12 +239,11 @@ class ComboDeviceHidProxy:
                 last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
                 await asyncio.sleep(wait_seconds) 
 
-    def _log_failed_reconnection_attempt(
-            self, 
+    def _log_failed_reconnection_attempt(self, 
             device_in: InputDevice, 
             start_time: datetime, 
-            last_log_time: datetime) -> datetime:
-        
+            last_log_time: datetime
+            ) -> datetime:
         current_time = datetime.now()
         elapsed_minutes = (current_time - start_time).total_seconds() / 60
         minutes_since_last_log = (current_time - last_log_time).total_seconds() / 60
