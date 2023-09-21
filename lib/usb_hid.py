@@ -17,9 +17,8 @@ from pathlib import Path
 import os, stat
 import atexit
 import sys
-import shutil
 
-import lib.evdev_converter
+from lib.constants import Keycode
 
 for module in ["dwc2", "libcomposite"]:
     if Path("/proc/modules").read_text(encoding="utf-8").find(module) == -1:
@@ -905,7 +904,7 @@ class Keyboard:
 
     def _add_keycode_to_report(self, keycode: int) -> None:
         """Add a single keycode to the USB HID report."""
-        modifier = lib.evdev_converter.Keycode.modifier_bit(keycode)
+        modifier = Keycode.modifier_bit(keycode)
         if modifier:
             # Set bit for this modifier.
             self.report_modifier[0] |= modifier
@@ -929,7 +928,7 @@ class Keyboard:
 
     def _remove_keycode_from_report(self, keycode: int) -> None:
         """Remove a single keycode from the report."""
-        modifier = lib.evdev_converter.Keycode.modifier_bit(keycode)
+        modifier = Keycode.modifier_bit(keycode)
         if modifier:
             # Turn off the bit for this modifier.
             self.report_modifier[0] &= ~modifier
@@ -999,13 +998,6 @@ class Keyboard:
 
 class Mouse:
     """Send USB HID mouse reports."""
-
-    LEFT_BUTTON = 1
-    """Left mouse button."""
-    RIGHT_BUTTON = 2
-    """Right mouse button."""
-    MIDDLE_BUTTON = 4
-    """Middle mouse button."""
 
     def __init__(self, devices: Sequence[Device]):
         """Create a Mouse object that will send USB mouse HID reports.
