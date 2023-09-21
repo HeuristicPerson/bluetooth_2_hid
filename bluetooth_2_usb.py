@@ -233,6 +233,7 @@ class ComboDeviceHidProxy:
         while True:
             if device_in.path in list_devices():
                 logger.info(f"Successfully reconnected to {self._device_repr(device_in)}. Restarting daemon... ")
+                device_in = InputDevice(device_in.path)
                 await asyncio.sleep(delay_seconds) 
                 return True
             else:
