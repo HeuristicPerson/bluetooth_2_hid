@@ -233,6 +233,7 @@ class ComboDeviceHidProxy:
         while True:
             if device_in.path in list_devices():
                 logger.info(f"Successfully reconnected to {self._device_repr(device_in)}. Restarting daemon... ")
+                await asyncio.sleep(delay_seconds) 
                 return True
             else:
                 last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
