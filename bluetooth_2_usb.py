@@ -49,6 +49,7 @@ class ComboDeviceHidProxy:
         self._mouse_out = None
         self._is_sandbox = is_sandbox
         self._task_group = None
+        self._tasks = []
 
     def _enable_usb_gadgets(self, 
             keyboard_in: str=None, 
@@ -132,10 +133,12 @@ class ComboDeviceHidProxy:
         try:
             async with TaskGroup() as self._task_group:
                 if self._keyboard_in is not None:
-                    self._create_task(self._keyboard_in, self._keyboard_out, "Keyboard")
+                    keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, "Keyboard")
+                    self._tasks.append(keyboard_task)
                 if self._mouse_in is not None:
-                    self._create_task(self._mouse_in, self._mouse_out, "Mouse")
-                logger.debug(f"Running tasks: {self._task_group}")
+                    mouse_task = self._create_task(self._mouse_in, self._mouse_out, "Mouse")
+                    self._tasks.append(mouse_task)
+                logger.debug(f"Running tasks: {self._tasks}")
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
         logger.critical(f"Event loop closed..")
@@ -154,18 +157,21 @@ class ComboDeviceHidProxy:
             device_in: InputDevice, 
             device_out: OutputDevice):
         logger.info(f"Started event loop for {self._device_repr(device_in)}")
-        try:
-            async for event in device_in.async_read_loop():
-                if event is None: 
-                    continue
-                await self.async_handle_event(event, device_out) 
-        except OSError as e:
-            if e.errno == errno.OSError.NO_SUCH_DEVICE:
-                await self.async_reconnect_device(device_in)
-            else:
-                raise
-        except Exception as e:
-            logger.error(f"Failed reading events from {self._device_repr(device_in)} [{e}]") 
+        should_run = True
+        while should_run:
+            try:
+                async for event in device_in.async_read_loop():
+                    if event is None: 
+                        continue
+                    await self.async_handle_event(event, device_out) 
+            except OSError as e:
+                if e.errno == errno.OSError.NO_SUCH_DEVICE:
+                    should_run = await self.async_reconnect_device(device_in)
+                else:
+                    raise
+            except Exception as e:
+                logger.error(f"Failed reading events from {self._device_repr(device_in)}. Reconnecting failed. Cancelling this task. [{e}]") 
+                should_run = False
 
     async def async_handle_event(self, 
             event: InputEvent, 
@@ -218,7 +224,7 @@ class ComboDeviceHidProxy:
 
     async def async_reconnect_device(self, 
             device_in: InputDevice, 
-            wait_seconds: float=5
+            delay_seconds: float=1
             ) -> bool:
         start_time = datetime.now()
         last_log_time = start_time
@@ -230,7 +236,7 @@ class ComboDeviceHidProxy:
                 return True
             else:
                 last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
-                await asyncio.sleep(wait_seconds) 
+                await asyncio.sleep(delay_seconds) 
 
     def _log_failed_reconnection_attempt(self, 
             device_in: InputDevice, 
