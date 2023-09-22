@@ -40,10 +40,10 @@ class ComboDeviceHidProxy:
 
     def _init_variables(self, 
             is_sandbox: bool=False):
-        self._device_pairs = List[DevicePair]()
+        self._device_pairs: List[DevicePair] = []
         self._is_sandbox = is_sandbox
-        self._task_group = None
-        self._tasks = List[Task]()
+        self._task_group = None 
+        self._tasks: List[Task] = []
 
     def _enable_usb_gadgets(self,
             gadgets_enabled: bool=True):
