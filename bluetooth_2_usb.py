@@ -8,14 +8,10 @@ try:
     import asyncio
     from asyncio import TaskGroup, Task
     from datetime import datetime
-    import gc
     import logging
-    import os
     import signal
     import sys
-    import threading
-    from typing import Union
-    import psutil
+    from typing import List
 
     from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
 
@@ -23,12 +19,13 @@ try:
     import lib.evdev_converter as converter
     import lib.logger
     import lib.usb_hid
-    from lib.usb_hid import Device as OutputDevice, Mouse, Keyboard
+    from lib.usb_hid import GadgetDevice, MouseGadget, KeyboardGadget, DevicePair
 except ImportError as e:
     print(f"Error importing modules. [{e}]")
     raise
 
 logger = lib.logger.get_logger()
+
 
 class ComboDeviceHidProxy:
     def __init__(self, 
@@ -36,147 +33,126 @@ class ComboDeviceHidProxy:
             mouse_in: str=None, 
             is_sandbox: bool=False):
         self._init_variables(is_sandbox)
-        self._enable_usb_gadgets(keyboard_in, mouse_in)
+        self._enable_usb_gadgets()
         self._init_devices(keyboard_in, mouse_in)
         if self._is_sandbox:
             self._enable_sandbox()
 
     def _init_variables(self, 
             is_sandbox: bool=False):
-        self._keyboard_in = None            
-        self._keyboard_out = None
-        self._mouse_in = None     
-        self._mouse_out = None
+        self._device_pairs = List[DevicePair]()
         self._is_sandbox = is_sandbox
         self._task_group = None
-        self._tasks = []
+        self._tasks = List[Task]()
 
-    def _enable_usb_gadgets(self, 
-            keyboard_in: str=None, 
-            mouse_in: str=None):
+    def _enable_usb_gadgets(self,
+            gadgets_enabled: bool=True):
         try:
-            requested_devices = self._get_requested_devices(keyboard_in, mouse_in)
-            lib.usb_hid.enable(requested_devices)
+            if gadgets_enabled:
+                lib.usb_hid.enable([GadgetDevice.BOOT_MOUSE, GadgetDevice.KEYBOARD])
+                logger.info(f'Available output devices: {lib.usb_hid.devices}')
+            else:
+                lib.usb_hid.disable()
+                logger.warning(f'Disabled all output devices!')
         except Exception as e:
-            logger.error(f"Failed to enable devices. [{e}]")
-            sys.exit(1)
-
-    def _get_requested_devices(self, 
-            keyboard_in: str=None, 
-            mouse_in: str=None):
-        requested_devices = []
-        if mouse_in is not None:
-            requested_devices.append(OutputDevice.BOOT_MOUSE)
-        if keyboard_in is not None:
-            requested_devices.append(OutputDevice.KEYBOARD)
-
-        return requested_devices
+            logger.error(f"Failed to enable/disable devices. [{e}]")
+            raise
 
     def _init_devices(self, 
             keyboard_in: str=None, 
             mouse_in: str=None):
         try:
-            logger.info(f'Available output devices: {self._device_repr(*lib.usb_hid.devices)}')
             if mouse_in is not None:
-                self._init_mouse(mouse_in)
+                self._device_pairs.append(
+                    self._init_mouse(mouse_in)
+                )
             if keyboard_in is not None:
-                self._init_keyboard(keyboard_in)
-
+                self._device_pairs.append(
+                    self._init_keyboard(keyboard_in)
+                )
+            for pair in self._device_pairs:
+                logger.info(repr(pair))
         except Exception as e:
             logger.error(f"Failed to initialize devices. [{e}]")
-            sys.exit(1)
+            raise
 
     def _init_keyboard(self, 
-            keyboard_in: str):
-        self._keyboard_in = InputDevice(keyboard_in)
-        logger.info(f'Keyboard (in): {self._keyboard_in}')
-        self._keyboard_out = Keyboard(lib.usb_hid.devices)
-        logger.info(f'Keyboard (out): {self._device_repr(self._keyboard_out)}')
+            keyboard_in: str
+            ) -> DevicePair:
+        keyboard_pair = DevicePair(
+            InputDevice(keyboard_in),
+            KeyboardGadget(),
+            name='Keyboard'
+        )
+        return keyboard_pair
 
     def _init_mouse(self, 
-            mouse_in: str):
-        self._mouse_in = InputDevice(mouse_in)
-        logger.info(f'Mouse (in): {self._mouse_in}')
-        self._mouse_out = Mouse(lib.usb_hid.devices)
-        logger.info(f'Mouse (out): {self._device_repr(self._mouse_out)}')
+            mouse_in: str
+            ) -> DevicePair:
+        mouse_pair = DevicePair(
+            InputDevice(mouse_in),
+            MouseGadget(),
+            name='Mouse'
+        )
+        return mouse_pair
 
-    def _enable_sandbox(self):
-        self._is_sandbox = True
-        self._keyboard_out = None
-        self._mouse_out = None
-        logger.warning('Sandbox mode enabled! All output devices deactivated.')
-
-    def _device_repr(self, 
-            *devices: Union[InputDevice, OutputDevice, Keyboard, Mouse]
-            ) -> str:
-        device_strings = []
-        for device in devices:
-            if isinstance(device, InputDevice):
-                device_strings.append(f'{device.name} ({device.path})')
-            elif isinstance(device, OutputDevice):
-                device_path = device.get_device_path(None)
-                if device == OutputDevice.KEYBOARD:
-                    device_strings.append(f'Keyboard gadget ({device_path})')
-                elif device == OutputDevice.BOOT_MOUSE:
-                    device_strings.append(f'Mouse gadget ({device_path})')
-            elif isinstance(device, Keyboard):
-                device_strings.append(self._device_repr(device._keyboard_device))
-            elif isinstance(device, Mouse):
-                device_strings.append(self._device_repr(device._mouse_device))
-        
-        if len(device_strings) == 1:
-            return device_strings[0]
+    def _enable_sandbox(self,
+            sandbox_enabled: bool=True):
+        self._is_sandbox = sandbox_enabled
+        outputs_enabled = not sandbox_enabled
+        for pair in self._device_pairs:
+            pair.enable_output(outputs_enabled)
+        if sandbox_enabled:
+            logger.warning('Sandbox mode enabled! All output devices deactivated.')
         else:
-            return f"[{', '.join(device_strings)}]"
+            logger.info('Sandbox mode disabled. All output devices activated.')
     
     async def async_run_event_loop(self):
         try:
             async with TaskGroup() as self._task_group:
-                if self._keyboard_in is not None:
-                    keyboard_task = self._create_task(self._keyboard_in, self._keyboard_out, "Keyboard")
-                    self._tasks.append(keyboard_task)
-                if self._mouse_in is not None:
-                    mouse_task = self._create_task(self._mouse_in, self._mouse_out, "Mouse")
-                    self._tasks.append(mouse_task)
+                for pair in self._device_pairs:
+                    task = self._create_task(pair)
+                    self._tasks.append(task)
                 logger.debug(f"Running tasks: {self._tasks}")
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
         logger.critical(f"Event loop closed..")
 
     def _create_task(self, 
-            device_in: InputDevice, 
-            device_out: OutputDevice, 
-            task_name: str=None
+            device_pair: DevicePair
             ) -> Task:
         return self._task_group.create_task(
-            coro=self.async_process_events(device_in, device_out),
-            name=task_name
-            )
+                self.async_process_events(device_pair),
+                name=device_pair.name()
+                )
     
     async def async_process_events(self, 
-            device_in: InputDevice, 
-            device_out: OutputDevice):
-        logger.info(f"Started event loop for {self._device_repr(device_in)}")
-        should_run = True
-        while should_run:
-            try:
-                async for event in device_in.async_read_loop():
-                    if event is None: 
-                        continue
-                    await self.async_handle_event(event, device_out) 
-            except OSError as e:
-                if e.errno == errno.OSError.NO_SUCH_DEVICE:
-                    should_run = await self.async_reconnect_device(device_in)
-                else:
+            device_pair: DevicePair):
+        logger.info(f"Started event loop for {repr(device_pair)}")
+        try:
+            device_in = device_pair.input()
+            device_out = device_pair.output()
+            async for event in device_in.async_read_loop():
+                if event is None: 
+                    continue
+                await self.async_handle_event(event, device_out) 
+        except OSError as e:
+            if e.errno == errno.OSError.NO_SUCH_DEVICE:
+                reconnected = await self.async_reconnect_device(device_pair)
+                if not reconnected:
                     raise
-            except Exception as e:
-                logger.error(f"Failed reading events from {self._device_repr(device_in)}. Reconnecting failed. Cancelling this task. [{e}]") 
-                should_run = False
+            else:
+                raise
+        except Exception as e:
+            logger.error(f"Failed reading events from {device_in}. Reconnecting failed. Cancelling this task. [{e}]")
+            for task in self._tasks:
+                if task.get_name() == device_pair.name():
+                    task.cancel()
 
     async def async_handle_event(self, 
             event: InputEvent, 
-            device_out: OutputDevice):
-        logger.debug(f"Received event: [{categorize(event)}] for {self._device_repr(device_out)}") 
+            device_out: GadgetDevice):
+        logger.debug(f"Received event: [{categorize(event)}] for {device_out}") 
         if self.is_key_up_or_down(event):
             await self.async_send_key(event, device_out)
         elif self.is_mouse_move(event):
@@ -192,7 +168,7 @@ class ComboDeviceHidProxy:
 
     async def async_send_key(self, 
             event: InputEvent, 
-            device_out: OutputDevice):
+            device_out: GadgetDevice):
         key = converter.to_hid_key(event.code) 
         if key is None or self._is_sandbox: 
             return
@@ -202,11 +178,11 @@ class ComboDeviceHidProxy:
             elif event.value == key_event.UP:
                 device_out.release(key)
         except Exception as e:
-            logger.error(f"Error sending key event [{categorize(event)}] to {self._device_repr(device_out)} [{e}]")
+            logger.error(f"Error sending key event [{categorize(event)}] to {device_out} [{e}]")
 
     async def async_send_mouse_move(self, 
             event: InputEvent, 
-            mouse_out: Mouse):
+            mouse_out: MouseGadget):
         x, y, mwheel = 0, 0, 0
         if event.code == ecodes.REL_X:
             x = event.value
@@ -214,33 +190,32 @@ class ComboDeviceHidProxy:
             y = event.value
         elif event.code == ecodes.REL_WHEEL:
             mwheel = event.value
-        logger.debug(f"Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {self._device_repr(mouse_out)}")
+        logger.debug(f"Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {mouse_out}")
         if self._is_sandbox: 
             return
         try:
             mouse_out.move(x, y, mwheel)
         except Exception as e:
-            logger.error(f"Error sending mouse move event [{categorize(event)}] to {self._device_repr(mouse_out)} [{e}]")
+            logger.error(f"Error sending mouse move event [{categorize(event)}] to {mouse_out} [{e}]")
 
     async def async_reconnect_device(self, 
-            device_in: InputDevice, 
+            device_pair: DevicePair, 
             delay_seconds: float=1
             ) -> bool:
+        device_in = device_pair.input()
         start_time = datetime.now()
         last_log_time = start_time
-        logger.critical(f"Lost connection to {self._device_repr(device_in)}. Trying to reconnect...")
+        logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
 
-        while True:
-            if device_in.path in list_devices():
-                logger.info(f"Successfully reconnected to {self._device_repr(device_in)}. Restarting daemon... ")
-                device_in = InputDevice(device_in.path)
-                await asyncio.sleep(delay_seconds) 
-                return True
-            else:
-                last_log_time = self._log_failed_reconnection_attempt(device_in, start_time, last_log_time)
-                await asyncio.sleep(delay_seconds) 
+        while device_in.path not in list_devices():
+            last_log_time = self._log_reconnection_attempt(device_in, start_time, last_log_time)
+            await asyncio.sleep(delay_seconds) 
 
-    def _log_failed_reconnection_attempt(self, 
+        logger.info(f"Successfully reconnected to {device_in}.")
+
+        return True
+
+    def _log_reconnection_attempt(self, 
             device_in: InputDevice, 
             start_time: datetime, 
             last_log_time: datetime
@@ -248,17 +223,25 @@ class ComboDeviceHidProxy:
         current_time = datetime.now()
         elapsed_minutes = (current_time - start_time).total_seconds() / 60
         minutes_since_last_log = (current_time - last_log_time).total_seconds() / 60
+        should_write_log = self._should_write_log(elapsed_minutes, minutes_since_last_log)
+
+        if should_write_log:
+            logger.info(f"Still trying to reconnect to {device_in}...")
+            last_log_time = current_time
+
+        return last_log_time
+
+    def _should_write_log(self, 
+            elapsed_minutes: float, 
+            minutes_since_last_log: float
+            ) -> bool:
         should_write_log = False
 
         if elapsed_minutes <= 10 and minutes_since_last_log >= 1:
             should_write_log = True 
         elif minutes_since_last_log >= 10:
             should_write_log = True
-        if should_write_log:
-            logger.info(f"Still trying to reconnect to {self._device_repr(device_in)}...")
-            last_log_time = current_time
-
-        return last_log_time
+        return should_write_log
 
 def __parse_args():
     parser = argparse.ArgumentParser(description='Bluetooth to HID proxy.')

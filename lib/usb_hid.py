@@ -18,6 +18,8 @@ import os, stat
 import atexit
 import sys
 
+from evdev import InputDevice
+
 from lib.constants import Keycode
 
 for module in ["dwc2", "libcomposite"]:
@@ -32,7 +34,7 @@ this.boot_device = 0
 this.devices = []
 
 
-class Device:
+class GadgetDevice:
     """
     HID Device specification: see
     https://github.com/adafruit/circuitpython/blob/main/shared-bindings/usb_hid/Device.c
@@ -47,6 +49,8 @@ class Device:
         report_ids: Sequence[int],
         in_report_lengths: Sequence[int],
         out_report_lengths: Sequence[int],
+        name: str='Gadget'
+
     ) -> None:
         self.out_report_lengths = out_report_lengths
         self.in_report_lengths = in_report_lengths
@@ -55,6 +59,8 @@ class Device:
         self.usage_page = usage_page
         self.descriptor = descriptor
         self._last_received_report = None
+        self._name = name
+        self._path = self.get_device_path()
 
     def send_report(self, report: bytearray, report_id: int = None):
         """Send an HID report. If the device descriptor specifies zero or one report id's,
@@ -92,7 +98,7 @@ class Device:
                 self._last_received_report = report
         return self._last_received_report
 
-    def get_device_path(self, report_id):
+    def get_device_path(self, report_id=None):
         """
         translates the /dev/hidg device from the report id
         """
@@ -108,12 +114,20 @@ class Device:
         device_path = "/dev/hidg%s" % device
         return device_path
 
+    def __repr__(self):
+        return f'{self._name} ({self._path})'
+    
+    def __str__(self):
+        return self._path
+        
     KEYBOARD = None
+    BOOT_KEYBOARD = None
     MOUSE = None
+    BOOT_MOUSE = None
     CONSUMER_CONTROL = None
 
 
-Device.KEYBOARD = Device(
+GadgetDevice.KEYBOARD = GadgetDevice(
     descriptor=bytes(
         (
             0x05,
@@ -192,8 +206,9 @@ Device.KEYBOARD = Device(
     report_ids=[0x1],
     in_report_lengths=[8],
     out_report_lengths=[1],
+    name='Keyboard gadget'
 )
-Device.MOUSE = Device(
+GadgetDevice.MOUSE = GadgetDevice(
     descriptor=bytes(
         (
             0x05,
@@ -267,9 +282,10 @@ Device.MOUSE = Device(
     report_ids=[0x02],
     in_report_lengths=[4],
     out_report_lengths=[0],
+    name='Mouse gadget'
 )
 
-Device.CONSUMER_CONTROL = Device(
+GadgetDevice.CONSUMER_CONTROL = GadgetDevice(
     descriptor=bytes(
         (
             0x05,
@@ -304,9 +320,10 @@ Device.CONSUMER_CONTROL = Device(
     report_ids=[3],
     in_report_lengths=[2],
     out_report_lengths=[0],
+    name='Consumer control gadget'
 )
 
-Device.BOOT_KEYBOARD = Device(
+GadgetDevice.BOOT_KEYBOARD = GadgetDevice(
     descriptor=bytes(
         (
             0x05,
@@ -383,8 +400,9 @@ Device.BOOT_KEYBOARD = Device(
     report_ids=[0x0],
     in_report_lengths=[8],
     out_report_lengths=[1],
+    name='Boot keyboard gadget'
 )
-Device.BOOT_MOUSE = Device(
+GadgetDevice.BOOT_MOUSE = GadgetDevice(
     descriptor=bytes(
         (
             0x05,
@@ -456,6 +474,7 @@ Device.BOOT_MOUSE = Device(
     report_ids=[0],
     in_report_lengths=[4],
     out_report_lengths=[0],
+    name='Boot mouse gadget'
 )
 
 def remove_readonly(func, path, _):
@@ -510,7 +529,7 @@ def disable() -> None:
 atexit.register(disable)
 
 
-def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
+def enable(requested_devices: Sequence[GadgetDevice], boot_device: int = 0) -> None:
     """Specify which USB HID devices that will be available.
     Can be called in ``boot.py``, before USB is connected.
 
@@ -560,9 +579,9 @@ def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
         return
 
     if boot_device == 1:
-        requested_devices = [Device.BOOT_KEYBOARD]
+        requested_devices = [GadgetDevice.BOOT_KEYBOARD]
     if boot_device == 2:
-        requested_devices = [Device.BOOT_MOUSE]
+        requested_devices = [GadgetDevice.BOOT_MOUSE]
 
     # """
     # 1. Creating the gadgets
@@ -770,8 +789,8 @@ Implementation Notes
 """
 
 def find_device(
-    devices: Sequence[Device], *, usage_page: int, usage: int
-) -> Device:
+    devices: Sequence[GadgetDevice], *, usage_page: int, usage: int
+) -> GadgetDevice:
     """Search through the provided sequence of devices to find the one with the matching
     usage_page and usage."""
     if hasattr(devices, "send_report"):
@@ -798,7 +817,7 @@ def find_device(
 
 _MAX_KEYPRESSES = 6
 
-class Keyboard:
+class KeyboardGadget:
     """Send HID keyboard reports."""
 
     LED_NUM_LOCK = 0x01
@@ -812,7 +831,7 @@ class Keyboard:
 
     # No more than _MAX_KEYPRESSES regular keys may be pressed at once.
 
-    def __init__(self, devices: Sequence[Device]) -> None:
+    def __init__(self, devices: Sequence[GadgetDevice]=this.devices) -> None:
         """Create a Keyboard object that will send keyboard HID reports.
 
         Devices can be a sequence of devices that includes a keyboard device or a keyboard device
@@ -996,10 +1015,10 @@ class Keyboard:
 """
 
 
-class Mouse:
+class MouseGadget:
     """Send USB HID mouse reports."""
 
-    def __init__(self, devices: Sequence[Device]):
+    def __init__(self, devices: Sequence[GadgetDevice]=this.devices):
         """Create a Mouse object that will send USB mouse HID reports.
 
         Devices can be a sequence of devices that includes a keyboard device or a keyboard device
@@ -1120,3 +1139,35 @@ class Mouse:
     @staticmethod
     def _limit(dist: int) -> int:
         return min(127, max(-127, dist))
+
+
+class DevicePair():
+    def __init__(self, 
+            device_in: InputDevice, 
+            device_out: GadgetDevice,
+            name: str='Device pair'):
+        self._device_in = device_in
+        self._device_out = device_out
+        self._device_out_enabled = True
+        self._name = name
+
+    def __repr__(self):
+        return f'{self._name}: [{repr(self._device_in)}] >> [{repr(self._device_out)}]'
+    
+    def __str__(self):
+        return f'[{self._device_in}] >> [{self._device_out}]'
+    
+    def input(self) -> InputDevice:
+        return self._device_in
+
+    def output(self) -> GadgetDevice:
+        if not self._device_out_enabled:
+            return None
+        return self._device_out
+    
+    def enable_output(self,
+            enabled: bool=True):
+        self._device_out_enabled = enabled
+
+    def name(self) -> str:
+        return self._name
