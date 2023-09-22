@@ -141,6 +141,7 @@ class ComboDeviceHidProxy:
         try:
             device_in = device_pair.input()
             device_out = device_pair.output()
+            device_in.grab()
             async for event in device_in.async_read_loop():
                 if event is None: 
                     continue
@@ -149,7 +150,8 @@ class ComboDeviceHidProxy:
             reconnected = await self.async_reconnect_device(device_pair)
             if not reconnected:
                 raise
-            self._restart_task(device_pair)
+            device_in.ungrab()
+            self._restart_task(device_pair)   
         except Exception as e:
             logger.error(f"Failed reading events from {device_in}. Reconnecting failed. Cancelling this task. [{e}]")
             self._remove_task(device_pair)
