@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""
+'''
 Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
-"""
+'''
 
 try:
     import argparse
@@ -22,7 +22,7 @@ try:
     import lib.usb_hid
     from lib.usb_hid import GadgetDevice, MouseGadget, KeyboardGadget, DevicePair
 except ImportError as e:
-    print(f"Error importing modules. [{e}]")
+    print(f'Error importing modules. [{e}]')
     raise
 
 logger = lib.logger.get_logger()
@@ -59,7 +59,7 @@ class ComboDeviceHidProxy:
                 lib.usb_hid.disable()
                 logger.warning(f'Disabled all output devices!')
         except Exception as e:
-            logger.error(f"Failed to enable/disable devices. [{e}]")
+            logger.error(f'Failed to enable/disable devices. [{e}]')
             sys.exit(1)
 
     def _init_devices(self, 
@@ -78,7 +78,7 @@ class ComboDeviceHidProxy:
             for pair in self._device_pairs:
                 logger.info(repr(pair))
         except Exception as e:
-            logger.error(f"Failed to initialize devices. [{e}]")
+            logger.error(f'Failed to initialize devices. [{e}]')
             sys.exit(1)
 
     def _init_keyboard(self, 
@@ -119,10 +119,10 @@ class ComboDeviceHidProxy:
                 async with TaskGroup() as self._task_group:
                     for pair in self._device_pairs:
                         self._create_task(pair)
-                    logger.debug(f"Running tasks: {self._tasks}")
+                    logger.debug(f'Running tasks: {self._tasks}')
             except* Exception as e:
-                logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
-            logger.critical(f"Event loop closed. Trying to restart.")
+                logger.error(f'Error(s) in TaskGroup: [{e.exceptions}]')
+            logger.critical(f'Event loop closed. Trying to restart.')
             await asyncio.sleep(5) 
 
     def _create_task(self, 
@@ -137,7 +137,7 @@ class ComboDeviceHidProxy:
     async def async_process_events(self, 
             device_pair: DevicePair
         ) -> None:
-        logger.info(f"Started event loop for {repr(device_pair)}")
+        logger.info(f'Started event loop for {repr(device_pair)}')
         try:
             device_in = device_pair.input()
             device_out = device_pair.output()
@@ -148,11 +148,11 @@ class ComboDeviceHidProxy:
         except OSError:
             reconnected = await self.async_reconnect_device(device_pair)
             if not reconnected:
-                logger.critical(f"Reconnecting failed for {device_in}.")
+                logger.critical(f'Reconnecting failed for {device_in}.')
                 raise
             self._delete_task(device_pair, restart = True)   
         except Exception as e:
-            logger.error(f"Failed reading events from {device_in}.  Cancelling this task. [{e}]")
+            logger.error(f'Failed reading events from {device_in}.  Cancelling this task. [{e}]')
             self._delete_task(device_pair, restart = False)
 
     def _delete_task(self,
@@ -184,7 +184,7 @@ class ComboDeviceHidProxy:
             event: InputEvent, 
             device_out: GadgetDevice
         ) -> None:
-        logger.debug(f"Received event: [{categorize(event)}] for {device_out}") 
+        logger.debug(f'Received event: [{categorize(event)}] for {device_out}') 
         if self.is_key_up_or_down(event):
             await self.async_send_key(event, device_out)
         elif self.is_mouse_move(event):
@@ -213,20 +213,20 @@ class ComboDeviceHidProxy:
             elif event.value == key_event.UP:
                 device_out.release(key)
         except Exception as e:
-            logger.error(f"Error sending key event [{categorize(event)}] to {device_out} [{e}]")
+            logger.error(f'Error sending key event [{categorize(event)}] to {device_out} [{e}]')
 
     async def async_send_mouse_move(self, 
             event: InputEvent, 
             mouse_out: MouseGadget
         ) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
-        logger.debug(f"Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {mouse_out}")
+        logger.debug(f'Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {mouse_out}')
         if self._is_sandbox: 
             return
         try:
             mouse_out.move(x, y, mwheel)
         except Exception as e:
-            logger.error(f"Error sending mouse move event [{categorize(event)}] to {mouse_out} [{e}]")
+            logger.error(f'Error sending mouse move event [{categorize(event)}] to {mouse_out} [{e}]')
 
     def _get_mouse_movement(self, 
             event: InputEvent
@@ -247,13 +247,13 @@ class ComboDeviceHidProxy:
         device_in = device_pair.input()
         start_time = datetime.now()
         last_log_time = start_time
-        logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
+        logger.critical(f'Lost connection to {device_in}. Trying to reconnect...')
 
         while device_in.path not in list_devices():
             last_log_time = self._log_reconnection_attempt(device_in, start_time, last_log_time)
             await asyncio.sleep(delay_seconds) 
 
-        logger.info(f"Successfully reconnected to {device_in}.")
+        logger.info(f'Successfully reconnected to {device_in}.')
 
         return True
 
@@ -268,7 +268,7 @@ class ComboDeviceHidProxy:
         should_write_log = self._should_write_log(elapsed_minutes, minutes_since_last_log)
 
         if should_write_log:
-            logger.info(f"Still trying to reconnect to {device_in}...")
+            logger.info(f'Still trying to reconnect to {device_in}...')
             last_log_time = current_time
 
         return last_log_time
@@ -306,9 +306,9 @@ signal.signal(signal.SIGTERM, __signal_handler)
 async def __async_main(args: Namespace) -> NoReturn:
     proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
     await proxy.async_run_event_loop()
-    logger.critical(f"Main exited prematurely.")
+    logger.critical(f'Main exited prematurely.')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     try:
         args = __parse_args()  
         if args.debug:
@@ -318,5 +318,5 @@ if __name__ == "__main__":
             lib.logger.add_file_handler(args.log_path)
         asyncio.run(__async_main(args), debug = args.debug)
     except Exception as e:
-        logger.error(f"Houston, we have an unhandled problem. Abort mission. [{e}]") 
+        logger.error(f'Houston, we have an unhandled problem. Abort mission. [{e}]') 
         raise 
