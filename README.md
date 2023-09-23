@@ -52,7 +52,7 @@ Follow these steps to install and configure the project:
    ```
 
 3. Pair and trust any Bluetooth devices you wish to relay, either via GUI or:
-   ``` bash
+   ```
    bluetoothctl
    scan on
    pair {your-device-mac}
@@ -80,7 +80,7 @@ Follow these steps to install and configure the project:
 8. Check which Linux input devices your Bluetooth devices are mapped to:
    
    8.1. Start an interactive Python session:
-   ``` bash
+   ```
    python3.11
    ```
 
@@ -93,7 +93,7 @@ Follow these steps to install and configure the project:
    ```
 
    8.3. Note the device paths of the devices you want to use:
-   ``` bash
+   ```
    /dev/input/event3 AceRK Mouse xx:xx:xx:xx:xx:xx
    /dev/input/event2 AceRK Keyboard yy:yy:yy:yy:yy:yy
    /dev/input/event1 vc4-hdmi-1 vc4-hdmi-1/input0
@@ -112,13 +112,13 @@ Follow these steps to install and configure the project:
 10. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
 11. Reload and restart service:
-    ``` bash
+    ```
     sudo systemctl daemon-reload
     sudo service bluetooth_2_usb restart
     ```
 
 12. Verify that the service is running. It should look something like this:
-  ``` bash
+  ```
    pi@raspberrypi:~/bluetooth_2_usb $ sudo service bluetooth_2_usb status
    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
       Loaded: loaded (/home/pi/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
@@ -142,7 +142,7 @@ It's essential to use the small power port instead of the bigger USB-A ports, si
 ## 5.1. Command line arguments
 Currently you can provide the following CLI arguments:
 
-``` bash
+```
 pi@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 /usr/bin/bluetooth_2_usb.py -h
 usage: bluetooth_2_usb.py [-h] [--keyboard KEYBOARD] [--mouse MOUSE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH]
 
@@ -175,27 +175,27 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
 ### 5.2.2. The installation was successful, but I don't see any output on the target device 
 This could be due to a number of reasons. Try these steps:
 - Verify that the service is running:
-  ``` bash
+  ```
   sudo service bluetooth_2_usb status
   ```
 - Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
 - Check the log files at `/var/log/bluetooth_2_usb/` for errors (logging to file requires the `-f` flag)
 - Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth_2_usb.service`. 
 - Reload and restart service:
-  ``` bash
+  ```
   sudo systemctl daemon-reload
   sudo service bluetooth_2_usb restart
   ```
 - For easier degguging, you may also stop the service 
-   ``` bash
+   ```
    sudo service bluetooth_2_usb 
    ```
    and run the script manually, adding arguments as required, e.g.:
-   ``` bash
+   ```
    sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -ds
    ```
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
-   ``` bash
+   ```
    23-09-23 18:32:02 [DEBUG] Received event: [event at 1695490322.588185, code 04, type 04, val 589826] for /dev/hidg0
    23-09-23 18:32:02 [DEBUG] Received event: [key event at 1695490322.588185, 273 (BTN_RIGHT), up] for /dev/hidg0
    23-09-23 18:32:02 [DEBUG] Converted ecode 273 to HID keycode 2
@@ -208,12 +208,12 @@ This could be due to a number of reasons. Try these steps:
 ### 5.2.3. I have a different issue 
 Here's a few things you could try:
 - Reload and restart service:
-  ``` bash
+  ```
   sudo systemctl daemon-reload
   sudo service bluetooth_2_usb restart
   ```
 - Reboot Pi
-  ``` bash
+  ```
   sudo reboot 
   ```
 - Re-connect the Pi to the host and check that the cable is in good shape 
