@@ -9,7 +9,6 @@ try:
     import asyncio
     from asyncio import TaskGroup, Task
     from datetime import datetime
-    import gc
     import logging
     import signal
     import sys
