@@ -1200,10 +1200,10 @@ class DevicePair():
         self._name = name
 
     def __repr__(self):
-        return f'{self._name}: [{self._device_in}] >> [{repr(self._device_out)}]'
+        return f'{self._name}: [{self._device_in}] >> [{repr(self.output())}]'
     
     def __str__(self):
-        return f'[{repr(self._device_in)}] >> [{self._device_out}]'
+        return f'[{repr(self._device_in)}] >> [{self.output()}]'
     
     def input(self) -> InputDevice:
         return self._device_in
