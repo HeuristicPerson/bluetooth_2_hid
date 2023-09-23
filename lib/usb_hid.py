@@ -61,6 +61,12 @@ class GadgetDevice:
         self._last_received_report = None
         self._name = name
 
+    def __repr__(self):
+        return f'{self._name} ({self})'
+    
+    def __str__(self):
+        return self.get_device_path()
+        
     def send_report(self, report: bytearray, report_id: int = None):
         """Send an HID report. If the device descriptor specifies zero or one report id's,
         you can supply `None` (the default) as the value of ``report_id``.
@@ -113,12 +119,6 @@ class GadgetDevice:
         device_path = "/dev/hidg%s" % device
         return device_path
 
-    def __repr__(self):
-        return f'{self._name} ({self})'
-    
-    def __str__(self):
-        return self.get_device_path()
-        
     KEYBOARD = None
     BOOT_KEYBOARD = None
     MOUSE = None
@@ -864,6 +864,12 @@ class KeyboardGadget:
             time.sleep(1)
             self.release_all()
 
+    def __repr__(self):
+        return repr(self._keyboard_device)
+    
+    def __str__(self):
+        return str(self._keyboard_device)
+    
     def press(self, *keycodes: int) -> None:
         """Send a report indicating that the given keys have been pressed.
 
@@ -1041,6 +1047,12 @@ class MouseGadget:
             time.sleep(1)
             self._send_no_move()
 
+    def __repr__(self):
+        return repr(self._mouse_device)
+    
+    def __str__(self):
+        return str(self._mouse_device)
+  
     def press(self, buttons: int) -> None:
         """Press the given mouse buttons.
 
