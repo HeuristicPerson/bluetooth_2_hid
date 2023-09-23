@@ -116,7 +116,7 @@ class ComboDeviceHidProxy:
                 async with TaskGroup() as self._task_group:
                     for pair in self._device_pairs:
                         self._create_task(pair)
-                    logger.debug(f'Running tasks: {self._tasks}')
+                    logger.debug(f'Running tasks: {asyncio.all_tasks()}')
             except* Exception as e:
                 logger.error(f'Error(s) in TaskGroup: [{e.exceptions}]')
             logger.critical(f'Event loop closed. Trying to restart.')
