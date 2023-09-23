@@ -129,8 +129,8 @@ class ComboDeviceHidProxy:
             device_pair: DevicePair
         ) -> None:
         task = self._task_group.create_task(
-                    self.async_process_events(device_pair),
-                    name=device_pair.name()
+                self.async_process_events(device_pair),
+                name=device_pair.name()
             )
         self._tasks.append(task)
     
@@ -306,6 +306,7 @@ signal.signal(signal.SIGTERM, __signal_handler)
 async def __async_main(args: Namespace) -> NoReturn:
     proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
     await proxy.async_run_event_loop()
+    logger.critical(f"Main exited prematurely.")
 
 if __name__ == "__main__":
     try:
