@@ -52,7 +52,7 @@ class ComboDeviceHidProxy:
         try:
             if gadgets_enabled:
                 lib.usb_hid.enable([GadgetDevice.BOOT_MOUSE, GadgetDevice.KEYBOARD])
-                logger.info(f'Available output devices: {lib.usb_hid.devices}')
+                logger.debug(f'Available output devices: {lib.usb_hid.devices}')
             else:
                 lib.usb_hid.disable()
                 logger.warning(f'Disabled all output devices!')
