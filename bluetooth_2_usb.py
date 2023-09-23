@@ -304,12 +304,8 @@ signal.signal(signal.SIGINT, __signal_handler)
 signal.signal(signal.SIGTERM, __signal_handler)
 
 async def __async_main(args: Namespace) -> NoReturn:
-    try:
-        proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
-        await proxy.async_run_event_loop()
-    except Exception as e:
-        logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]") 
-        raise  
+    proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
+    await proxy.async_run_event_loop()
 
 if __name__ == "__main__":
     try:
@@ -321,5 +317,5 @@ if __name__ == "__main__":
             lib.logger.add_file_handler(args.log_path)
         asyncio.run(__async_main(args), debug = args.debug)
     except Exception as e:
-        logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]") 
+        logger.error(f"Houston, we have an unhandled problem. Abort mission. [{e}]") 
         raise 
