@@ -37,8 +37,6 @@ class ComboDeviceHidProxy:
         self._init_variables(is_sandbox)
         self._enable_usb_gadgets()
         self._init_devices(keyboard_in, mouse_in)
-        if self._is_sandbox:
-            self._enable_sandbox()
 
     def _init_variables(self, 
             is_sandbox: bool = False
@@ -69,6 +67,8 @@ class ComboDeviceHidProxy:
         try:
             self._init_mouse(mouse_in)
             self._init_keyboard(keyboard_in)
+            if self._is_sandbox:
+                self._enable_sandbox()
             for pair in self._device_pairs:
                 logger.info(repr(pair))
         except Exception as e:
