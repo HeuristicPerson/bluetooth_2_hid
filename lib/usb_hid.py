@@ -1168,13 +1168,13 @@ class DevicePair():
     def __str__(self):
         return f'[{repr(self._device_in)}] >> [{self._device_out}]'
     
-    def get_input(self) -> InputDevice:
+    def input(self) -> InputDevice:
         return self._device_in
-    
-    def set_input(self, 
-            device_in: InputDevice
-        ) -> None:
-        self._device_in = device_in
+ 
+    def reset_input(self) -> None:  
+        device_path = self._device_in.path
+        self._device_in = None
+        self._device_in = InputDevice(device_path)
 
     def output(self) -> GadgetDevice:
         if not self._device_out_enabled:

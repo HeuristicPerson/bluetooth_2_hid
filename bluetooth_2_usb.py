@@ -140,7 +140,7 @@ class ComboDeviceHidProxy:
         ) -> None:
         logger.info(f"Started event loop for {repr(device_pair)}")
         try:
-            device_in = device_pair.get_input()
+            device_in = device_pair.input()
             device_out = device_pair.output()
             async for event in device_in.async_read_loop():
                 if event is None: 
@@ -164,8 +164,7 @@ class ComboDeviceHidProxy:
         self._cancel_task(task)
         self._tasks.remove(task)
         if restart:
-            device_path = device_pair.get_input().path
-            device_pair.set_input(InputDevice(device_path))
+            device_pair.reset_input()
             self._create_task(device_pair)
 
     def _get_task(self, 
@@ -246,7 +245,7 @@ class ComboDeviceHidProxy:
             device_pair: DevicePair, 
             delay_seconds: float=1
         ) -> bool:
-        device_in = device_pair.get_input()
+        device_in = device_pair.input()
         start_time = datetime.now()
         last_log_time = start_time
         logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
