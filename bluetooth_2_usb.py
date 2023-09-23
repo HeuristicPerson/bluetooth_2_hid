@@ -9,6 +9,7 @@ try:
     import asyncio
     from asyncio import TaskGroup, Task
     from datetime import datetime
+    import gc
     import logging
     import signal
     import sys
@@ -139,7 +140,7 @@ class ComboDeviceHidProxy:
         ) -> None:
         logger.info(f"Started event loop for {repr(device_pair)}")
         try:
-            device_in = device_pair.input()
+            device_in = device_pair.get_input()
             device_out = device_pair.output()
             async for event in device_in.async_read_loop():
                 if event is None: 
@@ -150,8 +151,6 @@ class ComboDeviceHidProxy:
             if not reconnected:
                 logger.critical(f"Reconnecting failed for {device_in}.")
                 raise
-            device_in.close()
-            device_in = InputDevice(device_in.path)
             self._delete_task(device_pair, restart = True)   
         except Exception as e:
             logger.error(f"Failed reading events from {device_in}.  Cancelling this task. [{e}]")
@@ -165,6 +164,14 @@ class ComboDeviceHidProxy:
         self._cancel_task(task)
         self._tasks.remove(task)
         if restart:
+            device_in = device_pair.get_input()
+            device_path = device_in.path
+            device_in.close()
+            device_pair.set_input(None)
+            device_in = None
+            gc.collect()
+            device_in_new = InputDevice(device_path)
+            device_pair.set_input(device_in_new)
             self._create_task(device_pair)
 
     def _get_task(self, 
@@ -245,7 +252,7 @@ class ComboDeviceHidProxy:
             device_pair: DevicePair, 
             delay_seconds: float=1
         ) -> bool:
-        device_in = device_pair.input()
+        device_in = device_pair.get_input()
         start_time = datetime.now()
         last_log_time = start_time
         logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")

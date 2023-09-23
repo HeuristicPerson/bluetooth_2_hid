@@ -1156,20 +1156,25 @@ class DevicePair():
     def __init__(self, 
             device_in: InputDevice, 
             device_out: GadgetDevice,
-            name: str='Device pair'):
+            name: str):
         self._device_in = device_in
         self._device_out = device_out
         self._device_out_enabled = True
         self._name = name
 
     def __repr__(self):
-        return f'{self._name}: [{repr(self._device_in)}] >> [{repr(self._device_out)}]'
+        return f'{self._name}: [{self._device_in}] >> [{repr(self._device_out)}]'
     
     def __str__(self):
-        return f'[{self._device_in}] >> [{self._device_out}]'
+        return f'[{repr(self._device_in)}] >> [{self._device_out}]'
     
-    def input(self) -> InputDevice:
+    def get_input(self) -> InputDevice:
         return self._device_in
+    
+    def set_input(self, 
+            device_in: InputDevice
+        ) -> None:
+        self._device_in = device_in
 
     def output(self) -> GadgetDevice:
         if not self._device_out_enabled:
