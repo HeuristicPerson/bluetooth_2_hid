@@ -44,7 +44,6 @@ class ComboDeviceHidProxy:
         self._device_pairs: List[DevicePair] = []
         self._is_sandbox = is_sandbox
         self._task_group = None 
-        self._tasks: List[Task] = []
 
     def _enable_usb_gadgets(self,
             gadgets_enabled: bool = True
@@ -125,12 +124,12 @@ class ComboDeviceHidProxy:
 
     def _create_task(self, 
             device_pair: DevicePair
-        ) -> None:
+        ) -> Task:
         task = self._task_group.create_task(
                 self.async_process_events(device_pair),
                 name=device_pair.name()
             )
-        self._tasks.append(task)
+        return task
     
     async def async_process_events(self, 
             device_pair: DevicePair
@@ -150,7 +149,7 @@ class ComboDeviceHidProxy:
                 raise
             self._delete_task(device_pair, restart = True)   
         except Exception as e:
-            logger.error(f'Failed reading events from {device_in}.  Cancelling this task. [{e}]')
+            logger.error(f'Failed reading events from {device_in}. Cancelling this task. [{e}]')
             self._delete_task(device_pair, restart = False)
 
     def _delete_task(self,
@@ -159,7 +158,6 @@ class ComboDeviceHidProxy:
         ) -> None:
         task = self._get_task(device_pair)
         self._cancel_task(task)
-        self._tasks.remove(task)
         if restart:
             device_pair.reset_input()
             self._create_task(device_pair)
@@ -167,7 +165,7 @@ class ComboDeviceHidProxy:
     def _get_task(self, 
             device_pair: DevicePair
         ) -> Task:
-        for task in self._tasks:
+        for task in asyncio.all_tasks():
             if task.get_name() == device_pair.name():
                 return task
         return None
@@ -175,8 +173,13 @@ class ComboDeviceHidProxy:
     def _cancel_task(self, 
             task: Task
         ) -> None:
-        if task and not task.cancelled() and not task.cancelling() and not task.done():
+        if self._is_running(task):
             task.cancel()
+
+    def _is_running(self, 
+            task: Task
+        ) -> bool:
+        return task and not task.cancelled() and not task.cancelling() and not task.done()
 
     async def async_handle_event(self, 
             event: InputEvent, 
@@ -299,12 +302,21 @@ def __signal_handler(sig, frame) -> NoReturn:
 signal.signal(signal.SIGINT, __signal_handler)
 signal.signal(signal.SIGTERM, __signal_handler)
 
-async def __async_main(args: Namespace) -> NoReturn:
+async def __main(args: Namespace) -> NoReturn:
+    """
+    Run the main event loop to read events from the input device and forward them to the corresponding USB device.
+    
+    Parameters:
+        args (Namespace): Command-line arguments.
+    """
     proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
     await proxy.async_run_event_loop()
     logger.critical(f'Main exited prematurely.')
 
 if __name__ == '__main__':
+    """
+    Entry point for the script. Sets up logging, parses command-line arguments, and starts the event loop.
+    """
     try:
         args = __parse_args()  
         if args.debug:
@@ -312,7 +324,7 @@ if __name__ == '__main__':
             logger.debug(f'cmdline args: {args}')
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
-        asyncio.run(__async_main(args), debug = args.debug)
+        asyncio.run(__main(args), debug = args.debug)
     except Exception as e:
         logger.error(f'Houston, we have an unhandled problem. Abort mission. [{e}]') 
         raise 
