@@ -1196,7 +1196,7 @@ class DevicePair():
         self._device_in = device_in
         self._device_out = device_out
         self._device_out_enabled = True
-        self._device_out_dummy = DummyGadget(self)
+        self._device_out_dummy = DummyGadget(device_out)
         self._name = name
 
     def __repr__(self):
