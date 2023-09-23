@@ -111,7 +111,7 @@ class ComboDeviceHidProxy:
         if sandbox_enabled:
             logger.warning('Sandbox mode enabled! All output devices deactivated.')
         else:
-            logger.info('Sandbox mode disabled. All output devices activated.')
+            logger.warning('Sandbox mode disabled. All output devices activated.')
     
     async def async_run_event_loop(self) -> NoReturn:
         while True:
@@ -129,9 +129,9 @@ class ComboDeviceHidProxy:
             device_pair: DevicePair
         ) -> None:
         task = self._task_group.create_task(
-                self.async_process_events(device_pair),
-                name=device_pair.name()
-                )
+                    self.async_process_events(device_pair),
+                    name=device_pair.name()
+            )
         self._tasks.append(task)
     
     async def async_process_events(self, 
@@ -142,7 +142,7 @@ class ComboDeviceHidProxy:
             device_in = device_pair.input()
             device_out = device_pair.output()
             async for event in device_in.async_read_loop():
-                if event is None: 
+                if not event: 
                     continue
                 await self.async_handle_event(event, device_out) 
         except OSError:
@@ -205,7 +205,7 @@ class ComboDeviceHidProxy:
             device_out: GadgetDevice
         ) -> None:
         key = converter.to_hid_key(event.code) 
-        if key is None or self._is_sandbox: 
+        if not key or self._is_sandbox: 
             return
         try:
             if event.value == key_event.DOWN:
@@ -281,7 +281,7 @@ class ComboDeviceHidProxy:
 
         if elapsed_minutes <= 10 and minutes_since_last_log >= 1:
             should_write_log = True 
-        elif minutes_since_last_log >= 10:
+        elif elapsed_minutes > 10 and minutes_since_last_log >= 10:
             should_write_log = True
         return should_write_log
 
@@ -303,13 +303,8 @@ def __signal_handler(sig, frame) -> NoReturn:
 signal.signal(signal.SIGINT, __signal_handler)
 signal.signal(signal.SIGTERM, __signal_handler)
 
-async def __async_main() -> NoReturn:
+async def __async_main(args: Namespace) -> NoReturn:
     try:
-        args = __parse_args()  
-        if args.debug:
-            logger.setLevel(logging.DEBUG)
-        if args.log_to_file:
-            lib.logger.add_file_handler(args.log_path)
         proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
         await proxy.async_run_event_loop()
     except Exception as e:
@@ -317,4 +312,14 @@ async def __async_main() -> NoReturn:
         raise  
 
 if __name__ == "__main__":
-    asyncio.run(__async_main())
+    try:
+        args = __parse_args()  
+        if args.debug:
+            logger.setLevel(logging.DEBUG)
+            logger.debug(f'cmdline args: {args}')
+        if args.log_to_file:
+            lib.logger.add_file_handler(args.log_path)
+        asyncio.run(__async_main(args), debug = args.debug)
+    except Exception as e:
+        logger.error(f"Unhandled error while processing input events. Abort mission. [{e}]") 
+        raise 
