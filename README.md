@@ -81,7 +81,7 @@ Follow these steps to install and configure the project:
    
    8.1. Start an interactive Python session:
    ``` bash
-   python3
+   python3.11
    ```
 
    8.2. Copy & paste these commands (`Enter` twice):
