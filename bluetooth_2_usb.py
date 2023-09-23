@@ -141,7 +141,6 @@ class ComboDeviceHidProxy:
         try:
             device_in = device_pair.input()
             device_out = device_pair.output()
-            device_in.grab()
             async for event in device_in.async_read_loop():
                 if event is None: 
                     continue
@@ -149,32 +148,24 @@ class ComboDeviceHidProxy:
         except OSError:
             reconnected = await self.async_reconnect_device(device_pair)
             if not reconnected:
+                logger.critical(f"Reconnecting failed for {device_in}.")
                 raise
-            device_in.ungrab()
-            self._restart_task(device_pair)   
+            device_in.close()
+            device_in = InputDevice(device_in.path)
+            self._delete_task(device_pair, restart = True)   
         except Exception as e:
-            logger.error(f"Failed reading events from {device_in}. Reconnecting failed. Cancelling this task. [{e}]")
-            self._remove_task(device_pair)
+            logger.error(f"Failed reading events from {device_in}.  Cancelling this task. [{e}]")
+            self._delete_task(device_pair, restart = False)
 
-    def _restart_task(self,
-            device_pair: DevicePair
+    def _delete_task(self,
+            device_pair: DevicePair, 
+            restart: bool = False
         ) -> None:
-        self._cancel_task(device_pair)
-        self._create_task(device_pair)
-
-    def _remove_task(self,
-            device_pair: DevicePair
-        ) -> None:
-        self._cancel_task(device_pair)
         task = self._get_task(device_pair)
+        self._cancel_task(task)
         self._tasks.remove(task)
-
-    def _cancel_task(self, 
-            device_pair: DevicePair
-        ) -> None:
-        task = self._get_task(device_pair)
-        if task and not task.cancelled() and not task.cancelling() and not task.done():
-            task.cancel()
+        if restart:
+            self._create_task(device_pair)
 
     def _get_task(self, 
             device_pair: DevicePair
@@ -183,6 +174,12 @@ class ComboDeviceHidProxy:
             if task.get_name() == device_pair.name():
                 return task
         return None
+
+    def _cancel_task(self, 
+            task: Task
+        ) -> None:
+        if task and not task.cancelled() and not task.cancelling() and not task.done():
+            task.cancel()
 
     async def async_handle_event(self, 
             event: InputEvent, 
@@ -196,12 +193,12 @@ class ComboDeviceHidProxy:
     
     def is_key_up_or_down(self, 
             event: InputEvent
-        ) -> None:
+        ) -> bool:
         return event.type == ecodes.EV_KEY and event.value in [key_event.DOWN, key_event.UP]   
     
     def is_mouse_move(self, 
             event: InputEvent
-        ) -> None:
+        ) -> bool:
         return event.type == ecodes.EV_REL 
 
     async def async_send_key(self, 
@@ -223,13 +220,7 @@ class ComboDeviceHidProxy:
             event: InputEvent, 
             mouse_out: MouseGadget
         ) -> None:
-        x, y, mwheel = 0, 0, 0
-        if event.code == ecodes.REL_X:
-            x = event.value
-        elif event.code == ecodes.REL_Y:
-            y = event.value
-        elif event.code == ecodes.REL_WHEEL:
-            mwheel = event.value
+        x, y, mwheel = self._get_mouse_movement(event)
         logger.debug(f"Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {mouse_out}")
         if self._is_sandbox: 
             return
@@ -237,6 +228,18 @@ class ComboDeviceHidProxy:
             mouse_out.move(x, y, mwheel)
         except Exception as e:
             logger.error(f"Error sending mouse move event [{categorize(event)}] to {mouse_out} [{e}]")
+
+    def _get_mouse_movement(self, 
+            event: InputEvent
+        ) -> tuple[int, int, int]:
+        x, y, mwheel = 0, 0, 0
+        if event.code == ecodes.REL_X:
+            x = event.value
+        elif event.code == ecodes.REL_Y:
+            y = event.value
+        elif event.code == ecodes.REL_WHEEL:
+            mwheel = event.value
+        return x, y, mwheel
 
     async def async_reconnect_device(self, 
             device_pair: DevicePair, 
