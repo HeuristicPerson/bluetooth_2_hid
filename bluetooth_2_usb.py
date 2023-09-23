@@ -64,8 +64,8 @@ class ComboDeviceHidProxy:
             sys.exit(1)
 
     def _init_devices(self, 
-            keyboard_in: str=None, 
-            mouse_in: str=None
+            keyboard_in: Optional[str] = None, 
+            mouse_in: Optional[str] = None
         ) -> None:
         try:
             if mouse_in:
