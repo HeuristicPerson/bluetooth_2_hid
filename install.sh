@@ -31,7 +31,7 @@ append_if_not_exist "dtoverlay=dwc2" "/boot/config.txt"
 append_if_not_exist "dwc2" "/etc/modules"
 append_if_not_exist "libcomposite" "/etc/modules"
 
-pip3 install adafruit-circuitpython-hid evdev psutil
+pip3 install evdev
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
 
