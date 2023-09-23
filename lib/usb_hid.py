@@ -1152,6 +1152,42 @@ class MouseGadget:
         return min(127, max(-127, dist))
 
 
+class DummyGadget():
+    def __init__(self, actual_gadget):
+        self._actual_gadget = actual_gadget
+
+    def __repr__(self):
+        return f'Dummy {repr(self._actual_gadget)}'
+    
+    def __str__(self):
+        return f'{self._actual_gadget} (Dummy)'
+    
+    def press(self, *keycodes: int) -> None:
+        pass
+
+    def release(self, *keycodes: int) -> None:
+        pass
+
+    def release_all(self) -> None:
+        pass
+
+    def send(self, *keycodes: int) -> None:
+        pass
+
+    @property
+    def led_status(self) -> bytes:
+        return b'\x00'
+
+    def led_on(self, led_code: int) -> bool:
+        return False
+
+    def click(self, buttons: int) -> None:
+        pass
+
+    def move(self, x: int = 0, y: int = 0, wheel: int = 0) -> None:
+        pass
+
+
 class DevicePair():
     def __init__(self, 
             device_in: InputDevice, 
@@ -1160,6 +1196,7 @@ class DevicePair():
         self._device_in = device_in
         self._device_out = device_out
         self._device_out_enabled = True
+        self._device_out_dummy = DummyGadget(self)
         self._name = name
 
     def __repr__(self):
@@ -1178,7 +1215,7 @@ class DevicePair():
 
     def output(self) -> GadgetDevice:
         if not self._device_out_enabled:
-            return None
+            return self._device_out_dummy
         return self._device_out
     
     def enable_output(self,

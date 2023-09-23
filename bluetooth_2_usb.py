@@ -203,7 +203,7 @@ class ComboDeviceHidProxy:
             device_out: GadgetDevice
         ) -> None:
         key = converter.to_hid_key(event.code) 
-        if not key or self._is_sandbox: 
+        if not key: 
             return
         try:
             if event.value == key_event.DOWN:
@@ -219,8 +219,6 @@ class ComboDeviceHidProxy:
         ) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
         logger.debug(f'Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {mouse_out}')
-        if self._is_sandbox: 
-            return
         try:
             mouse_out.move(x, y, mwheel)
         except Exception as e:
