@@ -70,7 +70,7 @@ class ComboDeviceHidProxy:
             if self._is_sandbox:
                 self._enable_sandbox()
             for pair in self._device_pairs:
-                logger.info(repr(pair))
+                logger.debug(repr(pair))
         except Exception as e:
             logger.error(f'Failed to initialize devices. [{e}]')
             sys.exit(1)
