@@ -165,7 +165,6 @@ class ComboDeviceHidProxy:
         self._tasks.remove(task)
         if restart:
             device_path = device_pair.get_input().path
-            device_pair.set_input(None)
             device_pair.set_input(InputDevice(device_path))
             self._create_task(device_pair)
 
