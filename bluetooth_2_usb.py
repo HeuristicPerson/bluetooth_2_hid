@@ -281,7 +281,7 @@ class ComboDeviceHidProxy:
 
         if elapsed_minutes <= 10 and minutes_since_last_log >= 1:
             should_write_log = True 
-        elif elapsed_minutes > 10 and minutes_since_last_log >= 10:
+        elif elapsed_minutes > 10 and minutes_since_last_log >= 30:
             should_write_log = True
         return should_write_log
 
