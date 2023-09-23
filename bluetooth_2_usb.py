@@ -12,7 +12,7 @@ try:
     import logging
     import signal
     import sys
-    from typing import List, NoReturn, Optional
+    from typing import List, NoReturn, Optional, Tuple
 
     from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
 
@@ -229,7 +229,7 @@ class ComboDeviceHidProxy:
 
     def _get_mouse_movement(self, 
             event: InputEvent
-        ) -> tuple[int, int, int]:
+        ) -> Tuple[int, int, int]:
         x, y, mwheel = 0, 0, 0
         if event.code == ecodes.REL_X:
             x = event.value
@@ -321,10 +321,10 @@ if __name__ == '__main__':
         args = __parse_args()  
         if args.debug:
             logger.setLevel(logging.DEBUG)
-            logger.debug(f'cmdline args: {args}')
+            logger.debug(f'CLI args: {args}')
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
-        asyncio.run(__main(args), debug = args.debug)
+        asyncio.run(__main(args))
     except Exception as e:
         logger.error(f'Houston, we have an unhandled problem. Abort mission. [{e}]') 
         raise 
