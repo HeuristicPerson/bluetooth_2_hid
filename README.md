@@ -137,6 +137,8 @@ Follow these steps to install and configure the project:
 # 5. Usage
 Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. 
 
+It's essential to use the small power port instead of the bigger USB-A ports, since only the power port has the [OTG](https://en.wikipedia.org/wiki/USB_On-The-Go) feature required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html). 
+
 ## 5.1. Command line arguments
 Currently you can provide the following CLI arguments:
 
@@ -163,8 +165,10 @@ options:
 
 ### 5.2.1. The Pi keeps rebooting or crashes randomly
 This is likely due to the limited power the Pi gets from the host. Try these steps:
-- If available, connect your Pi to a USB 3 port on the host (usually blue)
-- Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals
+- If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
+  
+  **IMPORTANT**: *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. *Do use* the small USB power port. 
+- Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals.
 - Install a light version of your OS on the Pi (without GUI)
 - Buy a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor (the Pi 4B requires 3A/15W for stable operation!)
 
