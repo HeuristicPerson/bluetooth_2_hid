@@ -67,39 +67,37 @@ class ComboDeviceHidProxy:
             mouse_in: Optional[str] = None
         ) -> None:
         try:
-            if mouse_in:
-                self._device_pairs.append(
-                    self._init_mouse(mouse_in)
-                )
-            if keyboard_in:
-                self._device_pairs.append(
-                    self._init_keyboard(keyboard_in)
-                )
+            self._init_mouse(mouse_in)
+            self._init_keyboard(keyboard_in)
             for pair in self._device_pairs:
                 logger.info(repr(pair))
         except Exception as e:
             logger.error(f'Failed to initialize devices. [{e}]')
             sys.exit(1)
 
-    def _init_keyboard(self, 
-            keyboard_in: str
-        ) -> DevicePair:
-        keyboard_pair = DevicePair(
-            InputDevice(keyboard_in),
-            KeyboardGadget(),
-            name = 'Keyboard'
-        )
-        return keyboard_pair
-
     def _init_mouse(self, 
-            mouse_in: str
-        ) -> DevicePair:
+            mouse_in: Optional[str] = None
+        ) -> None:
+        if not mouse_in:
+            return
         mouse_pair = DevicePair(
             InputDevice(mouse_in),
             MouseGadget(),
             name = 'Mouse'
         )
-        return mouse_pair
+        self._device_pairs.append(mouse_pair)
+
+    def _init_keyboard(self, 
+            keyboard_in: Optional[str] = None
+        ) -> None:
+        if not keyboard_in:
+            return
+        keyboard_pair = DevicePair(
+            InputDevice(keyboard_in),
+            KeyboardGadget(),
+            name = 'Keyboard'
+        )
+        self._device_pairs.append(keyboard_pair)
 
     def _enable_sandbox(self,
             sandbox_enabled: bool = True
