@@ -37,7 +37,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 # 3. Requirements
 - Raspberry Pi with Bluetooth support, e.g. Pi 4B or Pi Zero **_W_**
-- Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups) (script to install from source [available](https://github.com/quaxalber/bluetooth_2_usb/blob/auto-reconnect/install_python_3.11.sh))
+- Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups) (script to install from source [available](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh))
 - Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/)
 
 # 4. Installation
