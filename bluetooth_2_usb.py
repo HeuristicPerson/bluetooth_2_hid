@@ -157,29 +157,6 @@ class ComboDeviceHidProxy:
                 continue
             await self.async_handle_event(event, device_out)
 
-    def _stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
-        task = self._get_task(device_pair)
-        self._cancel_task(task)
-
-        if restart:
-            device_pair.reset_input()
-            self._create_task(device_pair)
-
-    def _get_task(self, device_pair: DevicePair) -> Task:
-        for task in asyncio.all_tasks():
-            if task.get_name() == device_pair.name():
-                return task
-        return None
-
-    def _cancel_task(self, task: Task) -> None:
-        if self._is_running(task):
-            task.cancel()
-
-    def _is_running(self, task: Task) -> bool:
-        return (
-            task and not task.cancelled() and not task.cancelling() and not task.done()
-        )
-
     async def async_handle_event(
         self, event: InputEvent, device_out: GadgetDevice
     ) -> None:
@@ -210,25 +187,19 @@ class ComboDeviceHidProxy:
             elif event.value == key_event.UP:
                 device_out.release(key)
         except Exception as e:
-            logger.error(
-                f"Error sending key event [{categorize(event)}] to {device_out} [{e}]"
-            )
+            logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
 
     async def async_send_mouse_move(
         self, event: InputEvent, mouse_out: MouseGadget
     ) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
 
-        logger.debug(
-            f"Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {mouse_out}"
-        )
+        logger.debug(f"Moving mouse {mouse_out}: (x,y,mwheel) = {(x, y, mwheel)}")
 
         try:
             mouse_out.move(x, y, mwheel)
         except Exception as e:
-            logger.error(
-                f"Error sending mouse move event [{categorize(event)}] to {mouse_out} [{e}]"
-            )
+            logger.error(f"Error sending [{categorize(event)}] to {mouse_out} [{e}]")
 
     def _get_mouse_movement(self, event: InputEvent) -> Tuple[int, int, int]:
         x, y, mwheel = 0, 0, 0
@@ -288,6 +259,29 @@ class ComboDeviceHidProxy:
         elif elapsed_minutes > 10 and minutes_since_last_log >= 30:
             should_write_log = True
         return should_write_log
+
+    def _stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
+        task = self._get_task(device_pair)
+        self._cancel_task(task)
+
+        if restart:
+            device_pair.reset_input()
+            self._create_task(device_pair)
+
+    def _get_task(self, device_pair: DevicePair) -> Task:
+        for task in asyncio.all_tasks():
+            if task.get_name() == device_pair.name():
+                return task
+        return None
+
+    def _cancel_task(self, task: Task) -> None:
+        if self._is_running(task):
+            task.cancel()
+
+    def _is_running(self, task: Task) -> bool:
+        return (
+            task and not task.cancelled() and not task.cancelling() and not task.done()
+        )
 
 
 def __parse_args() -> Namespace:
