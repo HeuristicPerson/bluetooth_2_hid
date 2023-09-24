@@ -62,8 +62,10 @@ class ComboDeviceHidProxy:
         try:
             self._init_mouse(mouse_in)
             self._init_keyboard(keyboard_in)
+
             if self._is_sandbox:
                 self._enable_sandbox()
+                
             for pair in self._device_pairs:
                 logger.debug(repr(pair))
         except Exception as e:
@@ -87,8 +89,10 @@ class ComboDeviceHidProxy:
     def _enable_sandbox(self, sandbox_enabled: bool = True) -> None:
         self._is_sandbox = sandbox_enabled
         outputs_enabled = not sandbox_enabled
+
         for pair in self._device_pairs:
             pair.enable_output(outputs_enabled)
+
         if sandbox_enabled:
             logger.warning("Sandbox mode enabled! All output devices deactivated.")
         else:
@@ -103,11 +107,14 @@ class ComboDeviceHidProxy:
     async def _async_try_run_event_loop(self) -> None:
         try:
             async with TaskGroup() as self._task_group:
-                for pair in self._device_pairs:
-                    self._create_task(pair)
+                self._create_tasks()
                 logger.debug(f"Running tasks: {asyncio.all_tasks()}")
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
+
+    def _create_tasks(self):
+        for pair in self._device_pairs:
+            self._create_task(pair)
 
     def _create_task(self, device_pair: DevicePair) -> Task:
         task = self._task_group.create_task(
@@ -118,27 +125,34 @@ class ComboDeviceHidProxy:
     async def async_process_events(self, device_pair: DevicePair) -> None:
         logger.info(f"Started event loop for {repr(device_pair)}")
         try:
-            device_in = device_pair.input()
-            device_out = device_pair.output()
-            async for event in device_in.async_read_loop():
-                if not event:
-                    continue
-                await self.async_handle_event(event, device_out)
+            await self._async_try_process_events(device_pair)
         except OSError:
             reconnected = await self.async_reconnect_device(device_pair)
+
             if not reconnected:
-                logger.critical(f"Reconnecting failed for {device_in}.")
+                logger.critical(f"Reconnecting failed for {device_pair.input()}.")
                 raise
+
             self._delete_task(device_pair, restart=True)
         except Exception as e:
             logger.error(
-                f"Failed reading events from {device_in}. Cancelling this task. [{e}]"
+                f"Failed reading events from {device_pair.input()}. Cancelling this task. [{e}]"
             )
             self._delete_task(device_pair, restart=False)
+
+    async def _async_try_process_events(self, device_pair: DevicePair):
+        device_in = device_pair.input()
+        device_out = device_pair.output()
+
+        async for event in device_in.async_read_loop():
+            if not event:
+                continue
+            await self.async_handle_event(event, device_out)
 
     def _delete_task(self, device_pair: DevicePair, restart: bool = False) -> None:
         task = self._get_task(device_pair)
         self._cancel_task(task)
+
         if restart:
             device_pair.reset_input()
             self._create_task(device_pair)
@@ -162,6 +176,7 @@ class ComboDeviceHidProxy:
         self, event: InputEvent, device_out: GadgetDevice
     ) -> None:
         logger.debug(f"Received event: [{categorize(event)}] for {device_out}")
+
         if self.is_key_up_or_down(event):
             await self.async_send_key(event, device_out)
         elif self.is_mouse_move(event):
@@ -180,6 +195,7 @@ class ComboDeviceHidProxy:
         key = converter.to_hid_key(event.code)
         if not key:
             return
+        
         try:
             if event.value == key_event.DOWN:
                 device_out.press(key)
@@ -194,9 +210,11 @@ class ComboDeviceHidProxy:
         self, event: InputEvent, mouse_out: MouseGadget
     ) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
+
         logger.debug(
             f"Sending mouse event: (x, y, mwheel) = {(x, y, mwheel)} to {mouse_out}"
         )
+
         try:
             mouse_out.move(x, y, mwheel)
         except Exception as e:
@@ -206,21 +224,24 @@ class ComboDeviceHidProxy:
 
     def _get_mouse_movement(self, event: InputEvent) -> Tuple[int, int, int]:
         x, y, mwheel = 0, 0, 0
+
         if event.code == ecodes.REL_X:
             x = event.value
         elif event.code == ecodes.REL_Y:
             y = event.value
         elif event.code == ecodes.REL_WHEEL:
             mwheel = event.value
+
         return x, y, mwheel
 
     async def async_reconnect_device(
         self, device_pair: DevicePair, delay_seconds: float = 1
     ) -> bool:
+        logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
+
         device_in = device_pair.input()
         start_time = datetime.now()
         last_log_time = start_time
-        logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
 
         while device_in.path not in list_devices():
             last_log_time = self._log_reconnection_attempt(
@@ -238,6 +259,7 @@ class ComboDeviceHidProxy:
         current_time = datetime.now()
         elapsed_minutes = (current_time - start_time).total_seconds() / 60
         minutes_since_last_log = (current_time - last_log_time).total_seconds() / 60
+
         should_write_log = self._should_write_log(
             elapsed_minutes, minutes_since_last_log
         )
@@ -262,6 +284,7 @@ class ComboDeviceHidProxy:
 
 def __parse_args() -> Namespace:
     parser = argparse.ArgumentParser(description="Bluetooth to HID proxy.")
+
     parser.add_argument(
         "--keyboard",
         "-k",
@@ -300,6 +323,7 @@ def __parse_args() -> Namespace:
         default="/var/log/bluetooth_2_usb/bluetooth_2_usb.log",
         help="The path of the log file",
     )
+
     args = parser.parse_args()
     return args
 
@@ -322,7 +346,6 @@ async def __main(args: Namespace) -> NoReturn:
     """
     proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
     await proxy.async_run_event_loop()
-    logger.critical(f"Main exited prematurely.")
 
 
 if __name__ == "__main__":
