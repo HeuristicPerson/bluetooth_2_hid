@@ -133,12 +133,13 @@ class ComboDeviceHidProxy:
                 logger.critical(f"Reconnecting failed for {device_pair.input()}.")
                 raise
 
-            self._delete_task(device_pair, restart=True)
+            self._stop_task(device_pair, restart=True)
         except Exception as e:
             logger.error(
-                f"Failed reading events from {device_pair.input()}. Cancelling this task. [{e}]"
+                f"Failed reading events from {device_pair.input()}. Trying to restart task. [{e}]"
             )
-            self._delete_task(device_pair, restart=False)
+            await asyncio.sleep(5)
+            self._stop_task(device_pair, restart=True)
 
     async def _async_try_process_events(self, device_pair: DevicePair):
         device_in = device_pair.input()
@@ -149,7 +150,7 @@ class ComboDeviceHidProxy:
                 continue
             await self.async_handle_event(event, device_out)
 
-    def _delete_task(self, device_pair: DevicePair, restart: bool = False) -> None:
+    def _stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
         task = self._get_task(device_pair)
         self._cancel_task(task)
 
