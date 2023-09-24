@@ -65,7 +65,7 @@ class ComboDeviceHidProxy:
 
             if self._is_sandbox:
                 self._enable_sandbox()
-                
+
             for pair in self._device_pairs:
                 logger.debug(repr(pair))
         except Exception as e:
@@ -195,7 +195,7 @@ class ComboDeviceHidProxy:
         key = converter.to_hid_key(event.code)
         if not key:
             return
-        
+
         try:
             if event.value == key_event.DOWN:
                 device_out.press(key)
