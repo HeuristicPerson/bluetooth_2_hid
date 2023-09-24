@@ -31,15 +31,22 @@ logger = lib.logger.get_logger()
 class ComboDeviceHidProxy:
     def __init__(
         self,
-        keyboard_in: Optional[str] = None,
-        mouse_in: Optional[str] = None,
-        is_sandbox: bool = False,
+        keyboard_path: Optional[str] = None,
+        mouse_path: Optional[str] = None,
+        is_sandbox: Optional[bool] = False,
     ) -> None:
-        self._init_variables(is_sandbox)
+        self._init_variables(keyboard_path, mouse_path, is_sandbox)
         self._enable_usb_gadgets()
-        self._init_devices(keyboard_in, mouse_in)
+        self._init_devices()
 
-    def _init_variables(self, is_sandbox: bool = False) -> None:
+    def _init_variables(
+        self,
+        keyboard_path: str,
+        mouse_path: str,
+        is_sandbox: bool,
+    ) -> None:
+        self._keyboard_path = keyboard_path
+        self._mouse_path = mouse_path
         self._device_pairs: List[DevicePair] = []
         self._is_sandbox = is_sandbox
         self._task_group = None
@@ -56,12 +63,10 @@ class ComboDeviceHidProxy:
             logger.error(f"Failed to enable/disable devices. [{e}]")
             sys.exit(1)
 
-    def _init_devices(
-        self, keyboard_in: Optional[str] = None, mouse_in: Optional[str] = None
-    ) -> None:
+    def _init_devices(self) -> None:
         try:
-            self._init_mouse(mouse_in)
-            self._init_keyboard(keyboard_in)
+            self._init_mouse()
+            self._init_keyboard()
 
             if self._is_sandbox:
                 self._enable_sandbox()
@@ -72,17 +77,19 @@ class ComboDeviceHidProxy:
             logger.error(f"Failed to initialize devices. [{e}]")
             sys.exit(1)
 
-    def _init_mouse(self, mouse_in: Optional[str] = None) -> None:
-        if not mouse_in:
+    def _init_mouse(self) -> None:
+        if not self._mouse_path:
             return
-        mouse_pair = DevicePair(InputDevice(mouse_in), MouseGadget(), name="Mouse")
+        mouse_pair = DevicePair(
+            InputDevice(self._mouse_path), MouseGadget(), name="Mouse"
+        )
         self._device_pairs.append(mouse_pair)
 
-    def _init_keyboard(self, keyboard_in: Optional[str] = None) -> None:
-        if not keyboard_in:
+    def _init_keyboard(self) -> None:
+        if not self._keyboard_path:
             return
         keyboard_pair = DevicePair(
-            InputDevice(keyboard_in), KeyboardGadget(), name="Keyboard"
+            InputDevice(self._keyboard_path), KeyboardGadget(), name="Keyboard"
         )
         self._device_pairs.append(keyboard_pair)
 

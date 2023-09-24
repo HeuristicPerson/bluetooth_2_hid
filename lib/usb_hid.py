@@ -1188,6 +1188,7 @@ class DummyGadget:
 class DevicePair:
     def __init__(self, device_in: InputDevice, device_out: GadgetDevice, name: str):
         self._device_in = device_in
+        self._device_in_path = self._device_in.path
         self._device_out = device_out
         self._device_out_enabled = True
         self._device_out_dummy = DummyGadget(device_out)
@@ -1203,9 +1204,8 @@ class DevicePair:
         return self._device_in
 
     def reset_input(self) -> None:
-        device_path = self._device_in.path
         self._device_in = None
-        self._device_in = InputDevice(device_path)
+        self._device_in = InputDevice(self._device_in_path)
 
     def output(self) -> GadgetDevice:
         if not self._device_out_enabled:
