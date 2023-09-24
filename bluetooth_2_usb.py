@@ -115,7 +115,6 @@ class ComboDeviceHidProxy:
         try:
             async with TaskGroup() as self._task_group:
                 self._create_tasks()
-                logger.debug(f"Running tasks: {asyncio.all_tasks()}")
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
 
@@ -127,6 +126,7 @@ class ComboDeviceHidProxy:
         task = self._task_group.create_task(
             self.async_process_events(device_pair), name=device_pair.name()
         )
+        logger.debug(f"Running tasks: {asyncio.all_tasks()}")
         return task
 
     async def async_process_events(self, device_pair: DevicePair) -> None:
