@@ -241,7 +241,7 @@ class ComboDeviceHidProxy:
         start_time = datetime.now()
         last_log_time = start_time
 
-        logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
+        logger.critical(f"Lost connection to {repr(device_in)}. Trying to reconnect...")
 
         while device_in.path not in list_devices():
             last_log_time = self._log_reconnection_attempt(
@@ -249,7 +249,7 @@ class ComboDeviceHidProxy:
             )
             await asyncio.sleep(delay_seconds)
 
-        logger.info(f"Successfully reconnected to {device_in}.")
+        logger.info(f"Successfully reconnected to {repr(device_in)}.")
 
         return True
 
@@ -265,7 +265,7 @@ class ComboDeviceHidProxy:
         )
 
         if should_write_log:
-            logger.info(f"Still trying to reconnect to {device_in}...")
+            logger.info(f"Still trying to reconnect to {repr(device_in)}...")
             last_log_time = current_time
 
         return last_log_time
