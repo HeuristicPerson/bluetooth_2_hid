@@ -237,11 +237,11 @@ class ComboDeviceHidProxy:
     async def async_reconnect_device(
         self, device_pair: DevicePair, delay_seconds: float = 1
     ) -> bool:
-        logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
-
         device_in = device_pair.input()
         start_time = datetime.now()
         last_log_time = start_time
+
+        logger.critical(f"Lost connection to {device_in}. Trying to reconnect...")
 
         while device_in.path not in list_devices():
             last_log_time = self._log_reconnection_attempt(
