@@ -30,9 +30,10 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 # 2. Features
 - Simple installation and highly automated setup 
-- Supports various Bluetooth input devices (currently keyboard and mouse)
-- Auto-reconnect feature for Bluetooth input devices 
+- Supports multiple input devices (currently keyboard and mouse)
+- Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
+- Reliable concurrency, using cutting-edge [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 - Clean and actively maintained code base
 
 # 3. Requirements
@@ -169,8 +170,8 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
   
   **IMPORTANT**: *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. *Do use* the small USB power port. 
 - Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals.
-- Install a light version of your OS on the Pi (without GUI)
-- Buy a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor (the Pi 4B requires 3A/15W for stable operation!)
+- Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
+- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor (the Pi 4B requires 3A/15W for stable operation!)
 
 ### 5.2.2. The installation was successful, but I don't see any output on the target device 
 This could be due to a number of reasons. Try these steps:
