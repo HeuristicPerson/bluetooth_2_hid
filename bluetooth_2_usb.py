@@ -96,15 +96,18 @@ class ComboDeviceHidProxy:
 
     async def async_run_event_loop(self) -> NoReturn:
         while True:
-            try:
-                async with TaskGroup() as self._task_group:
-                    for pair in self._device_pairs:
-                        self._create_task(pair)
-                    logger.debug(f"Running tasks: {asyncio.all_tasks()}")
-            except* Exception as e:
-                logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
+            await self._async_try_run_event_loop()
             logger.critical(f"Event loop closed. Trying to restart.")
             await asyncio.sleep(5)
+
+    async def _async_try_run_event_loop(self) -> None:
+        try:
+            async with TaskGroup() as self._task_group:
+                for pair in self._device_pairs:
+                    self._create_task(pair)
+                logger.debug(f"Running tasks: {asyncio.all_tasks()}")
+        except* Exception as e:
+            logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
 
     def _create_task(self, device_pair: DevicePair) -> Task:
         task = self._task_group.create_task(
