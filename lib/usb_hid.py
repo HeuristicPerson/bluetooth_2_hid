@@ -1198,7 +1198,7 @@ class DevicePair:
         return f"{self._name}: [{self._device_in}] >> [{repr(self.output())}]"
 
     def __str__(self):
-        return f"[{repr(self._device_in)}] >> [{self.output()}]"
+        return f"[{self._device_in.name}] >> [{self.output()}]"
 
     def input(self) -> InputDevice:
         return self._device_in
