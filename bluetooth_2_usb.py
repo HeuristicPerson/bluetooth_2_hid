@@ -141,7 +141,7 @@ class ComboDeviceHidProxy:
             logger.critical(f"Lost connection to {device_in}. [{e}] Reconnecting...")
 
             reconnected = await self.async_reconnect_device(device_in)
-            self._log_reconnection_status(device_in, reconnected)
+            self._log_reconnection_success(device_in, reconnected)
 
             self._stop_task(device_pair, restart=True)
         except Exception as e:
@@ -239,7 +239,7 @@ class ComboDeviceHidProxy:
 
         return last_log_time
 
-    def _log_reconnection_status(self, device_in: InputDevice, reconnected: bool):
+    def _log_reconnection_success(self, device_in: InputDevice, reconnected: bool):
         if reconnected:
             logger.info(f"Successfully reconnected to {repr(device_in)}.")
         else:
