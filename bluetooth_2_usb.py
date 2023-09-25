@@ -196,7 +196,7 @@ class ComboDeviceHidProxy:
     ) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
 
-        logger.debug(f"Moving mouse {mouse_out}: (x,y,mwheel) = {(x, y, mwheel)}")
+        logger.debug(f"Moving mouse {mouse_out}: (x, y, mwheel) = {(x, y, mwheel)}")
 
         try:
             mouse_out.move(x, y, mwheel)
