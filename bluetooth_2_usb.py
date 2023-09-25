@@ -137,7 +137,7 @@ class ComboDeviceHidProxy:
             await self._async_try_process_events(device_pair)
         except OSError as e:
             logger.critical(f"Lost connection to {device_in}. [{e}] Reconnecting...")
-            reconnected = await self.async_reconnect_device(device_pair)
+            reconnected = await self.async_reconnect_device(device_in)
 
             if reconnected:
                 logger.info(f"Successfully reconnected to {repr(device_in)}.")
@@ -216,11 +216,10 @@ class ComboDeviceHidProxy:
         return x, y, mwheel
 
     async def async_reconnect_device(
-        self, device_pair: DevicePair, delay_seconds: float = 1
+        self, device_in: InputDevice, delay_seconds: float = 1
     ) -> bool:
         await asyncio.sleep(delay_seconds)
 
-        device_in = device_pair.input()
         last_log_time = datetime.now()
 
         while device_in.path not in list_devices():
