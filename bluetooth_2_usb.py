@@ -122,12 +122,11 @@ class ComboDeviceHidProxy:
         for pair in self._device_pairs:
             self._create_task(pair)
 
-    def _create_task(self, device_pair: DevicePair) -> Task:
-        task = self._task_group.create_task(
+    def _create_task(self, device_pair: DevicePair) -> None:
+        self._task_group.create_task(
             self.async_process_events(device_pair), name=device_pair.name()
         )
         logger.debug(f"Task created. Current tasks: {asyncio.all_tasks()}")
-        return task
 
     async def async_process_events(self, device_pair: DevicePair) -> None:
         logger.info(f"Started event loop for {repr(device_pair)}")
