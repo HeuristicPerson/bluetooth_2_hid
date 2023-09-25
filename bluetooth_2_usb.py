@@ -286,8 +286,6 @@ class ComboDeviceHidProxy:
 
     def stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
         task = self._get_task(device_pair)
-        if not task:
-            return
         self._cancel_task(task)
 
         if restart:
