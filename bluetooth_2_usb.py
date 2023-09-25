@@ -100,6 +100,9 @@ class ComboDeviceHidProxy:
         for pair in self._device_pairs:
             pair.enable_output(outputs_enabled)
 
+        self._log_sandbox_status(sandbox_enabled)
+
+    def _log_sandbox_status(self, sandbox_enabled: bool):
         if sandbox_enabled:
             logger.warning("Sandbox mode enabled! All output devices deactivated.")
         else:
@@ -136,12 +139,9 @@ class ComboDeviceHidProxy:
             await self._async_try_process_events(device_pair)
         except OSError as e:
             logger.critical(f"Lost connection to {device_in}. [{e}] Reconnecting...")
-            reconnected = await self.async_reconnect_device(device_in)
 
-            if reconnected:
-                logger.info(f"Successfully reconnected to {repr(device_in)}.")
-            else:
-                logger.critical(f"Reconnecting failed for {device_in}.")
+            reconnected = await self.async_reconnect_device(device_in)
+            self._log_reconnection_status(device_in, reconnected)
 
             self._stop_task(device_pair, restart=True)
         except Exception as e:
@@ -238,6 +238,12 @@ class ComboDeviceHidProxy:
             last_log_time = current_time
 
         return last_log_time
+
+    def _log_reconnection_status(self, device_in: InputDevice, reconnected: bool):
+        if reconnected:
+            logger.info(f"Successfully reconnected to {repr(device_in)}.")
+        else:
+            logger.critical(f"Reconnecting failed for {device_in}.")
 
     def _stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
         task = self._get_task(device_pair)
