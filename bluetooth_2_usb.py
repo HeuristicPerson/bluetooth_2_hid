@@ -136,12 +136,14 @@ class ComboDeviceHidProxy:
             device_in = device_pair.input()
             await self._async_try_process_events(device_pair)
         except OSError:
+            logger.critical(f"Lost connection to {repr(device_in)}. Reconnecting...")
             reconnected = await self.async_reconnect_device(device_pair)
 
             if not reconnected:
                 logger.critical(f"Reconnecting failed for {device_in}.")
                 raise
 
+            logger.info(f"Successfully reconnected to {repr(device_in)}.")
             self._stop_task(device_pair, restart=True)
         except Exception as e:
             logger.error(f"Failed reading from {device_in}. Restarting task... [{e}]")
@@ -219,13 +221,9 @@ class ComboDeviceHidProxy:
         device_in = device_pair.input()
         last_log_time = datetime.now()
 
-        logger.critical(f"Lost connection to {repr(device_in)}. Trying to reconnect...")
-
         while device_in.path not in list_devices():
             last_log_time = self._log_reconnection_attempt(device_in, last_log_time)
             await asyncio.sleep(delay_seconds)
-
-        logger.info(f"Successfully reconnected to {repr(device_in)}.")
 
         return True
 
