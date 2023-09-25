@@ -131,20 +131,20 @@ class ComboDeviceHidProxy:
 
     async def async_process_events(self, device_pair: DevicePair) -> None:
         logger.info(f"Started event loop for {repr(device_pair)}")
+
         try:
+            device_in = device_pair.input()
             await self._async_try_process_events(device_pair)
         except OSError:
             reconnected = await self.async_reconnect_device(device_pair)
 
             if not reconnected:
-                logger.critical(f"Reconnecting failed for {device_pair.input()}.")
+                logger.critical(f"Reconnecting failed for {device_in}.")
                 raise
 
             self._stop_task(device_pair, restart=True)
         except Exception as e:
-            logger.error(
-                f"Failed reading events from {device_pair.input()}. Trying to restart task. [{e}]"
-            )
+            logger.error(f"Failed reading from {device_in}. Restarting task... [{e}]")
             await asyncio.sleep(5)
             self._stop_task(device_pair, restart=True)
 
@@ -217,15 +217,12 @@ class ComboDeviceHidProxy:
         self, device_pair: DevicePair, delay_seconds: float = 1
     ) -> bool:
         device_in = device_pair.input()
-        start_time = datetime.now()
-        last_log_time = start_time
+        last_log_time = datetime.now()
 
         logger.critical(f"Lost connection to {repr(device_in)}. Trying to reconnect...")
 
         while device_in.path not in list_devices():
-            last_log_time = self._log_reconnection_attempt(
-                device_in, start_time, last_log_time
-            )
+            last_log_time = self._log_reconnection_attempt(device_in, last_log_time)
             await asyncio.sleep(delay_seconds)
 
         logger.info(f"Successfully reconnected to {repr(device_in)}.")
@@ -233,32 +230,16 @@ class ComboDeviceHidProxy:
         return True
 
     def _log_reconnection_attempt(
-        self, device_in: InputDevice, start_time: datetime, last_log_time: datetime
+        self, device_in: InputDevice, last_log_time: datetime
     ) -> datetime:
         current_time = datetime.now()
-        elapsed_minutes = (current_time - start_time).total_seconds() / 60
-        minutes_since_last_log = (current_time - last_log_time).total_seconds() / 60
+        secs_since_last_log = (current_time - last_log_time).total_seconds()
 
-        should_write_log = self._should_write_log(
-            elapsed_minutes, minutes_since_last_log
-        )
-
-        if should_write_log:
-            logger.info(f"Still trying to reconnect to {repr(device_in)}...")
+        if secs_since_last_log >= 60:
+            logger.debug(f"Still trying to reconnect to {repr(device_in)}...")
             last_log_time = current_time
 
         return last_log_time
-
-    def _should_write_log(
-        self, elapsed_minutes: float, minutes_since_last_log: float
-    ) -> bool:
-        should_write_log = False
-
-        if elapsed_minutes <= 10 and minutes_since_last_log >= 1:
-            should_write_log = True
-        elif elapsed_minutes > 10 and minutes_since_last_log >= 30:
-            should_write_log = True
-        return should_write_log
 
     def _stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
         task = self._get_task(device_pair)
