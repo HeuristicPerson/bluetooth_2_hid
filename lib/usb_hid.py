@@ -21,6 +21,9 @@ import sys
 from evdev import InputDevice
 
 from lib.constants import Keycode
+import lib.logger
+
+logger = lib.logger.get_logger()
 
 for module in ["dwc2", "libcomposite"]:
     if Path("/proc/modules").read_text(encoding="utf-8").find(module) == -1:
@@ -1205,7 +1208,13 @@ class DevicePair:
 
     def reset_input(self) -> None:
         self._device_in = None
-        self._device_in = InputDevice(self._device_in_path)
+        while True:
+            try:
+                self._device_in = InputDevice(self._device_in_path)
+                break
+            except Exception as e:
+                logger.error(f"Error resetting input {self._device_in_path} [{e}]")
+                time.sleep(1)
 
     def output(self) -> GadgetDevice:
         if not self._device_out_enabled:

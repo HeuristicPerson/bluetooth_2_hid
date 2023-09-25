@@ -126,7 +126,7 @@ class ComboDeviceHidProxy:
         if self._is_sandbox:
             logger.warning("Sandbox mode enabled! All output devices deactivated.")
         else:
-            logger.warning("Sandbox mode disabled. All output devices activated.")
+            logger.debug("Sandbox mode disabled. All output devices activated.")
 
     def _log_device_pairs(self) -> None:
         for pair in self._devices:
@@ -286,6 +286,8 @@ class ComboDeviceHidProxy:
 
     def stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
         task = self._get_task(device_pair)
+        if not task:
+            return
         self._cancel_task(task)
 
         if restart:
