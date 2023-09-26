@@ -63,7 +63,7 @@ class GadgetDevice:
         self.descriptor = descriptor
         self._last_received_report = None
         self._name = name
-        self._path = self.get_device_path()
+        self._path = None
 
     def __repr__(self):
         return f"{self._name} ({self})"
@@ -750,6 +750,7 @@ def enable(requested_devices: Sequence[GadgetDevice], boot_device: int = 0) -> N
                 )
             except FileNotFoundError:
                 pass
+
     # ''' 5. Enabling the gadget
     # ----------------------
     # Such a gadget must be finally enabled so that the USB host can enumerate it.
@@ -765,6 +766,9 @@ def enable(requested_devices: Sequence[GadgetDevice], boot_device: int = 0) -> N
     # $ echo s3c-hsotg > UDC  '''
     udc = next(Path("/sys/class/udc/").glob("*"))
     Path("%s/UDC" % this.gadget_root).write_text("%s" % udc.name, encoding="utf-8")
+
+    for device in requested_devices:
+        device._path = device.get_device_path()
 
 
 # SPDX-FileCopyrightText: 2017 Scott Shawcroft for Adafruit Industries
