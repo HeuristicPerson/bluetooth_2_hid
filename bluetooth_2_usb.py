@@ -20,7 +20,7 @@ try:
     import lib.evdev_converter as converter
     import lib.logger
     import lib.usb_hid
-    from lib.usb_hid import GadgetDevice, MouseGadget, KeyboardGadget, DevicePair
+    from lib.usb_hid import GadgetDevice, MouseGadget, KeyboardGadget, DeviceLink
 except ImportError as e:
     print(f"Error importing modules. [{e}]")
     raise
@@ -39,7 +39,7 @@ class ComboDeviceHidProxy:
         self._init_devices(keyboard_path, mouse_path, is_sandbox)
 
     def _init_variables(self) -> None:
-        self._devices: List[DevicePair] = []
+        self._registered_links: List[DeviceLink] = []
         self._is_sandbox = False
         self._gadgets_enabled = False
         self._task_group = None
@@ -49,9 +49,9 @@ class ComboDeviceHidProxy:
     ) -> None:
         try:
             self.enable_usb_gadgets()
-            self._add_input_devices(keyboard_path, mouse_path)
+            self._create_and_register_links(keyboard_path, mouse_path)
             self.enable_sandbox(is_sandbox)
-            self._log_device_pairs()
+            self._log_registered_links()
         except Exception as e:
             logger.error(f"Failed to initialize devices. [{e}]")
             raise
@@ -80,31 +80,33 @@ class ComboDeviceHidProxy:
         else:
             logger.warning(f"All output devices disabled!")
 
-    def _add_input_devices(self, keyboard_path, mouse_path) -> None:
-        mouse = self.create_mouse(mouse_path)
-        keyboard = self.create_keyboard(keyboard_path)
-        self._register_devices(mouse, keyboard)
+    def _create_and_register_links(self, keyboard_path: str, mouse_path: str) -> None:
+        mouse = self.create_mouse_link(mouse_path)
+        keyboard = self.create_keyboard_link(keyboard_path)
+        self.register_device_links(mouse, keyboard)
 
-    def create_mouse(self, mouse_path: str) -> DevicePair:
-        return self._create_device(mouse_path, MouseGadget())
+    def register_device_links(self, *device_links: DeviceLink) -> None:
+        for link in device_links:
+            self._register_single_link(link)
 
-    def create_keyboard(self, keyboard_path: str) -> DevicePair:
-        return self._create_device(keyboard_path, KeyboardGadget())
+    def _register_single_link(self, link: DeviceLink) -> None:
+        if link and link not in self._registered_links:
+            self._registered_links.append(link)
 
-    def _create_device(self, device_path: str, device_out: GadgetDevice) -> DevicePair:
-        if not device_path:
+    def create_mouse_link(self, mouse_path: str) -> DeviceLink:
+        return self._create_device_link(mouse_path, MouseGadget())
+
+    def create_keyboard_link(self, keyboard_path: str) -> DeviceLink:
+        return self._create_device_link(keyboard_path, KeyboardGadget())
+
+    def _create_device_link(
+        self, device_in_path: str, device_out: GadgetDevice
+    ) -> DeviceLink:
+        if not device_in_path:
             return None
-        device_in = InputDevice(device_path)
-        device = DevicePair(device_in, device_out, name=device_in.name)
-        return device
-
-    def _register_devices(self, *devices: DevicePair) -> None:
-        for device in devices:
-            self._register_device(device)
-
-    def _register_device(self, device: DevicePair) -> None:
-        if device is not None and device not in self._devices:
-            self._devices.append(device)
+        device_in = InputDevice(device_in_path)
+        device_link = DeviceLink(device_in, device_out)
+        return device_link
 
     def enable_sandbox(self, sandbox_enabled: bool = True) -> None:
         self._check_enable_sandbox(sandbox_enabled)
@@ -119,8 +121,8 @@ class ComboDeviceHidProxy:
         self._enable_outputs(outputs_enabled)
 
     def _enable_outputs(self, outputs_enabled: bool) -> None:
-        for pair in self._devices:
-            pair.enable_output(outputs_enabled)
+        for link in self._registered_links:
+            link.enable_output(outputs_enabled)
 
     def _log_sandbox_status(self) -> None:
         if self._is_sandbox:
@@ -128,95 +130,82 @@ class ComboDeviceHidProxy:
         else:
             logger.debug("Sandbox mode disabled. All output devices activated.")
 
-    def _log_device_pairs(self) -> None:
-        for pair in self._devices:
-            logger.debug(repr(pair))
+    def _log_registered_links(self) -> None:
+        for link in self._registered_links:
+            logger.debug(repr(link))
 
-    async def async_run_event_loop(self) -> NoReturn:
+    async def async_connect_registered_links(self) -> NoReturn:
         while True:
-            await self._async_try_run_event_loop()
+            await self._async_create_task_group()
             logger.critical(f"Event loop closed. Trying to restart.")
             await asyncio.sleep(5)
 
-    async def _async_try_run_event_loop(self) -> None:
+    async def _async_create_task_group(self) -> None:
         try:
             async with TaskGroup() as self._task_group:
-                self._task_group.create_task(self._heartbeat(), name="heartbeat")
-                self._create_tasks()
+                self._connect_device_links(*self._registered_links)
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
 
-    async def _heartbeat(self) -> NoReturn:
-        while True:
-            await asyncio.sleep(5)
+    def _connect_device_links(self, *device_links: DeviceLink) -> None:
+        for link in device_links:
+            self._connect_single_link(link)
 
-    def _create_tasks(self) -> None:
-        for pair in self._devices:
-            self.create_task(pair)
-
-    def create_task(self, device_pair: DevicePair) -> Task:
-        self._ensure_task_group()
-
-        task = self._task_group.create_task(
-            self.async_process_events(device_pair), name=device_pair.name()
+    def _connect_single_link(self, device_link: DeviceLink) -> None:
+        self._task_group.create_task(
+            self._async_connect_device_link(device_link), name=device_link.name()
         )
-        logger.debug(f"Task created. Current tasks: {asyncio.all_tasks()}")
+        logger.debug(
+            f"Link {device_link} connected. Current tasks: {asyncio.all_tasks()}"
+        )
 
-        self._register_device(device_pair)
-
-        return task
-
-    def _ensure_task_group(self):
-        if self._task_group is None:
-            raise RuntimeError("No TaskGroup. Run `async_run_event_loop()` first.")
-
-    async def async_process_events(self, device_pair: DevicePair) -> None:
-        logger.info(f"Started event loop for {repr(device_pair)}")
+    async def _async_connect_device_link(self, device_link: DeviceLink) -> None:
+        logger.info(f"Started event loop for {repr(device_link)}")
 
         try:
-            device_in = device_pair.input()
-            await self._async_try_process_events(device_pair)
+            device_in = device_link.input()
+            await self._async_relay_device_events(device_link)
         except OSError as e:
             logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
-
-            reconnected = await self.async_reconnect_device(device_in)
-            self._log_reconnection_success(device_in, reconnected)
-
-            self.stop_task(device_pair, restart=True)
+            reconnected = await self._async_wait_for_device(device_in)
+            self._log_reconnection_outcome(device_in, reconnected)
         except Exception as e:
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(15)
-            self.stop_task(device_pair, restart=True)
+        finally:
+            self._disconnect_device_link(device_link, reconnect=True)
 
-    async def _async_try_process_events(self, device_pair: DevicePair):
-        device_in = device_pair.input()
-        device_out = device_pair.output()
+    async def _async_relay_device_events(self, device_link: DeviceLink):
+        device_in = device_link.input()
+        device_out = device_link.output()
 
         async for event in device_in.async_read_loop():
             if not event:
                 continue
-            await self.async_handle_event(event, device_out)
+            await self._async_relay_single_event(event, device_out)
 
-    async def async_handle_event(
+    async def _async_relay_single_event(
         self, event: InputEvent, device_out: GadgetDevice
     ) -> None:
         logger.debug(f"Received event: [{categorize(event)}] for {device_out}")
 
-        if self.is_key_up_or_down(event):
-            await self.async_send_key(event, device_out)
-        elif self.is_mouse_move(event):
-            await self.async_send_mouse_move(event, device_out)
+        if self._is_key_up_or_down(event):
+            await self._async_send_key(event, device_out)
+        elif self._is_mouse_movement(event):
+            await self._async_move_mouse(event, device_out)
 
-    def is_key_up_or_down(self, event: InputEvent) -> bool:
+    def _is_key_up_or_down(self, event: InputEvent) -> bool:
         return event.type == ecodes.EV_KEY and event.value in [
             key_event.DOWN,
             key_event.UP,
         ]
 
-    def is_mouse_move(self, event: InputEvent) -> bool:
+    def _is_mouse_movement(self, event: InputEvent) -> bool:
         return event.type == ecodes.EV_REL
 
-    async def async_send_key(self, event: InputEvent, device_out: GadgetDevice) -> None:
+    async def _async_send_key(
+        self, event: InputEvent, device_out: GadgetDevice
+    ) -> None:
         key = converter.to_hid_key(event.code)
         if key is None:
             return
@@ -229,7 +218,7 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
 
-    async def async_send_mouse_move(
+    async def _async_move_mouse(
         self, event: InputEvent, mouse_out: MouseGadget
     ) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
@@ -253,7 +242,7 @@ class ComboDeviceHidProxy:
 
         return x, y, mwheel
 
-    async def async_reconnect_device(
+    async def _async_wait_for_device(
         self, device_in: InputDevice, delay_seconds: float = 1
     ) -> bool:
         await asyncio.sleep(delay_seconds)
@@ -278,23 +267,25 @@ class ComboDeviceHidProxy:
 
         return last_log_time
 
-    def _log_reconnection_success(self, device_in: InputDevice, reconnected: bool):
+    def _log_reconnection_outcome(self, device_in: InputDevice, reconnected: bool):
         if reconnected:
             logger.info(f"Successfully reconnected to {device_in.name}.")
         else:
             logger.critical(f"Reconnecting to {device_in.name} failed.")
 
-    def stop_task(self, device_pair: DevicePair, restart: bool = False) -> None:
-        task = self._get_task(device_pair)
+    def _disconnect_device_link(
+        self, device_link: DeviceLink, reconnect: bool = False
+    ) -> None:
+        task = self._get_task(device_link.name())
         self._cancel_task(task)
 
-        if restart:
-            device_pair.reset_input()
-            self.create_task(device_pair)
+        if reconnect:
+            device_link.reset_input()
+            self._connect_single_link(device_link)
 
-    def _get_task(self, device_pair: DevicePair) -> Task:
+    def _get_task(self, task_name: str) -> Task:
         for task in asyncio.all_tasks():
-            if task.get_name() == device_pair.name():
+            if task.get_name() == task_name:
                 return task
         return None
 
@@ -371,7 +362,7 @@ async def __main(args: Namespace) -> NoReturn:
         args (Namespace): Command-line arguments.
     """
     proxy = ComboDeviceHidProxy(args.keyboard, args.mouse, args.sandbox)
-    await proxy.async_run_event_loop()
+    await proxy.async_connect_registered_links()
 
 
 if __name__ == "__main__":

@@ -1188,14 +1188,20 @@ class DummyGadget:
         pass
 
 
-class DevicePair:
-    def __init__(self, device_in: InputDevice, device_out: GadgetDevice, name: str):
-        self._device_in = device_in
-        self._device_in_path = self._device_in.path
+class DeviceLink:
+    def __init__(self, device_in: InputDevice, device_out: GadgetDevice):
+        self._device_in = None
+        self._name = None
+        self._device_in_path = None
+        if isinstance(device_in, InputDevice):
+            self._device_in = device_in
+            self._device_in_path = device_in.path
+            self._name = device_in.name
         self._device_out = device_out
-        self._device_out_enabled = True
+        self._device_out_enabled = False
         self._device_out_dummy = DummyGadget(device_out)
-        self._name = name
+        if device_out:
+            self._device_out_enabled = True
 
     def __repr__(self):
         return f"{self._name}: [{self._device_in}] >> [{repr(self.output())}]"
