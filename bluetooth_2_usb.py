@@ -173,7 +173,7 @@ class ComboDeviceHidProxy:
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(15)
         finally:
-            self._disconnect_device_link(device_link, reconnect=True)
+            await self._async_disconnect_device_link(device_link, reconnect=True)
 
     async def _async_relay_device_events(self, device_link: DeviceLink):
         device_in = device_link.input()
@@ -273,14 +273,14 @@ class ComboDeviceHidProxy:
         else:
             logger.critical(f"Reconnecting to {device_in.name} failed.")
 
-    def _disconnect_device_link(
+    async def _async_disconnect_device_link(
         self, device_link: DeviceLink, reconnect: bool = False
     ) -> None:
         task = self._get_task(device_link.name())
         self._cancel_task(task)
 
         if reconnect:
-            device_link.reset_input()
+            await device_link.async_reset_input()
             self._connect_single_link(device_link)
 
     def _get_task(self, task_name: str) -> Task:

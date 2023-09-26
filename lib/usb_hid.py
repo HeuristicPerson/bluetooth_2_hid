@@ -11,6 +11,7 @@ For now using report ids in the descriptor
 * Author(s): Björn Bösel
 """
 
+import asyncio
 import time
 from typing import Sequence
 from pathlib import Path
@@ -1212,7 +1213,7 @@ class DeviceLink:
     def input(self) -> InputDevice:
         return self._device_in
 
-    def reset_input(self) -> None:
+    async def async_reset_input(self) -> None:
         self._device_in = None
         while True:
             try:
@@ -1220,7 +1221,7 @@ class DeviceLink:
                 break
             except Exception as e:
                 logger.error(f"Error resetting input {self._device_in_path} [{e}]")
-                time.sleep(1)
+                await asyncio.sleep(5)
 
     def output(self) -> GadgetDevice:
         if not self._device_out_enabled:
