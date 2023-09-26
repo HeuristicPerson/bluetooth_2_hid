@@ -63,12 +63,13 @@ class GadgetDevice:
         self.descriptor = descriptor
         self._last_received_report = None
         self._name = name
+        self._path = self.get_device_path()
 
     def __repr__(self):
         return f"{self._name} ({self})"
 
     def __str__(self):
-        return self.get_device_path()
+        return self._path
 
     def send_report(self, report: bytearray, report_id: int = None):
         """Send an HID report. If the device descriptor specifies zero or one report id's,
