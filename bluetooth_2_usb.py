@@ -132,7 +132,7 @@ class ComboDeviceHidProxy:
 
     def _log_registered_links(self) -> None:
         for link in self._registered_links:
-            logger.debug(f"Registered device link: {repr(link)}")
+            logger.debug(f"Registered device link: {link}")
 
     async def async_connect_registered_links(self) -> NoReturn:
         while True:
