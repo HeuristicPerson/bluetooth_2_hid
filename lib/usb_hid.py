@@ -1192,12 +1192,12 @@ class DummyGadget:
 class DeviceLink:
     def __init__(self, device_in: InputDevice, device_out: GadgetDevice):
         self._device_in = None
-        self._name = None
+        self._device_in_name = None
         self._device_in_path = None
         if isinstance(device_in, InputDevice):
             self._device_in = device_in
+            self._device_in_name = device_in.name
             self._device_in_path = device_in.path
-            self._name = device_in.name
         self._device_out = device_out
         self._device_out_enabled = False
         self._device_out_dummy = DummyGadget(device_out)
@@ -1205,10 +1205,10 @@ class DeviceLink:
             self._device_out_enabled = True
 
     def __repr__(self):
-        return f"{self._name}: [{self._device_in}] >> [{repr(self.output())}]"
+        return f"{self._device_in_name}: [{self._device_in}] >> [{repr(self.output())}]"
 
     def __str__(self):
-        return f"[{self._device_in.name}] >> [{self.output()}]"
+        return f"[{self._device_in_name}]>>[{self.output()}]"
 
     def input(self) -> InputDevice:
         return self._device_in
@@ -1230,6 +1230,3 @@ class DeviceLink:
 
     def enable_output(self, enabled: bool = True):
         self._device_out_enabled = enabled
-
-    def name(self) -> str:
-        return self._name

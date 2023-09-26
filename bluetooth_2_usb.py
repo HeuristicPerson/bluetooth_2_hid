@@ -153,7 +153,7 @@ class ComboDeviceHidProxy:
 
     def _connect_single_link(self, device_link: DeviceLink) -> None:
         self._task_group.create_task(
-            self._async_connect_device_link(device_link), name=device_link.name()
+            self._async_connect_device_link(device_link), name=str(device_link)
         )
         logger.debug(
             f"Link {device_link} connected. Current tasks: {asyncio.all_tasks()}"
@@ -276,8 +276,9 @@ class ComboDeviceHidProxy:
     async def _async_disconnect_device_link(
         self, device_link: DeviceLink, reconnect: bool = False
     ) -> None:
-        task = self._get_task(device_link.name())
-        self._cancel_task(task)
+        task = self._get_task(str(device_link))
+        if task:
+            task.cancel()
 
         if reconnect:
             await device_link.async_reset_input()
@@ -288,15 +289,6 @@ class ComboDeviceHidProxy:
             if task.get_name() == task_name:
                 return task
         return None
-
-    def _cancel_task(self, task: Task) -> None:
-        if self._is_running(task):
-            task.cancel()
-
-    def _is_running(self, task: Task) -> bool:
-        return (
-            task and not task.cancelled() and not task.cancelling() and not task.done()
-        )
 
 
 def __parse_args() -> Namespace:
