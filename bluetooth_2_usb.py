@@ -285,10 +285,14 @@ class ComboDeviceHidProxy:
             self._connect_single_link(device_link)
 
     def _get_task(self, task_name: str) -> Task:
-        for task in asyncio.all_tasks():
-            if task.get_name() == task_name:
-                return task
-        return None
+        try:
+            for task in asyncio.all_tasks():
+                if task.get_name() == task_name:
+                    return task
+        except Exception as e:
+            logger.error(f"Error retrieving task {task_name} [{e}]")
+        finally:
+            return None
 
 
 def __parse_args() -> Namespace:
