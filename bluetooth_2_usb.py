@@ -12,7 +12,7 @@ try:
     import logging
     import signal
     import sys
-    from typing import List, NoReturn, Optional, Tuple
+    from typing import Collection, List, NoReturn, Optional, Tuple
 
     from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
 
@@ -143,21 +143,20 @@ class ComboDeviceHidProxy:
     async def _async_create_task_group(self) -> None:
         try:
             async with TaskGroup() as self._task_group:
-                self._connect_device_links(*self._registered_links)
+                self._connect_device_links(self._registered_links)
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
 
-    def _connect_device_links(self, *device_links: DeviceLink) -> None:
+    def _connect_device_links(self, device_links: Collection[DeviceLink]) -> None:
         for link in device_links:
             self._connect_single_link(link)
+        logger.debug(f"Current tasks: {asyncio.all_tasks()}")
 
     def _connect_single_link(self, device_link: DeviceLink) -> None:
         self._task_group.create_task(
             self._async_connect_device_link(device_link), name=str(device_link)
         )
-        logger.debug(
-            f"Link {device_link} connected. Current tasks: {asyncio.all_tasks()}"
-        )
+        logger.debug(f"Link {device_link} connected.")
 
     async def _async_connect_device_link(self, device_link: DeviceLink) -> None:
         logger.info(f"Started event loop for {repr(device_link)}")
@@ -172,7 +171,7 @@ class ComboDeviceHidProxy:
             await self._async_disconnect_device_link(device_link, reconnect=True)
         except Exception as e:
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
-            await asyncio.sleep(15)
+            await asyncio.sleep(5)
             await self._async_disconnect_device_link(device_link, reconnect=True)
 
     async def _async_relay_device_events(self, device_link: DeviceLink):
@@ -222,7 +221,6 @@ class ComboDeviceHidProxy:
         self, event: InputEvent, mouse_out: MouseGadget
     ) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
-
         logger.debug(f"Moving mouse {mouse_out}: (x, y, mwheel) = {(x, y, mwheel)}")
 
         try:
@@ -246,7 +244,6 @@ class ComboDeviceHidProxy:
         self, device_in: InputDevice, delay_seconds: float = 1
     ) -> bool:
         await asyncio.sleep(delay_seconds)
-
         last_log_time = datetime.now()
 
         while device_in.path not in list_devices():
