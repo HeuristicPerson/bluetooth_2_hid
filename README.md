@@ -33,11 +33,11 @@ Sounds familiar? Congratulations! **You just found the solution!**
 - Supports multiple input devices (currently keyboard and mouse)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
-- Reliable concurrency, using cutting-edge [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
+- Reliable concurrency, using state-of-the-art [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 - Clean and actively maintained code base
 
 # 3. Requirements
-- Raspberry Pi with Bluetooth support, e.g. Pi 4B or Pi Zero **_W_**
+- ([Single-board](https://en.wikipedia.org/wiki/Single-board_computer)) computer with Bluetooth support, e.g. Raspberry Pi 4B or Raspberry Pi Zero **_W_**
 - Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups) (script to install from source [available](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh))
 - Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/)
 
