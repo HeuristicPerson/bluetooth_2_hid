@@ -29,6 +29,10 @@ logger = lib.logger.get_logger()
 
 
 class ComboDeviceHidProxy:
+    """
+    This class serves as a HID proxy to handle both keyboard and mouse devices.
+    """
+
     def __init__(
         self,
         keyboard_path: Optional[str] = None,
@@ -39,6 +43,8 @@ class ComboDeviceHidProxy:
         self._init_devices(keyboard_path, mouse_path, is_sandbox)
 
     def _init_variables(self) -> None:
+        # Device links, that have been registered to this instance, but not
+        # necessarily connected. Only connected links are ready to be used.
         self._registered_links: List[DeviceLink] = []
         self._is_sandbox = False
         self._gadgets_enabled = False
@@ -171,7 +177,7 @@ class ComboDeviceHidProxy:
             device_in = device_link.input()
             await self._async_relay_device_events(device_link)
             # The only reason we should get here is a task cancellation,
-            # e.g. due to service shutdown or keyboard interrupt. 
+            # e.g. due to service shutdown or keyboard interrupt.
             # In this case we don't want to reconnect.
             finally_reconnect = False
         except OSError as e:
@@ -298,18 +304,25 @@ class ComboDeviceHidProxy:
         return None
 
 
-def __parse_args() -> Namespace:
-    parser = argparse.ArgumentParser(description="Bluetooth to HID proxy.")
+def _parse_args() -> Namespace:
+    parser = argparse.ArgumentParser(
+        description="Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events \
+        (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.",
+    )
 
     parser.add_argument(
         "--keyboard",
         "-k",
         type=str,
         default=None,
-        help="Input device path for keyboard",
+        help="Input device path for keyboard. Default is None.",
     )
     parser.add_argument(
-        "--mouse", "-m", type=str, default=None, help="Input device path for mouse"
+        "--mouse",
+        "-m",
+        type=str,
+        default=None,
+        help="Input device path for mouse. Default is None.",
     )
     parser.add_argument(
         "--sandbox",
@@ -323,37 +336,37 @@ def __parse_args() -> Namespace:
         "-d",
         action="store_true",
         default=False,
-        help="Increase log verbosity",
+        help="Enable debug mode. Increases log verbosity",
     )
     parser.add_argument(
         "--log_to_file",
         "-f",
         action="store_true",
         default=False,
-        help="Add a handler that logs to file",
+        help="Add a handler that logs to file additionally to stdout. ",
     )
     parser.add_argument(
         "--log_path",
         "-p",
         type=str,
         default="/var/log/bluetooth_2_usb/bluetooth_2_usb.log",
-        help="The path of the log file",
+        help="The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.",
     )
 
     args = parser.parse_args()
     return args
 
 
-def __signal_handler(sig, frame) -> NoReturn:
+def _signal_handler(sig, frame) -> NoReturn:
     logger.info(f"Exiting gracefully. Received signal: {sig}, frame: {frame}")
     sys.exit(0)
 
 
-signal.signal(signal.SIGINT, __signal_handler)
-signal.signal(signal.SIGTERM, __signal_handler)
+signal.signal(signal.SIGINT, _signal_handler)
+signal.signal(signal.SIGTERM, _signal_handler)
 
 
-async def __main(args: Namespace) -> NoReturn:
+async def _main(args: Namespace) -> NoReturn:
     """
     Run the main event loop to read events from the input device and forward them to the corresponding USB device.
 
@@ -364,18 +377,20 @@ async def __main(args: Namespace) -> NoReturn:
     await proxy.async_connect_registered_links()
 
 
-if __name__ == "__main__":
+if __name__ == "_main__":
     """
     Entry point for the script. Sets up logging, parses command-line arguments, and starts the event loop.
     """
     try:
-        args = __parse_args()
+        args = _parse_args()
         if args.debug:
             logger.setLevel(logging.DEBUG)
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
         logger.debug(f"CLI args: {args}")
-        asyncio.run(__main(args))
+        logger.info("Script starting up...")
+        asyncio.run(_main(args))
+        logger.info("Script shutting down...")
     except Exception as e:
-        logger.error(f"Houston, we have an unhandled problem. Abort mission. [{e}]")
+        logger.exception("Houston, we have an unhandled problem. Abort mission.")
         raise
