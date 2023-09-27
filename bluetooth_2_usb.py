@@ -65,11 +65,14 @@ class ComboDeviceHidProxy:
             raise
 
     def _check_enable_gadgets(self, gadgets_enabled: bool) -> None:
+        # Nothing to do if the state didn't change
         if self._gadgets_enabled == gadgets_enabled:
             return
         self._gadgets_enabled = gadgets_enabled
 
         if gadgets_enabled:
+            # We have to use BOOT_MOUSE since for some reason MOUSE freezes on any input.
+            # This should be fine though. Also it's important to enable mouse first.
             lib.usb_hid.enable([GadgetDevice.BOOT_MOUSE, GadgetDevice.KEYBOARD])
         else:
             lib.usb_hid.disable()
@@ -113,6 +116,7 @@ class ComboDeviceHidProxy:
         self._log_sandbox_status()
 
     def _check_enable_sandbox(self, sandbox_enabled: bool) -> None:
+        # Nothing to do if the state didn't change
         if self._is_sandbox == sandbox_enabled:
             return
         self._is_sandbox = sandbox_enabled
@@ -153,26 +157,32 @@ class ComboDeviceHidProxy:
         logger.debug(f"Current tasks: {asyncio.all_tasks()}")
 
     def _connect_single_link(self, device_link: DeviceLink) -> None:
+        # By running the event relaying loop, the device becomes available/connected.
         self._task_group.create_task(
-            self._async_connect_device_link(device_link), name=str(device_link)
+            self._async_relay_device_events_loop(device_link), name=str(device_link)
         )
         logger.debug(f"Link {device_link} connected.")
 
-    async def _async_connect_device_link(self, device_link: DeviceLink) -> None:
+    async def _async_relay_device_events_loop(self, device_link: DeviceLink) -> None:
         logger.info(f"Started event loop for {repr(device_link)}")
 
         try:
+            finally_reconnect = True
             device_in = device_link.input()
             await self._async_relay_device_events(device_link)
+            # The only reason we should get here is a task cancellation,
+            # e.g. due to service shutdown or keyboard interrupt. 
+            # In this case we don't want to reconnect.
+            finally_reconnect = False
         except OSError as e:
             logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
             reconnected = await self._async_wait_for_device(device_in)
             self._log_reconnection_outcome(device_in, reconnected)
-            await self._async_disconnect_device_link(device_link, reconnect=True)
         except Exception as e:
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(5)
-            await self._async_disconnect_device_link(device_link, reconnect=True)
+        finally:
+            await self._async_disconnect_device_link(device_link, finally_reconnect)
 
     async def _async_relay_device_events(self, device_link: DeviceLink):
         device_in = device_link.input()
