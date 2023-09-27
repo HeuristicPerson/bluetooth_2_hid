@@ -368,7 +368,8 @@ signal.signal(signal.SIGTERM, _signal_handler)
 
 async def _main(args: Namespace) -> NoReturn:
     """
-    Run the main event loop to read events from the input device and forward them to the corresponding USB device.
+    Run the main event loop to read events from the input device 
+    and forward them to the corresponding USB device.
 
     Parameters:
         args (Namespace): Command-line arguments.
@@ -377,7 +378,7 @@ async def _main(args: Namespace) -> NoReturn:
     await proxy.async_connect_registered_links()
 
 
-if __name__ == "_main__":
+if __name__ == "__main__":
     """
     Entry point for the script. Sets up logging, parses command-line arguments, and starts the event loop.
     """
