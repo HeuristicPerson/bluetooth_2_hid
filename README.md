@@ -33,7 +33,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 - Supports multiple input devices (currently keyboard and mouse)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
-- Reliable concurrency, using state-of-the-art [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
+- Reliable concurrency using state-of-the-art [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 - Clean and actively maintained code base
 
 # 3. Requirements
@@ -120,7 +120,7 @@ Follow these steps to install and configure the project:
 
 12. Verify that the service is running. It should look something like this:
   ```
-   pi@raspberrypi:~/bluetooth_2_usb $ sudo service bluetooth_2_usb status
+   pi@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
       Loaded: loaded (/home/pi/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
       Active: active (running) since Sat 2023-09-23 18:34:00 BST; 5s ago
@@ -145,21 +145,23 @@ Currently you can provide the following CLI arguments:
 
 ```
 pi@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 /usr/bin/bluetooth_2_usb.py -h
-usage: bluetooth_2_usb.py [-h] [--keyboard KEYBOARD] [--mouse MOUSE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH]
+sage: bluetooth_2_usb.py [-h] [--keyboard KEYBOARD] [--mouse MOUSE] [--sandbox] [--debug] [--log_to_file]
+                          [--log_path LOG_PATH]
 
-Bluetooth to USB HID proxy.
+Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using
+Linux's gadget mode.
 
 options:
   -h, --help            show this help message and exit
   --keyboard KEYBOARD, -k KEYBOARD
-                        Input device path for keyboard
+                        Input device path for keyboard. Default is None.
   --mouse MOUSE, -m MOUSE
-                        Input device path for mouse
+                        Input device path for mouse. Default is None.
   --sandbox, -s         Only read input events but do not forward them to the output devices.
-  --debug, -d           Increase log verbosity
-  --log_to_file, -f     Add a handler that logs to file
+  --debug, -d           Enable debug mode. Increases log verbosity
+  --log_to_file, -f     Add a handler that logs to file additionally to stdout.
   --log_path LOG_PATH, -p LOG_PATH
-                        The path of the log file
+                        The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.
 ```
 
 ## 5.2. Troubleshooting
@@ -177,10 +179,14 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
 This could be due to a number of reasons. Try these steps:
 - Verify that the service is running:
   ```
-  sudo service bluetooth_2_usb status
+  service bluetooth_2_usb status
   ```
 - Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
 - Check the log files at `/var/log/bluetooth_2_usb/` for errors (logging to file requires the `-f` flag)
+- You may also query the journal to inspect the service logs in real-time:
+  ```
+  journalctl -u bluetooth_2_usb.service -n 20 -f
+  ```
 - Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth_2_usb.service`. 
 - Reload and restart service:
   ```
@@ -189,9 +195,9 @@ This could be due to a number of reasons. Try these steps:
   ```
 - For easier degguging, you may also stop the service 
    ```
-   sudo service bluetooth_2_usb 
+   sudo service bluetooth_2_usb stop
    ```
-   and run the script manually, adding arguments as required, e.g.:
+   and run the script manually, modifying arguments as required, e.g.:
    ```
    sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -ds
    ```
