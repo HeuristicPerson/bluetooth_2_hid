@@ -10,7 +10,7 @@
   - [4.1. Prerequisites](#41-prerequisites)
   - [4.2. Setup](#42-setup)
 - [5. Usage](#5-usage)
-  - [5.1. Command line arguments](#51-command-line-arguments)
+  - [5.1. Command-line arguments](#51-command-line-arguments)
   - [5.2. Troubleshooting](#52-troubleshooting)
     - [5.2.1. The Pi keeps rebooting or crashes randomly](#521-the-pi-keeps-rebooting-or-crashes-randomly)
     - [5.2.2. The installation was successful, but I don't see any output on the target device](#522-the-installation-was-successful-but-i-dont-see-any-output-on-the-target-device)
