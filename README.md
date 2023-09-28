@@ -140,7 +140,7 @@ Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB 
 
 It's essential to use the small power port instead of the bigger USB-A ports, since only the power port has the [OTG](https://en.wikipedia.org/wiki/USB_On-The-Go) feature required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html). 
 
-## 5.1. Command line arguments
+## 5.1. Command-line arguments
 Currently you can provide the following CLI arguments:
 
 ```
