@@ -95,8 +95,8 @@ Follow these steps to install and configure the project:
 
    8.3. Note the device paths of the devices you want to use:
    ```
-   /dev/input/event3 AceRK Mouse xx:xx:xx:xx:xx:xx
-   /dev/input/event2 AceRK Keyboard yy:yy:yy:yy:yy:yy
+   /dev/input/event3 AceRK Mouse a1:b2:c3:d4:e5:f6     <---
+   /dev/input/event2 AceRK Keyboard a1:b2:c3:d4:e5:f6  <---
    /dev/input/event1 vc4-hdmi-1 vc4-hdmi-1/input0
    /dev/input/event0 vc4-hdmi-0 vc4-hdmi-0/input0
    ```
