@@ -89,10 +89,12 @@ class ComboDeviceHidProxy:
         else:
             logger.warning(f"All output devices disabled!")
 
-    def _create_and_register_links(self, keyboard_paths: List[str], mouse_paths: List[str]) -> None:
+    def _create_and_register_links(
+        self, keyboard_paths: List[str], mouse_paths: List[str]
+    ) -> None:
         keyboards = [self.create_keyboard_link(path) for path in keyboard_paths]
         mice = [self.create_mouse_link(path) for path in mouse_paths]
-        # Use list unpacking to get a nice comma-separated sequence of all devices 
+        # Use list unpacking to get a nice comma-separated sequence of all devices
         self.register_device_links(*keyboards, *mice)
 
     def register_device_links(self, *device_links: DeviceLink) -> None:
@@ -318,7 +320,7 @@ def _parse_args() -> Namespace:
         default=None,
         help="Comma-separated list of input device paths for keyboards to be registered and connected. \
           Default is None. \
-          Example: --keyboards /dev/input/event2,/dev/input/event4"
+          Example: --keyboards /dev/input/event2,/dev/input/event4",
     )
     parser.add_argument(
         "--mice",
@@ -327,7 +329,7 @@ def _parse_args() -> Namespace:
         default=None,
         help="Comma-separated list of input device paths for mice to be registered and connected. \
           Default is None. \
-          Example: --mice /dev/input/event3,/dev/input/event5"
+          Example: --mice /dev/input/event3,/dev/input/event5",
     )
     parser.add_argument(
         "--sandbox",
