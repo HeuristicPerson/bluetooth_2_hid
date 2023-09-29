@@ -75,13 +75,13 @@ This will automatically reformat your code to conform to the project's coding st
 ## 4. Pull Requests
 
 - Create a new branch for each feature or bugfix you are working on.
-- Commit your changes following the coding style guidelines.
+- Commit your changes following the [coding style](#3-coding-style) guidelines.
 - Push your changes to your fork.
 - Create a new Pull Request targeting the main branch of the official repository.
 
 ## 5. Reporting Issues
 
-Please use the GitHub issue tracker to report any bugs or to request new features. Make sure to check for existing issues that are related to yours before creating a new one.
+Please use the GitHub [issue tracker](https://github.com/quaxalber/bluetooth_2_usb/issues) to report any bugs or to request new features. Make sure to check for existing issues that are related to yours before creating a new one.
 
 ## 6. Additional Resources
 
