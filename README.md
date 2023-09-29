@@ -121,7 +121,7 @@ Follow these steps to install and configure the project:
 
 12. Verify that the service is running:
     ```console
-    service bluetooth_2_usb restart
+    service bluetooth_2_usb status
     ```
     It should look something like this:
     ```console
