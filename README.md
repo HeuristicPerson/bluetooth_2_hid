@@ -124,7 +124,7 @@ Follow these steps to install and configure the project:
    pi@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
       Loaded: loaded (/home/pi/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
-      Active: active (running) since Sat 2023-09-23 18:34:00 BST; 5s ago
+      Active: \033[0;32mactive (running)\033[0m since Sat 2023-09-23 18:34:00 BST; 5s ago
       Main PID: 26579 (python3.11)
          Tasks: 1 (limit: 8755)
          CPU: 323ms
