@@ -120,7 +120,7 @@ Follow these steps to install and configure the project:
     ```
 
 12. Verify that the service is running. It should look something like this:
-  ```console
+  ```bash session
    pi@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
       Loaded: loaded (/home/pi/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
