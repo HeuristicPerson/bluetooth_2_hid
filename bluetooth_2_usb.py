@@ -148,15 +148,10 @@ class ComboDeviceHidProxy:
             logger.debug(f"Registered device link: {link}")
 
     async def async_connect_registered_links(self) -> NoReturn:
-        while True:
-            await self._async_create_task_group()
-            logger.critical("Event loop closed. Trying to restart.")
-            await asyncio.sleep(5)
-
-    async def _async_create_task_group(self) -> None:
         try:
             async with TaskGroup() as self._task_group:
                 self._connect_device_links(self._registered_links)
+            logger.critical("Event loop closed.")
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
 
