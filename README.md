@@ -172,10 +172,14 @@ options:
 This is likely due to the limited power the Pi gets from the host. Try these steps:
 - If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
   
-  **IMPORTANT**: *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. *Do use* the small USB power port. 
+  > [!IMPORTANT]
+  > *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. *Do use* the small USB power port. 
 - Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals.
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
-- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor (the Pi 4B requires 3A/15W for stable operation!)
+- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor 
+  
+ > [!NOTE]
+ > The Pi 4B requires 3A/15W for stable operation!
 
 #### 5.2.2. The installation was successful, but I don't see any output on the target device 
 This could be due to a number of reasons. Try these steps:
