@@ -96,8 +96,8 @@ Follow these steps to install and configure the project:
 
    8.3. Note the device paths of the devices you want to use:
    ```console
-   /dev/input/event3 AceRK Mouse a1:b2:c3:d4:e5:f6     <---
-   /dev/input/event2 AceRK Keyboard a1:b2:c3:d4:e5:f6  <---
+   /dev/input/event3 Moody Mouse a1:b2:c3:d4:e5:f6     <---
+   /dev/input/event2 Moody Keyboard a1:b2:c3:d4:e5:f6  <---
    /dev/input/event1 vc4-hdmi-1 vc4-hdmi-1/input0
    /dev/input/event0 vc4-hdmi-0 vc4-hdmi-0/input0
    ```
@@ -119,22 +119,27 @@ Follow these steps to install and configure the project:
     sudo service bluetooth_2_usb restart
     ```
 
-12. Verify that the service is running. It should look something like this:
-  ```console
-  pi@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
-   ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
-      Loaded: loaded (/home/pi/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
-      Active: active (running) since Sat 2023-09-23 18:34:00 BST; 5s ago
-      Main PID: 26579 (python3.11)
-         Tasks: 1 (limit: 8755)
-         CPU: 323ms
+12. Verify that the service is running:
+    ```console
+    service bluetooth_2_usb restart
+    ```
+    It should look something like this:
+    ```console
+    user@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
+    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
+      Loaded: loaded (/home/user/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
+      Active: active (running) since Fri 2023-09-29 20:17:10 BST; 20min ago
+    Main PID: 36719 (python3.11)
+          Tasks: 1 (limit: 8755)
+          CPU: 367ms
       CGroup: /system.slice/bluetooth_2_usb.service
-               └─26579 python3.11 /usr/bin/bluetooth_2_usb.py --keyboard /dev/input/event2 --mouse /dev/input/event3
+                └─36719 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
-   Sep 23 18:34:00 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
-   Sep 23 18:34:01 raspberrypi python3.11[26579]: 23-09-23 18:34:01 [INFO] Started event loop for Mouse: [device /dev/input/event3, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
-   Sep 23 18:34:01 raspberrypi python3.11[26579]: 23-09-23 18:34:01 [INFO] Started event loop for Keyboard: [device /dev/input/event2, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
-   ```
+    Sep 29 20:17:10 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
+    Sep 29 20:17:10 raspberrypi python3.11[36719]: 23-09-29 20:17:10 [INFO] Script starting up...
+    Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
+    Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
+    ```
     
 ## 5. Usage
 Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. 
@@ -146,19 +151,16 @@ Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB 
 Currently you can provide the following CLI arguments:
 
 ```console
-pi@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 /usr/bin/bluetooth_2_usb.py -h
-usage: bluetooth_2_usb.py [-h] [--keyboard KEYBOARD] [--mouse MOUSE] [--sandbox] [--debug] [--log_to_file]
-                          [--log_path LOG_PATH]
+user@raspberrypi:~/bluetooth_2_usb $ python3.11 /usr/bin/bluetooth_2_usb.py -h
+usage: bluetooth_2_usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH]
 
-Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using
-Linux's gadget mode.
+Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
 
 options:
   -h, --help            show this help message and exit
-  --keyboard KEYBOARD, -k KEYBOARD
-                        Input device path for keyboard. Default is None.
-  --mouse MOUSE, -m MOUSE
-                        Input device path for mouse. Default is None.
+  --keyboards KEYBOARDS, -k KEYBOARDS
+                        Comma-separated list of input device paths for keyboards to be registered and connected. Default is None. Example: --keyboards /dev/input/event2,/dev/input/event4
+  --mice MICE, -m MICE  Comma-separated list of input device paths for mice to be registered and connected. Default is None. Example: --mice /dev/input/event3,/dev/input/event5
   --sandbox, -s         Only read input events but do not forward them to the output devices.
   --debug, -d           Enable debug mode. Increases log verbosity
   --log_to_file, -f     Add a handler that logs to file additionally to stdout.
@@ -202,23 +204,35 @@ This could be due to a number of reasons. Try these steps:
   sudo service bluetooth_2_usb restart
   ```
 - For easier degguging, you may also stop the service 
-   ```console
-   sudo service bluetooth_2_usb stop
-   ```
-   and run the script manually, modifying arguments as required, e.g.:
-   ```console
-   sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -ds
-   ```
+  ```console
+  sudo service bluetooth_2_usb stop
+  ```
+  and run the script manually, modifying arguments as required, e.g.:
+  ```console
+  sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -ds
+  ```
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
-   ```console
-   23-09-23 18:32:02 [DEBUG] Received event: [event at 1695490322.588185, code 04, type 04, val 589826] for /dev/hidg0
-   23-09-23 18:32:02 [DEBUG] Received event: [key event at 1695490322.588185, 273 (BTN_RIGHT), up] for /dev/hidg0
-   23-09-23 18:32:02 [DEBUG] Converted ecode 273 to HID keycode 2
-   23-09-23 18:32:02 [DEBUG] Received event: [synchronization event at 1695490322.588185, SYN_REPORT] for /dev/hidg0
-   23-09-23 18:32:03 [DEBUG] Received event: [relative axis event at 1695490323.368208, REL_X] for /dev/hidg0
-   23-09-23 18:32:03 [DEBUG] Sending mouse event: (x, y, mwheel) = (125, 0, 0) to /dev/hidg0
-   23-09-23 18:32:03 [DEBUG] Received event: [synchronization event at 1695490323.368208, SYN_REPORT] for /dev/hidg0
-   ```
+  ```console
+  user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  23-09-29 21:03:00 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log')
+  23-09-29 21:03:00 [INFO] Script starting up...
+  23-09-29 21:03:00 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1)]
+  23-09-29 21:03:01 [DEBUG] Sandbox mode disabled. All output devices activated.
+  23-09-29 21:03:01 [DEBUG] Registered device link: [Moody Keyboard]>>[/dev/hidg1]
+  23-09-29 21:03:01 [DEBUG] Registered device link: [Moody Mouse]>>[/dev/hidg0]
+  23-09-29 21:03:01 [DEBUG] Link [Moody Keyboard]>>[/dev/hidg1] connected.
+  23-09-29 21:03:01 [DEBUG] Link [Moody Mouse]>>[/dev/hidg0] connected.
+  23-09-29 21:03:01 [DEBUG] Current tasks: {...}
+  23-09-29 21:03:01 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "e4:5f:01:01:c4:8c"] >> [Keyboard gadget (/dev/hidg1)]
+  23-09-29 21:03:01 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "e4:5f:01:01:c4:8c"] >> [Boot mouse gadget (/dev/hidg0)]
+  23-09-29 21:03:39 [DEBUG] Received event: [event at 1696017819.492925, code 04, type 04, val 458790] for /dev/hidg1
+  23-09-29 21:03:39 [DEBUG] Received event: [key event at 1696017819.492925, 10 (KEY_9), down] for /dev/hidg1
+  23-09-29 21:03:39 [DEBUG] Converted ecode 10 to HID keycode 38
+  23-09-29 21:03:39 [DEBUG] Received event: [synchronization event at 1696017819.492925, SYN_REPORT] for /dev/hidg1
+  23-09-29 21:03:48 [DEBUG] Received event: [relative axis event at 1696017828.268000, REL_X] for /dev/hidg0
+  23-09-29 21:03:48 [DEBUG] Moving mouse /dev/hidg0: (x, y, mwheel) = (125, 0, 0)
+  23-09-29 21:03:48 [DEBUG] Received event: [synchronization event at 1696017828.268000, SYN_REPORT] for /dev/hidg0
+  ```
 
 #### 5.2.3. I have a different issue 
 Here's a few things you could try:
