@@ -48,12 +48,12 @@ Follow these steps to install and configure the project:
 1. Prepare your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34)) and connect to WI-FI & enable SSH, if you intend to access the Pi remotely.
    
 2. Connect to the Pi and update the packages:
-   ```bash
+   ```console
    sudo apt update && sudo apt upgrade -y
    ```
 
 3. Pair and trust any Bluetooth devices you wish to relay, either via GUI or:
-   ```bash
+   ```console
    bluetoothctl
    scan on
    pair a1:b2:c3:d4:e5:f6
@@ -63,17 +63,17 @@ Follow these steps to install and configure the project:
 
 ### 4.2. Setup 
 4. On the Pi, clone the repository:  
-   ```bash
+   ```console
    git clone https://github.com/quaxalber/bluetooth_2_usb.git
    ```
    
 5. Navigate to the project folder:  
-   ```bash
+   ```console
    cd bluetooth_2_usb
    ```
 
 6. Run the installation script as root:  
-   ```bash
+   ```console
    sudo bash install.sh
    ```
 
@@ -82,7 +82,7 @@ Follow these steps to install and configure the project:
 8. Check which Linux input devices your Bluetooth devices are mapped to:
    
    8.1. Start an interactive Python session:
-   ```bash
+   ```console
    python3.11
    ```
 
@@ -103,7 +103,7 @@ Follow these steps to install and configure the project:
    ```
 
 9.  Specify the correct input devices in `bluetooth_2_usb.service`:
-    ```bash
+    ```console
     nano bluetooth_2_usb.service
     ```
 
@@ -114,7 +114,7 @@ Follow these steps to install and configure the project:
 10. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
 11. Reload and restart service:
-    ```bash
+    ```console
     sudo systemctl daemon-reload
     sudo service bluetooth_2_usb restart
     ```
@@ -179,27 +179,27 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
 #### 5.2.2. The installation was successful, but I don't see any output on the target device 
 This could be due to a number of reasons. Try these steps:
 - Verify that the service is running:
-  ```bash
+  ```console
   service bluetooth_2_usb status
   ```
 - Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
 - Check the log files at `/var/log/bluetooth_2_usb/` for errors (logging to file requires the `-f` flag)
 - You may also query the journal to inspect the service logs in real-time:
-  ```bash
+  ```console
   journalctl -u bluetooth_2_usb.service -n 20 -f
   ```
 - Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth_2_usb.service`. 
 - Reload and restart service:
-  ```bash
+  ```console
   sudo systemctl daemon-reload
   sudo service bluetooth_2_usb restart
   ```
 - For easier degguging, you may also stop the service 
-   ```bash
+   ```console
    sudo service bluetooth_2_usb stop
    ```
    and run the script manually, modifying arguments as required, e.g.:
-   ```bash
+   ```console
    sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -ds
    ```
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
@@ -216,12 +216,12 @@ This could be due to a number of reasons. Try these steps:
 #### 5.2.3. I have a different issue 
 Here's a few things you could try:
 - Reload and restart service:
-  ```bash
+  ```console
   sudo systemctl daemon-reload
   sudo service bluetooth_2_usb restart
   ```
 - Reboot Pi
-  ```bash
+  ```console
   sudo reboot 
   ```
 - Re-connect the Pi to the host and check that the cable is in good shape 
