@@ -209,7 +209,7 @@ This could be due to a number of reasons. Try these steps:
   ```
   and run the script manually, modifying arguments as required, e.g.:
   ```console
-  sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -ds
+  sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
   ```
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
   ```console
