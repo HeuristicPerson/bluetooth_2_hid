@@ -120,7 +120,7 @@ Follow these steps to install and configure the project:
     ```
 
 12. Verify that the service is running. It should look something like this:
-  ```bash session
+  ```console
    pi@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
       Loaded: loaded (/home/pi/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
@@ -144,7 +144,7 @@ It's essential to use the small power port instead of the bigger USB-A ports, si
 ### 5.1. Command-line arguments
 Currently you can provide the following CLI arguments:
 
-```
+```console
 pi@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 /usr/bin/bluetooth_2_usb.py -h
 usage: bluetooth_2_usb.py [-h] [--keyboard KEYBOARD] [--mouse MOUSE] [--sandbox] [--debug] [--log_to_file]
                           [--log_path LOG_PATH]
