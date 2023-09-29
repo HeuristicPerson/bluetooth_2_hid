@@ -173,7 +173,8 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
 - If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
   
   > [!IMPORTANT]
-  > *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. *Do use* the small USB power port. 
+  > *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. 
+  > *Do use* the small USB power port. 
 - Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals.
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
 - Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor. This will ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
