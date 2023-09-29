@@ -87,7 +87,8 @@ fi
 if ! command -v python"$PY_VER_MINOR" &> /dev/null; then
   colored_output ${RED} "Installation failed!"
 else
-  colored_output ${GREEN} "Successfully installed $(python"$PY_VER_MINOR" --version)"
+  colored_output ${GREEN} "Successfully installed $(python"$PY_VER_MINOR" --version) as Debian package python$PY_VER_MINOR.
+  You may now use your usual package management tools such as apt or dpkg to remove this package if no longer needed. "
 fi
 
 # Re-enable history expansion

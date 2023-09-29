@@ -56,9 +56,10 @@ Follow these steps to install and configure the project:
    ```
    bluetoothctl
    scan on
-   pair {your-device-mac}
-   trust {your-device-mac}
+   pair a1:b2:c3:d4:e5:f6
+   trust a1:b2:c3:d4:e5:f6
    ```
+   (replace `a1:b2:c3:d4:e5:f6` by your Bluetooth device's MAC)
 
 ## 4.2. Setup 
 4. On the Pi, clone the repository:  
