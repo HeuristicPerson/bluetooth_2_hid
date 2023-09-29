@@ -1,8 +1,8 @@
 <!-- omit in toc -->
-# Bluetooth to USB
+#  Bluetooth to USB
 ![Connection overview](images/diagram.png)
 <!-- omit in toc -->
-# Table of Contents
+## Table of Contents
 - [1. Introduction](#1-introduction)
 - [2. Features](#2-features)
 - [3. Requirements](#3-requirements)
@@ -21,14 +21,14 @@
 - [8. License](#8-license)
 - [9. Acknowledgments](#9-acknowledgments)
 
-# 1. Introduction
+## 1. Introduction
 Convert a Raspberry Pi into a HID proxy that relays Bluetooth keyboard and mouse input to USB. Minimal configuration. Zero hassle.
 
 The issue with Bluetooth devices is that you usually can't use them to wake up sleeping devices, access the BIOS or OS select menu (GRUB). Some devices don't even have a (working) Bluetooth interface.  
 
 Sounds familiar? Congratulations! **You just found the solution!**
 
-# 2. Features
+## 2. Features
 - Simple installation and highly automated setup 
 - Supports multiple input devices (currently keyboard and mouse)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
@@ -36,15 +36,15 @@ Sounds familiar? Congratulations! **You just found the solution!**
 - Reliable concurrency using state-of-the-art [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 - Clean and actively maintained code base
 
-# 3. Requirements
+## 3. Requirements
 - ([Single-board](https://en.wikipedia.org/wiki/Single-board_computer)) computer with Bluetooth support, e.g. Raspberry Pi 4B or Raspberry Pi Zero **_W_**
 - Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups) (script to install from source [available](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh))
 - Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/)
 
-# 4. Installation
+## 4. Installation
 Follow these steps to install and configure the project:
 
-## 4.1. Prerequisites 
+### 4.1. Prerequisites 
 1. Prepare your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34)) and connect to WI-FI & enable SSH, if you intend to access the Pi remotely.
    
 2. Connect to the Pi and update the packages:
@@ -61,7 +61,7 @@ Follow these steps to install and configure the project:
    ```
    (replace `a1:b2:c3:d4:e5:f6` by your Bluetooth device's MAC)
 
-## 4.2. Setup 
+### 4.2. Setup 
 4. On the Pi, clone the repository:  
    ```
    git clone https://github.com/quaxalber/bluetooth_2_usb.git
@@ -136,12 +136,12 @@ Follow these steps to install and configure the project:
    Sep 23 18:34:01 raspberrypi python3.11[26579]: 23-09-23 18:34:01 [INFO] Started event loop for Keyboard: [device /dev/input/event2, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
    ```
     
-# 5. Usage
+## 5. Usage
 Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. 
 
 It's essential to use the small power port instead of the bigger USB-A ports, since only the power port has the [OTG](https://en.wikipedia.org/wiki/USB_On-The-Go) feature required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html). 
 
-## 5.1. Command-line arguments
+### 5.1. Command-line arguments
 Currently you can provide the following CLI arguments:
 
 ```
@@ -165,9 +165,9 @@ options:
                         The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.
 ```
 
-## 5.2. Troubleshooting
+### 5.2. Troubleshooting
 
-### 5.2.1. The Pi keeps rebooting or crashes randomly
+#### 5.2.1. The Pi keeps rebooting or crashes randomly
 This is likely due to the limited power the Pi gets from the host. Try these steps:
 - If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
   
@@ -176,7 +176,7 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
 - Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor (the Pi 4B requires 3A/15W for stable operation!)
 
-### 5.2.2. The installation was successful, but I don't see any output on the target device 
+#### 5.2.2. The installation was successful, but I don't see any output on the target device 
 This could be due to a number of reasons. Try these steps:
 - Verify that the service is running:
   ```
@@ -213,7 +213,7 @@ This could be due to a number of reasons. Try these steps:
    23-09-23 18:32:03 [DEBUG] Received event: [synchronization event at 1695490323.368208, SYN_REPORT] for /dev/hidg0
    ```
 
-### 5.2.3. I have a different issue 
+#### 5.2.3. I have a different issue 
 Here's a few things you could try:
 - Reload and restart service:
   ```
@@ -230,23 +230,23 @@ Here's a few things you could try:
 - Double-check the [Installation instructions](#4-installation)
 - For more help, open an [issue](https://github.com/quaxalber/bluetooth_2_usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth_2_usb)
 
-### 5.2.4. Everything is working, but can it help me with Bitcoin mining? 
+#### 5.2.4. Everything is working, but can it help me with Bitcoin mining? 
 Absolutely! [Here's how](https://bit.ly/42BTC). 
 
-# 6. Bonus points 
+## 6. Bonus points 
 After successfully setting up your Pi as a HID proxy for your Bluetooth devices, you may consider making [Raspberry OS read-only](https://learn.adafruit.com/read-only-raspberry-pi/overview). That helps preventing the SD card from wearing out and the file system from getting corrupted when powering off the Raspberry forcefully.
 
-# 7. Contributing
+## 7. Contributing
 Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines.
 
-# 8. License
+## 8. License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 "Bluetooth 2 HID" image [@PixelGordo](https://twitter.com/PixelGordo) is licensed under a [Creative Commons Attribution-NonCommercial 4.0 International License](http://creativecommons.org/licenses/by-nc/4.0/).
 
 ![License image.](https://i.creativecommons.org/l/by-nc/4.0/88x31.png)
 
-# 9. Acknowledgments
+## 9. Acknowledgments
 * [Mike Redrobe](https://github.com/mikerr/pihidproxy) for the idea and the basic code logic and [HeuristicPerson's bluetooth_2_hid](https://github.com/HeuristicPerson/bluetooth_2_hid) based off this.
 * [Georgi Valkov](https://github.com/gvalkov) for [python-evdev](https://github.com/gvalkov/python-evdev) making reading input devices a walk in the park. 
 * The folks at [Adafruit](https://www.adafruit.com/) for [CircuitPython HID](https://github.com/adafruit/Adafruit_CircuitPython_HID) providing super smooth access to USB gadgets. 
