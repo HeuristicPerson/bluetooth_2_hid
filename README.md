@@ -151,7 +151,7 @@ Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB 
 Currently you can provide the following CLI arguments:
 
 ```console
-user@raspberrypi:~/bluetooth_2_usb $ python3.11 /usr/bin/bluetooth_2_usb.py -h
+user@raspberrypi:~/bluetooth_2_usb $ python3.11 bluetooth_2_usb.py -h
 usage: bluetooth_2_usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH]
 
 Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
@@ -213,7 +213,7 @@ This could be due to a number of reasons. Try these steps:
   ```
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
   ```console
-  user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
   23-09-29 21:03:00 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log')
   23-09-29 21:03:00 [INFO] Script starting up...
   23-09-29 21:03:00 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1)]
@@ -222,7 +222,7 @@ This could be due to a number of reasons. Try these steps:
   23-09-29 21:03:01 [DEBUG] Registered device link: [Moody Mouse]>>[/dev/hidg0]
   23-09-29 21:03:01 [DEBUG] Link [Moody Keyboard]>>[/dev/hidg1] connected.
   23-09-29 21:03:01 [DEBUG] Link [Moody Mouse]>>[/dev/hidg0] connected.
-  23-09-29 21:03:01 [DEBUG] Current tasks: {...}
+  23-09-29 21:03:01 [DEBUG] Current tasks: {<Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb.py:380> cb=[_run_until_complete_cb() at /usr/local/lib/python3.11/asyncio/base_events.py:180]>, <Task pending name='[Moody Mouse]>>[/dev/hidg0]' coro=<ComboDeviceHidProxy._async_relay_device_events_loop() running at /usr/bin/bluetooth_2_usb.py:170> cb=[TaskGroup._on_task_done()]>, <Task pending name='[Moody Keyboard]>>[/dev/hidg1]' coro=<ComboDeviceHidProxy._async_relay_device_events_loop() running at /usr/bin/bluetooth_2_usb.py:170> cb=[TaskGroup._on_task_done()]>}
   23-09-29 21:03:01 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "e4:5f:01:01:c4:8c"] >> [Keyboard gadget (/dev/hidg1)]
   23-09-29 21:03:01 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "e4:5f:01:01:c4:8c"] >> [Boot mouse gadget (/dev/hidg0)]
   23-09-29 21:03:39 [DEBUG] Received event: [event at 1696017819.492925, code 04, type 04, val 458790] for /dev/hidg1
