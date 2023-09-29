@@ -174,6 +174,7 @@ This is likely due to the limited power the Pi gets from the host. Try these ste
   
   > [!IMPORTANT]
   > *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. 
+  > 
   > *Do use* the small USB power port. 
 - Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals.
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
