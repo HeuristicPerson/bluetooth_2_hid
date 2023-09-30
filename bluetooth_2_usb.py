@@ -178,16 +178,12 @@ class ComboDeviceHidProxy:
             finally_reconnect = True
             device_in = device_link.input()
             await self._async_relay_device_events(device_link)
-            # The only reason we should get here is a task cancellation,
-            # e.g. due to service shutdown or keyboard interrupt.
-            # In this case we don't want to reconnect.
-            finally_reconnect = False
         except OSError as e:
             logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
             reconnected = await self._async_wait_for_device(device_in)
             self._log_reconnection_outcome(device_in, reconnected)
-        except asyncio.exceptions.CancelledError as e:
-            logger.critical(f"{device_in.name} received a cancellation request. [{e}]")
+        except asyncio.exceptions.CancelledError:
+            logger.critical(f"{device_in.name} received a cancellation request.")
             finally_reconnect = False
         except Exception as e:
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
@@ -372,13 +368,6 @@ def _parse_args() -> Namespace:
 
 def _signal_handler(sig, frame) -> NoReturn:
     logger.info(f"Exiting gracefully. Received signal: {sig}, frame: {frame}")
-
-    _cancel_all_tasks()
-
-    start_time = datetime.now()
-    while not _all_tasks_done() and _elapsed_seconds_since(start_time) <= 5:
-        time.sleep(0.5)
-
     sys.exit(0)
 
 
@@ -388,27 +377,10 @@ def _elapsed_seconds_since(reference_time: datetime) -> float:
 
 
 def _get_task(task_name: str) -> Task:
-    for task in _all_tasks():
+    for task in asyncio.all_tasks():
         if task.get_name() == task_name:
             return task
     return None
-
-
-def _all_tasks(to_exclude: Collection[Task] = []):
-    return [task for task in asyncio.all_tasks() if task not in to_exclude]
-
-
-def _all_tasks_but_main():
-    return _all_tasks(to_exclude=[asyncio.current_task()])
-
-
-def _cancel_all_tasks():
-    for task in _all_tasks_but_main():
-        task.cancel()
-
-
-def _all_tasks_done() -> bool:
-    return all(task.done() for task in _all_tasks_but_main())
 
 
 signal.signal(signal.SIGINT, _signal_handler)
