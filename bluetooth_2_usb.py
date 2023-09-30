@@ -5,25 +5,29 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 
 
 try:
-    import argparse
     from argparse import Namespace
     import asyncio
     from asyncio import TaskGroup, Task
-    import atexit
     from datetime import datetime
     import logging
     import signal
     import sys
-    import time
     from typing import Collection, List, NoReturn, Optional, Tuple
 
     from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
 
+    from lib.argpaser import parse_args
     from lib.constants import key_event
     import lib.evdev_converter as converter
     import lib.logger
     import lib.usb_hid
-    from lib.usb_hid import GadgetDevice, MouseGadget, KeyboardGadget, DeviceLink
+    from lib.usb_hid import (
+        GadgetDevice,
+        MouseGadget,
+        KeyboardGadget,
+        DeviceLink,
+        unregister_disable,
+    )
 except ImportError as e:
     print(f"Error importing modules. [{e}]")
     raise
@@ -296,81 +300,6 @@ class ComboDeviceHidProxy:
             self._connect_single_link(device_link)
 
 
-class CustomArgumentParser(argparse.ArgumentParser):
-    def print_help(self) -> None:
-        _unregister_disable()
-        super().print_help()
-
-
-def _parse_args() -> Namespace:
-    parser = CustomArgumentParser(
-        description="Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events \
-        (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.",
-    )
-
-    parser.add_argument(
-        "--keyboards",
-        "-k",
-        type=lambda input: [item.strip() for item in input.split(",")],
-        default=None,
-        help="Comma-separated list of input device paths for keyboards to be registered and connected.\n \
-          Default is None.\n \
-          Example: --keyboards /dev/input/event2,/dev/input/event4",
-    )
-    parser.add_argument(
-        "--mice",
-        "-m",
-        type=lambda input: [item.strip() for item in input.split(",")],
-        default=None,
-        help="Comma-separated list of input device paths for mice to be registered and connected.\n \
-          Default is None.\n \
-          Example: --mice /dev/input/event3,/dev/input/event5",
-    )
-    parser.add_argument(
-        "--sandbox",
-        "-s",
-        action="store_true",
-        default=False,
-        help="Only read input events but do not forward them to the output devices.",
-    )
-    parser.add_argument(
-        "--debug",
-        "-d",
-        action="store_true",
-        default=False,
-        help="Enable debug mode. Increases log verbosity",
-    )
-    parser.add_argument(
-        "--log_to_file",
-        "-f",
-        action="store_true",
-        default=False,
-        help="Add a handler that logs to file additionally to stdout. ",
-    )
-    parser.add_argument(
-        "--log_path",
-        "-p",
-        type=str,
-        default="/var/log/bluetooth_2_usb/bluetooth_2_usb.log",
-        help="The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.",
-    )
-    parser.add_argument(
-        "--version",
-        "-v",
-        action="store_true",
-        default=False,
-        help="Display the version number of this software.",
-    )
-
-    args = parser.parse_args()
-    return args
-
-
-def _signal_handler(sig, frame) -> NoReturn:
-    logger.info(f"Exiting gracefully. Received signal: {sig}, frame: {frame}")
-    sys.exit(0)
-
-
 def _elapsed_seconds_since(reference_time: datetime) -> float:
     current_time = datetime.now()
     return (current_time - reference_time).total_seconds()
@@ -381,6 +310,11 @@ def _get_task(task_name: str) -> Task:
         if task.get_name() == task_name:
             return task
     return None
+
+
+def _signal_handler(sig, frame) -> NoReturn:
+    logger.info(f"Exiting gracefully. Received signal: {sig}, frame: {frame}")
+    sys.exit(0)
 
 
 signal.signal(signal.SIGINT, _signal_handler)
@@ -399,23 +333,15 @@ async def _main(args: Namespace) -> NoReturn:
     await proxy.async_connect_registered_links()
 
 
-def _unregister_disable():
-    """
-    When the script is run with help or version flag, we need to unregister lib.usb_hid.disable() from atexit
-    because else an exception occurs if the script is already running, e.g. as service.
-    """
-    atexit.unregister(lib.usb_hid.disable)
-
-
 if __name__ == "__main__":
     """
     Entry point for the script. Sets up logging, parses command-line arguments, and starts the event loop.
     """
     try:
-        args = _parse_args()
+        args = parse_args()
         if args.version:
             print(f"Bluetooth 2 USB v{_VERSION}")
-            _unregister_disable()
+            unregister_disable()
             sys.exit(0)
         if args.debug:
             logger.setLevel(logging.DEBUG)

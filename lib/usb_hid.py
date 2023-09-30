@@ -526,6 +526,14 @@ def disable() -> None:
 atexit.register(disable)
 
 
+def unregister_disable():
+    """
+    When the script is run with help or version flag, we need to unregister lib.usb_hid.disable() from atexit
+    because else an exception occurs if the script is already running, e.g. as service.
+    """
+    atexit.unregister(disable)
+
+
 def enable(requested_devices: Sequence[GadgetDevice], boot_device: int = 0) -> None:
     """Specify which USB HID devices that will be available.
     Can be called in ``boot.py``, before USB is connected.
