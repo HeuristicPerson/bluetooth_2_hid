@@ -30,9 +30,10 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 # 2. Features
 - Simple installation and highly automated setup 
-- Supports multiple input devices (currently keyboard and mouse)
+- Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
+- Installation as a systemd service
 - Reliable concurrency using state-of-the-art [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 - Clean and actively maintained code base
 
@@ -140,6 +141,7 @@ Follow these steps to install and configure the project:
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
+    Something is off? Try yourself in [Troubleshooting](#52-troubleshooting)! 
     
 # 5. Usage
 Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. 
@@ -171,14 +173,14 @@ options:
 ## 5.2. Troubleshooting
 
 ### 5.2.1. The Pi keeps rebooting or crashes randomly
-This is likely due to the limited power the Pi gets from the host. Try these steps:
+This is likely due to the limited power the Pi gets from the host's USB port. Try these steps:
 - If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
   
   > [!IMPORTANT]
-  > *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. 
+  > *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.** 
   > 
   > *Do use* the small USB power port. 
-- Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals.
+- Try to connect to the Pi via SSH instead of attaching a display directly and remove any unnecessary peripherals.
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
 - Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor. This will ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
   
