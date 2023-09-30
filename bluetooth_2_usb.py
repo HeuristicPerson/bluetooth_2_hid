@@ -186,6 +186,9 @@ class ComboDeviceHidProxy:
             logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
             reconnected = await self._async_wait_for_device(device_in)
             self._log_reconnection_outcome(device_in, reconnected)
+        except asyncio.exceptions.CancelledError as e:
+            logger.critical(f"{device_in.name} received a cancellation request. [{e}]")
+            finally_reconnect = False
         except Exception as e:
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(5)
