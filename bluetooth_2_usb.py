@@ -305,8 +305,14 @@ class ComboDeviceHidProxy:
         return None
 
 
+class CustomArgumentParser(argparse.ArgumentParser):
+    def print_help(self) -> None:
+        _unregister_disable()
+        super().print_help()
+
+
 def _parse_args() -> Namespace:
-    parser = argparse.ArgumentParser(
+    parser = CustomArgumentParser(
         description="Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events \
         (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.",
     )
@@ -390,6 +396,14 @@ async def _main(args: Namespace) -> NoReturn:
     await proxy.async_connect_registered_links()
 
 
+def _unregister_disable():
+    """
+    When the script is run with help or version flag, we need to unregister lib.usb_hid.disable() from atexit
+    because else an exception occurs if the script is already running, e.g. as service. 
+    """
+    atexit.unregister(lib.usb_hid.disable)
+
+
 if __name__ == "__main__":
     """
     Entry point for the script. Sets up logging, parses command-line arguments, and starts the event loop.
@@ -398,7 +412,7 @@ if __name__ == "__main__":
         args = _parse_args()
         if args.version:
             print(f"Bluetooth 2 USB v{_VERSION}")
-            atexit.unregister(lib.usb_hid.disable)
+            _unregister_disable()
             sys.exit(0)
         if args.debug:
             logger.setLevel(logging.DEBUG)
