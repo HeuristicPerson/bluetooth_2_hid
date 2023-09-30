@@ -14,6 +14,7 @@ try:
     import logging
     import signal
     import sys
+    import time
     from typing import Collection, List, NoReturn, Optional, Tuple
 
     from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
@@ -272,12 +273,9 @@ class ComboDeviceHidProxy:
     def _log_reconnection_attempt(
         self, device_in: InputDevice, last_log_time: datetime
     ) -> datetime:
-        current_time = datetime.now()
-        secs_since_last_log = (current_time - last_log_time).total_seconds()
-
-        if secs_since_last_log >= 60:
+        if _elapsed_seconds_since(last_log_time) >= 60:
             logger.debug(f"Still trying to reconnect to {device_in.name}...")
-            last_log_time = current_time
+            last_log_time = datetime.now()
 
         return last_log_time
 
@@ -290,19 +288,13 @@ class ComboDeviceHidProxy:
     async def _async_disconnect_device_link(
         self, device_link: DeviceLink, reconnect: bool = False
     ) -> None:
-        task = self._get_task(str(device_link))
+        task = _get_task(str(device_link))
         if task:
             task.cancel()
 
         if reconnect:
             await device_link.async_reset_input()
             self._connect_single_link(device_link)
-
-    def _get_task(self, task_name: str) -> Task:
-        for task in asyncio.all_tasks():
-            if task.get_name() == task_name:
-                return task
-        return None
 
 
 class CustomArgumentParser(argparse.ArgumentParser):
@@ -377,7 +369,43 @@ def _parse_args() -> Namespace:
 
 def _signal_handler(sig, frame) -> NoReturn:
     logger.info(f"Exiting gracefully. Received signal: {sig}, frame: {frame}")
+
+    _cancel_all_tasks()
+
+    start_time = datetime.now()
+    while not _all_tasks_done() and _elapsed_seconds_since(start_time) <= 5:
+        time.sleep(0.5)
+
     sys.exit(0)
+
+
+def _elapsed_seconds_since(reference_time: datetime) -> float:
+    current_time = datetime.now()
+    return (current_time - reference_time).total_seconds()
+
+
+def _get_task(task_name: str) -> Task:
+    for task in _all_tasks():
+        if task.get_name() == task_name:
+            return task
+    return None
+
+
+def _all_tasks(to_exclude: Collection[Task] = []):
+    return [task for task in asyncio.all_tasks() if task not in to_exclude]
+
+
+def _all_tasks_but_main():
+    return _all_tasks(to_exclude=[asyncio.current_task()])
+
+
+def _cancel_all_tasks():
+    for task in _all_tasks_but_main():
+        task.cancel()
+
+
+def _all_tasks_done() -> bool:
+    return all(task.done() for task in _all_tasks_but_main())
 
 
 signal.signal(signal.SIGINT, _signal_handler)
@@ -399,7 +427,7 @@ async def _main(args: Namespace) -> NoReturn:
 def _unregister_disable():
     """
     When the script is run with help or version flag, we need to unregister lib.usb_hid.disable() from atexit
-    because else an exception occurs if the script is already running, e.g. as service. 
+    because else an exception occurs if the script is already running, e.g. as service.
     """
     atexit.unregister(lib.usb_hid.disable)
 
