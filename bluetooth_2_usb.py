@@ -22,9 +22,9 @@ try:
     import lib.logger
     import lib.usb_hid
     from lib.usb_hid import (
-        GadgetDevice,
-        MouseGadget,
-        KeyboardGadget,
+        Device as OutputDevice,
+        Mouse,
+        Keyboard,
         DeviceLink,
         unregister_disable,
     )
@@ -87,7 +87,7 @@ class ComboDeviceHidProxy:
         if gadgets_enabled:
             # We have to use BOOT_MOUSE since for some reason MOUSE freezes on any input.
             # This should be fine though. Also it's important to enable mouse first.
-            lib.usb_hid.enable([GadgetDevice.BOOT_MOUSE, GadgetDevice.KEYBOARD])
+            lib.usb_hid.enable([OutputDevice.BOOT_MOUSE, OutputDevice.KEYBOARD])
         else:
             lib.usb_hid.disable()
 
@@ -114,13 +114,13 @@ class ComboDeviceHidProxy:
             self._registered_links.append(link)
 
     def create_keyboard_link(self, keyboard_path: str) -> DeviceLink:
-        return self._create_device_link(keyboard_path, KeyboardGadget())
+        return self._create_device_link(keyboard_path, Keyboard())
 
     def create_mouse_link(self, mouse_path: str) -> DeviceLink:
-        return self._create_device_link(mouse_path, MouseGadget())
+        return self._create_device_link(mouse_path, Mouse())
 
     def _create_device_link(
-        self, device_in_path: str, device_out: GadgetDevice
+        self, device_in_path: str, device_out: OutputDevice
     ) -> DeviceLink:
         if not device_in_path:
             return None
@@ -205,7 +205,7 @@ class ComboDeviceHidProxy:
             await self._async_relay_single_event(event, device_out)
 
     async def _async_relay_single_event(
-        self, event: InputEvent, device_out: GadgetDevice
+        self, event: InputEvent, device_out: OutputDevice
     ) -> None:
         logger.debug(f"Received event: [{categorize(event)}] for {device_out}")
 
@@ -224,7 +224,7 @@ class ComboDeviceHidProxy:
         return event.type == ecodes.EV_REL
 
     async def _async_send_key(
-        self, event: InputEvent, device_out: GadgetDevice
+        self, event: InputEvent, device_out: OutputDevice
     ) -> None:
         key = converter.to_hid_key(event.code)
         if key is None:
@@ -238,9 +238,7 @@ class ComboDeviceHidProxy:
         except Exception as e:
             logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
 
-    async def _async_move_mouse(
-        self, event: InputEvent, mouse_out: MouseGadget
-    ) -> None:
+    async def _async_move_mouse(self, event: InputEvent, mouse_out: Mouse) -> None:
         x, y, mwheel = self._get_mouse_movement(event)
         logger.debug(f"Moving mouse {mouse_out}: (x, y, mwheel) = {(x, y, mwheel)}")
 
