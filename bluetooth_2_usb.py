@@ -3,11 +3,13 @@
 Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
 """
 
+
 try:
     import argparse
     from argparse import Namespace
     import asyncio
     from asyncio import TaskGroup, Task
+    import atexit
     from datetime import datetime
     import logging
     import signal
@@ -396,6 +398,7 @@ if __name__ == "__main__":
         args = _parse_args()
         if args.version:
             print(f"Bluetooth 2 USB v{_VERSION}")
+            atexit.unregister(lib.usb_hid.disable)
             sys.exit(0)
         if args.debug:
             logger.setLevel(logging.DEBUG)
