@@ -66,6 +66,7 @@ class ComboDeviceHidProxy:
             self._create_and_register_links(keyboard_paths, mouse_paths)
             self.enable_sandbox(is_sandbox)
             self._log_registered_links()
+
         except Exception as e:
             logger.error(f"Failed to initialize devices. [{e}]")
             raise
@@ -74,6 +75,7 @@ class ComboDeviceHidProxy:
         try:
             self._check_enable_gadgets(gadgets_enabled)
             self._log_gadgets()
+
         except Exception as e:
             logger.error(f"Failed to enable/disable gadget devices. [{e}]")
             raise
@@ -102,6 +104,7 @@ class ComboDeviceHidProxy:
     ) -> None:
         keyboards = [self.create_keyboard_link(path) for path in keyboard_paths]
         mice = [self.create_mouse_link(path) for path in mouse_paths]
+
         # Use list unpacking to get a nice comma-separated sequence of all devices
         self.register_device_links(*keyboards, *mice)
 
@@ -124,8 +127,10 @@ class ComboDeviceHidProxy:
     ) -> DeviceLink:
         if not device_in_path:
             return None
+
         device_in = InputDevice(device_in_path)
         device_link = DeviceLink(device_in, device_out)
+
         return device_link
 
     def enable_sandbox(self, sandbox_enabled: bool = True) -> None:
@@ -159,13 +164,16 @@ class ComboDeviceHidProxy:
         try:
             async with TaskGroup() as self._task_group:
                 self._connect_device_links(self._registered_links)
+
             logger.critical("Event loop closed.")
+
         except* Exception as e:
             logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
 
     def _connect_device_links(self, device_links: Collection[DeviceLink]) -> None:
         for link in device_links:
             self._connect_single_link(link)
+
         logger.debug(f"Current tasks: {asyncio.all_tasks()}")
 
     def _connect_single_link(self, device_link: DeviceLink) -> None:
@@ -173,27 +181,36 @@ class ComboDeviceHidProxy:
         self._task_group.create_task(
             self._async_relay_device_events_loop(device_link), name=str(device_link)
         )
+
         logger.debug(f"Link {device_link} connected.")
 
     async def _async_relay_device_events_loop(self, device_link: DeviceLink) -> None:
         logger.info(f"Started event loop for {repr(device_link)}")
 
         try:
-            finally_reconnect = True
+            should_reconnect = True  # Flag to control reconnection behavior
             device_in = device_link.input()
+
             await self._async_relay_device_events(device_link)
+
         except OSError as e:
+            # Handle device disconnection
             logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
             reconnected = await self._async_wait_for_device(device_in)
             self._log_reconnection_outcome(device_in, reconnected)
+
         except asyncio.exceptions.CancelledError:
+            # Handle cancellation requests
             logger.critical(f"{device_in.name} received a cancellation request.")
-            finally_reconnect = False
+            should_reconnect = False
+
         except Exception as e:
+            # Handle unexpected errors
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(5)
+
         finally:
-            await self._async_disconnect_device_link(device_link, finally_reconnect)
+            await self._async_disconnect_device_link(device_link, should_reconnect)
 
     async def _async_relay_device_events(self, device_link: DeviceLink):
         device_in = device_link.input()
@@ -202,6 +219,7 @@ class ComboDeviceHidProxy:
         async for event in device_in.async_read_loop():
             if not event:
                 continue
+
             await self._async_relay_single_event(event, device_out)
 
     async def _async_relay_single_event(
@@ -235,6 +253,7 @@ class ComboDeviceHidProxy:
                 device_out.press(key)
             elif event.value == key_event.UP:
                 device_out.release(key)
+
         except Exception as e:
             logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
 
@@ -307,6 +326,7 @@ def _get_task(task_name: str) -> Task:
     for task in asyncio.all_tasks():
         if task.get_name() == task_name:
             return task
+
     return None
 
 
@@ -337,18 +357,25 @@ if __name__ == "__main__":
     """
     try:
         args = parse_args()
+
         if args.version:
             print(f"Bluetooth 2 USB v{_VERSION}")
             unregister_disable()
             sys.exit(0)
+
         if args.debug:
             logger.setLevel(logging.DEBUG)
+
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
+
         logger.debug(f"CLI args: {args}")
         logger.info("Script starting up...")
+
         asyncio.run(_main(args))
+
         logger.info("Script shutting down...")
+
     except Exception as e:
-        logger.exception("Houston, we have an unhandled problem. Abort mission.")
+        logger.exception(f"Houston, we have an unhandled problem. Abort mission. [{e}]")
         raise
