@@ -1229,9 +1229,9 @@ class DeviceLink:
                 await asyncio.sleep(5)
 
     def output(self) -> GadgetDevice:
-        if not self._device_out_enabled:
-            return self._device_out_dummy
-        return self._device_out
+        if self._device_out_enabled:
+            return self._device_out
+        return self._device_out_dummy
 
     def enable_output(self, enabled: bool = True):
         self._device_out_enabled = enabled
