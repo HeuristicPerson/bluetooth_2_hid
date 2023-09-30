@@ -25,6 +25,7 @@ except ImportError as e:
     print(f"Error importing modules. [{e}]")
     raise
 
+_VERSION = "0.1.0"
 logger = lib.logger.get_logger()
 
 
@@ -353,6 +354,13 @@ def _parse_args() -> Namespace:
         type=str,
         default="/var/log/bluetooth_2_usb/bluetooth_2_usb.log",
         help="The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.",
+    )
+    parser.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=f"Bluetooth 2 USB v{_VERSION}",
+        help="Display the version number of this software.",
     )
 
     args = parser.parse_args()
