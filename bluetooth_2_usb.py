@@ -358,8 +358,8 @@ def _parse_args() -> Namespace:
     parser.add_argument(
         "--version",
         "-v",
-        action="version",
-        version=f"Bluetooth 2 USB v{_VERSION}",
+        action="store_true",
+        default=False,
         help="Display the version number of this software.",
     )
 
@@ -395,6 +395,7 @@ if __name__ == "__main__":
     try:
         args = _parse_args()
         if args.version:
+            print(f"Bluetooth 2 USB v{_VERSION}")
             sys.exit(0)
         if args.debug:
             logger.setLevel(logging.DEBUG)
