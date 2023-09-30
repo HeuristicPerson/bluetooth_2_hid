@@ -394,6 +394,8 @@ if __name__ == "__main__":
     """
     try:
         args = _parse_args()
+        if args.version:
+            sys.exit(0)
         if args.debug:
             logger.setLevel(logging.DEBUG)
         if args.log_to_file:
