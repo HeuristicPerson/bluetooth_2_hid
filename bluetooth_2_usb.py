@@ -313,8 +313,8 @@ def _parse_args() -> Namespace:
         "-k",
         type=lambda input: [item.strip() for item in input.split(",")],
         default=None,
-        help="Comma-separated list of input device paths for keyboards to be registered and connected. \
-          Default is None. \
+        help="Comma-separated list of input device paths for keyboards to be registered and connected.\n \
+          Default is None.\n \
           Example: --keyboards /dev/input/event2,/dev/input/event4",
     )
     parser.add_argument(
@@ -322,8 +322,8 @@ def _parse_args() -> Namespace:
         "-m",
         type=lambda input: [item.strip() for item in input.split(",")],
         default=None,
-        help="Comma-separated list of input device paths for mice to be registered and connected. \
-          Default is None. \
+        help="Comma-separated list of input device paths for mice to be registered and connected.\n \
+          Default is None.\n \
           Example: --mice /dev/input/event3,/dev/input/event5",
     )
     parser.add_argument(
