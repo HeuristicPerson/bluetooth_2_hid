@@ -198,7 +198,24 @@ This could be due to a number of reasons. Try these steps:
   service bluetooth_2_usb status
   ```
 - Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
-- Check the log files at `/var/log/bluetooth_2_usb/` for errors (logging to file requires the `-f` flag)
+- Reload and restart service:
+  ```console
+  sudo systemctl daemon-reload
+  sudo service bluetooth_2_usb restart
+  ```
+- Reboot Pi
+  ```console
+  sudo reboot 
+  ```
+- Re-connect the Pi to the host and check that the cable is in good shape 
+- Try a different USB port on the host
+- Try connecting to a different host 
+
+### 5.2.3. I have a different issue 
+Here's a few things you could try:
+- Check the log files (default at `/var/log/bluetooth_2_usb/`) for errors
+  > [!NOTE]
+  > Logging to file requires the `-f` flag
 - You may also query the journal to inspect the service logs in real-time:
   ```console
   journalctl -u bluetooth_2_usb.service -n 20 -f
@@ -239,23 +256,8 @@ This could be due to a number of reasons. Try these steps:
   23-10-01 13:59:41 [DEBUG] Received event: [relative axis event at 1696165181.118076, REL_X] for /dev/hidg0
   23-10-01 13:59:41 [DEBUG] Moving mouse /dev/hidg0: (x, y, mwheel) = (50, 0, 0)
   23-10-01 13:59:41 [DEBUG] Received event: [synchronization event at 1696165181.118076, SYN_REPORT] for /dev/hidg0
-  ```
-
-### 5.2.3. I have a different issue 
-Here's a few things you could try:
-- Reload and restart service:
-  ```console
-  sudo systemctl daemon-reload
-  sudo service bluetooth_2_usb restart
-  ```
-- Reboot Pi
-  ```console
-  sudo reboot 
-  ```
-- Re-connect the Pi to the host and check that the cable is in good shape 
-- Try a different USB port on the host
-- Try connecting to a different host 
-- Double-check the [Installation instructions](#4-installation)
+  ``` 
+- Still not resolved? Double-check the [installation instructions](#4-installation)
 - For more help, open an [issue](https://github.com/quaxalber/bluetooth_2_usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth_2_usb)
 
 ### 5.2.4. Everything is working, but can it help me with Bitcoin mining? 
