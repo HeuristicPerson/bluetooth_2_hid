@@ -85,8 +85,8 @@ Follow these steps to install and configure the project:
    trust A1:B2:C3:D4:E5:F6
    ```
 
-   > [!NOTE]
-   > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
+ > [!NOTE]
+ > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
 
 ### 4.2. Setup 
 
@@ -108,8 +108,8 @@ Follow these steps to install and configure the project:
    sudo bash install.sh
    ```
  
-   > [!NOTE]
-   > Many distros, including Raspberry Pi OS, are usually one or two minor versions behind the latest Python version. You could opt for a rolling-release OS, such as Manjaro. Otherwise the installer will [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh).
+ > [!NOTE]
+ > Many distros, including Raspberry Pi OS, are usually one or two minor versions behind the latest Python version. You could opt for a rolling-release OS, such as Manjaro. Otherwise the installer will [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh).
 
 9. Restart the Pi (prompt at the end of `install.sh`)
    
@@ -147,8 +147,8 @@ Follow these steps to install and configure the project:
 
     And change `event3` and `event2` according to step **10.3.** 
    
-    > [!NOTE]
-    > `Ctrl + X` > `Y` > `Enter` to save and exit nano
+> [!NOTE]
+> `Ctrl + X` > `Y` > `Enter` to save and exit nano
 
 12. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
@@ -184,8 +184,8 @@ Follow these steps to install and configure the project:
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
 
-    > [!NOTE]
-    > Something seems off? Try yourself in [Troubleshooting](#6-troubleshooting)! 
+> [!NOTE]
+> Something seems off? Try yourself in [Troubleshooting](#6-troubleshooting)! 
     
 ## 5. Usage
 
@@ -229,10 +229,10 @@ This is likely due to the limited power the Pi gets from the host's USB port. Tr
 
 - If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
   
-  > [!IMPORTANT]
-  > *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.** 
-  > 
-  > *Do use* the small USB power port. 
+> [!IMPORTANT]
+> *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.** 
+> 
+> *Do use* the small USB power port. 
 
 - Try to [connect to the Pi via SSH](#41-prerequisites) instead of attaching a display directly and remove any unnecessary peripherals.
   
@@ -240,8 +240,8 @@ This is likely due to the limited power the Pi gets from the host's USB port. Tr
   
 - Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor. This will ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
   
-  > [!NOTE]
-  > The Pi 4B requires 3A/15W for stable operation!
+> [!NOTE]
+> The Pi 4B requires 3A/15W for stable operation!
 
 ### 6.2. The installation was successful, but I don't see any output on the target device 
 
@@ -278,8 +278,8 @@ This could be due to a number of reasons. Try these steps:
           UUID: Nordic UART Service       (6e400001-b5a3-f393-e0a9-e50e24dcca9e)
   ```
   
-  > [!NOTE]
-  > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
+> [!NOTE]
+> Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
 
 - Reload and restart service:
   
@@ -331,8 +331,8 @@ Here's a few things you could try:
 
 - Check the log files (default at `/var/log/bluetooth_2_usb/`) for errors
   
-  > [!NOTE]
-  > Logging to file requires the `-f` flag
+> [!NOTE]
+> Logging to file requires the `-f` flag
 
 - You may also query the journal to inspect the service logs in real-time:
   
