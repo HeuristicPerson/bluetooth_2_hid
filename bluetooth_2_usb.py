@@ -77,7 +77,8 @@ class ComboDeviceHidProxy:
             self._log_gadgets()
 
         except Exception as e:
-            logger.error(f"Failed to enable/disable gadget devices. [{e}]")
+            action = "enable" if gadgets_enabled else "disable"
+            logger.error(f"Failed to {action} gadget devices. [{e}]")
             raise
 
     def _check_enable_gadgets(self, gadgets_enabled: bool) -> None:
@@ -177,42 +178,38 @@ class ComboDeviceHidProxy:
         logger.debug(f"Current tasks: {asyncio.all_tasks()}")
 
     def _connect_single_link(self, device_link: DeviceLink) -> None:
-        # By running the event relaying loop, the device becomes available/connected.
         self._task_group.create_task(
-            self._async_relay_device_events_loop(device_link), name=str(device_link)
+            self._async_relay_input_events(device_link), name=str(device_link)
         )
 
         logger.debug(f"Link {device_link} connected.")
 
-    async def _async_relay_device_events_loop(self, device_link: DeviceLink) -> None:
-        logger.info(f"Started event loop for {repr(device_link)}")
+    async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
+        logger.info(f"Starting event loop for {repr(device_link)}")
 
         try:
-            should_reconnect = True  # Flag to control reconnection behavior
+            should_reconnect = True
             device_in = device_link.input()
 
-            await self._async_relay_device_events(device_link)
+            await self._async_relay_input_events_loop(device_link)
 
         except OSError as e:
-            # Handle device disconnection
             logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
             reconnected = await self._async_wait_for_device(device_in)
             self._log_reconnection_outcome(device_in, reconnected)
 
         except asyncio.exceptions.CancelledError:
-            # Handle cancellation requests
             logger.critical(f"{device_in.name} received a cancellation request.")
             should_reconnect = False
 
         except Exception as e:
-            # Handle unexpected errors
             logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(5)
 
         finally:
             await self._async_disconnect_device_link(device_link, should_reconnect)
 
-    async def _async_relay_device_events(self, device_link: DeviceLink):
+    async def _async_relay_input_events_loop(self, device_link: DeviceLink):
         device_in = device_link.input()
         device_out = device_link.output()
 
