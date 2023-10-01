@@ -46,9 +46,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 ## 3. Requirements
 
 - ([Single-board](https://en.wikipedia.org/wiki/Single-board_computer)) computer with Bluetooth support, e.g. Raspberry Pi 4B or Raspberry Pi Zero **_W_**
-  
 - Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/)
-  
 - Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 
 ## 4. Installation
@@ -57,20 +55,22 @@ Follow these steps to install and configure the project:
 
 ### 4.1. Prerequisites 
 
-1. Prepare your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34))
+1. Install an OS on your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34))
    
-2. (*optional*) Connect to a network via Ethernet cable or [WI-FI](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
+2. Connect to a network via Ethernet cable or [WI-FI](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). 
+   
+3. (*optional*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
 
    > [!NOTE]
    > These settings may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [at first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
    
-3. Connect to the Pi and update the packages:
+4. Connect to the Pi and update the packages:
    
    ```console
    sudo apt update && sudo apt upgrade -y
    ```
 
-4. Pair and trust any Bluetooth devices you wish to relay, either via GUI or:
+5. Pair and trust any Bluetooth devices you wish to relay, either via GUI or:
    
    ```console
    bluetoothctl
@@ -88,41 +88,38 @@ Follow these steps to install and configure the project:
 
 ### 4.2. Setup 
 
-5. On the Pi, clone the repository:  
+6. On the Pi, clone the repository:  
    
    ```console
    git clone https://github.com/quaxalber/bluetooth_2_usb.git
    ```
    
-6. Navigate to the project folder: 
+7. Navigate to the project folder: 
    
    ```console
    cd bluetooth_2_usb
    ```
 
-7. Run the installation script as root: 
+8. Run the installation script as root: 
     
    ```console
    sudo bash install.sh
    ```
  
    > [!NOTE]
-   > Many distros, including Raspberry Pi OS, are usually one or two minor versions behind the latest Python version. You could opt for a rolling-release OS, such as Manjaro. Otherwise the installer will [build Python 3.11 from source and install it as Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh).
+   > Many distros, including Raspberry Pi OS, are usually one or two minor versions behind the latest Python version. You could opt for a rolling-release OS, such as Manjaro. Otherwise the installer will [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh).
 
-   > [!IMPORTANT]
-   > If you want to let the installer build from source, remember to [set up a network](#41-prerequisites) first!
-
-8. Restart the Pi (prompt at the end of `install.sh`)
+9. Restart the Pi (prompt at the end of `install.sh`)
    
-9. Check which Linux input devices your Bluetooth devices are mapped to:
+10. Check which Linux input devices your Bluetooth devices are mapped to:
    
-   9.1. Start an interactive Python session:
+   10.1. Start an interactive Python session:
 
    ```console
    python3.11
    ```
 
-   9.2. Copy & paste these commands (`Enter` twice):
+   10.2. Copy & paste these commands (`Enter` twice):
 
    ```python
    import evdev
@@ -131,7 +128,7 @@ Follow these steps to install and configure the project:
        print(device.path, device.name, device.phys)
    ```
 
-   9.3. Note the device paths of the devices you want to use:
+   10.3. Note the device paths of the devices you want to use:
 
    ```console
    /dev/input/event3 Moody Mouse a1:b2:c3:d4:e5:f6     <---
@@ -140,26 +137,26 @@ Follow these steps to install and configure the project:
    /dev/input/event0 vc4-hdmi-0 vc4-hdmi-0/input0
    ```
 
-10. Specify the correct input devices in `bluetooth_2_usb.service`:
+11. Specify the correct input devices in `bluetooth_2_usb.service`:
     
     ```console
     nano bluetooth_2_usb.service
     ```
 
-    And change `event3` and `event2` according to step **9.3.** 
+    And change `event3` and `event2` according to step **10.3.** 
    
     (`Ctrl + X` > `Y` > `Enter` to exit)
 
-11. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
+12. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
-12. Reload and restart service:
+13. Reload and restart service:
     
     ```console
     sudo systemctl daemon-reload
     sudo service bluetooth_2_usb restart
     ```
 
-13. Verify that the service is running:
+14. Verify that the service is running:
     
     ```console
     service bluetooth_2_usb status
