@@ -30,9 +30,10 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 # 2. Features
 - Simple installation and highly automated setup 
-- Supports multiple input devices (currently keyboard and mouse)
+- Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
+- Installation as a systemd service
 - Reliable concurrency using state-of-the-art [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 - Clean and actively maintained code base
 
@@ -56,6 +57,9 @@ Follow these steps to install and configure the project:
    ```console
    bluetoothctl
    scan on
+   ```
+   ... wait for your devices to show up and note their MAC addresses (you may also type the first characters and hit `TAB` for auto-completion in the following commands) ...
+   ```console
    pair a1:b2:c3:d4:e5:f6
    trust a1:b2:c3:d4:e5:f6
    ```
@@ -136,10 +140,10 @@ Follow these steps to install and configure the project:
                 └─36719 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
     Sep 29 20:17:10 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
-    Sep 29 20:17:10 raspberrypi python3.11[36719]: 23-09-29 20:17:10 [INFO] Script starting up...
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
+    Something is off? Try yourself in [Troubleshooting](#52-troubleshooting)! 
     
 # 5. Usage
 Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. 
@@ -152,7 +156,7 @@ Currently you can provide the following CLI arguments:
 
 ```console
 user@raspberrypi:~/bluetooth_2_usb $ python3.11 bluetooth_2_usb.py -h
-usage: bluetooth_2_usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH]
+usage: bluetooth_2_usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH] [--version]
 
 Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
 
@@ -166,19 +170,20 @@ options:
   --log_to_file, -f     Add a handler that logs to file additionally to stdout.
   --log_path LOG_PATH, -p LOG_PATH
                         The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.
+  --version, -v         Display the version number of this software.
 ```
 
 ## 5.2. Troubleshooting
 
 ### 5.2.1. The Pi keeps rebooting or crashes randomly
-This is likely due to the limited power the Pi gets from the host. Try these steps:
+This is likely due to the limited power the Pi gets from the host's USB port. Try these steps:
 - If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
   
   > [!IMPORTANT]
-  > *Do not* use the blue (or black) USB-A ports *of your Pi* to connect. This won't work. 
+  > *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.** 
   > 
   > *Do use* the small USB power port. 
-- Try to connect to the Pi via SSH instead of attaching a disply directly and remove any unnecessary peripherals.
+- Try to connect to the Pi via SSH instead of attaching a display directly and remove any unnecessary peripherals.
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
 - Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor. This will ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
   

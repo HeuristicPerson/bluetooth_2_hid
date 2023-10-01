@@ -38,7 +38,7 @@ this.boot_device = 0
 this.devices = []
 
 
-class GadgetDevice:
+class Device:
     """
     HID Device specification: see
     https://github.com/adafruit/circuitpython/blob/main/shared-bindings/usb_hid/Device.c
@@ -130,7 +130,7 @@ class GadgetDevice:
     CONSUMER_CONTROL = None
 
 
-GadgetDevice.KEYBOARD = GadgetDevice(
+Device.KEYBOARD = Device(
     descriptor=bytes(
         (
             0x05,
@@ -211,7 +211,7 @@ GadgetDevice.KEYBOARD = GadgetDevice(
     out_report_lengths=[1],
     name="Keyboard gadget",
 )
-GadgetDevice.MOUSE = GadgetDevice(
+Device.MOUSE = Device(
     descriptor=bytes(
         (
             0x05,
@@ -288,7 +288,7 @@ GadgetDevice.MOUSE = GadgetDevice(
     name="Mouse gadget",
 )
 
-GadgetDevice.CONSUMER_CONTROL = GadgetDevice(
+Device.CONSUMER_CONTROL = Device(
     descriptor=bytes(
         (
             0x05,
@@ -326,7 +326,7 @@ GadgetDevice.CONSUMER_CONTROL = GadgetDevice(
     name="Consumer control gadget",
 )
 
-GadgetDevice.BOOT_KEYBOARD = GadgetDevice(
+Device.BOOT_KEYBOARD = Device(
     descriptor=bytes(
         (
             0x05,
@@ -405,7 +405,7 @@ GadgetDevice.BOOT_KEYBOARD = GadgetDevice(
     out_report_lengths=[1],
     name="Boot keyboard gadget",
 )
-GadgetDevice.BOOT_MOUSE = GadgetDevice(
+Device.BOOT_MOUSE = Device(
     descriptor=bytes(
         (
             0x05,
@@ -526,7 +526,15 @@ def disable() -> None:
 atexit.register(disable)
 
 
-def enable(requested_devices: Sequence[GadgetDevice], boot_device: int = 0) -> None:
+def unregister_disable():
+    """
+    When the script is run with help or version flag, we need to unregister lib.usb_hid.disable() from atexit
+    because else an exception occurs if the script is already running, e.g. as service.
+    """
+    atexit.unregister(disable)
+
+
+def enable(requested_devices: Sequence[Device], boot_device: int = 0) -> None:
     """Specify which USB HID devices that will be available.
     Can be called in ``boot.py``, before USB is connected.
 
@@ -576,9 +584,9 @@ def enable(requested_devices: Sequence[GadgetDevice], boot_device: int = 0) -> N
         return
 
     if boot_device == 1:
-        requested_devices = [GadgetDevice.BOOT_KEYBOARD]
+        requested_devices = [Device.BOOT_KEYBOARD]
     if boot_device == 2:
-        requested_devices = [GadgetDevice.BOOT_MOUSE]
+        requested_devices = [Device.BOOT_MOUSE]
 
     # '''
     # 1. Creating the gadgets
@@ -791,9 +799,7 @@ Implementation Notes
 """
 
 
-def find_device(
-    devices: Sequence[GadgetDevice], *, usage_page: int, usage: int
-) -> GadgetDevice:
+def find_device(devices: Sequence[Device], *, usage_page: int, usage: int) -> Device:
     """Search through the provided sequence of devices to find the one with the matching
     usage_page and usage."""
     if hasattr(devices, "send_report"):
@@ -822,7 +828,7 @@ def find_device(
 _MAX_KEYPRESSES = 6
 
 
-class KeyboardGadget:
+class Keyboard:
     """Send HID keyboard reports."""
 
     LED_NUM_LOCK = 0x01
@@ -836,7 +842,7 @@ class KeyboardGadget:
 
     # No more than _MAX_KEYPRESSES regular keys may be pressed at once.
 
-    def __init__(self, devices: Sequence[GadgetDevice] = this.devices) -> None:
+    def __init__(self, devices: Sequence[Device] = this.devices) -> None:
         """Create a Keyboard object that will send keyboard HID reports.
 
         Devices can be a sequence of devices that includes a keyboard device or a keyboard device
@@ -1026,10 +1032,10 @@ class KeyboardGadget:
 """
 
 
-class MouseGadget:
+class Mouse:
     """Send USB HID mouse reports."""
 
-    def __init__(self, devices: Sequence[GadgetDevice] = this.devices):
+    def __init__(self, devices: Sequence[Device] = this.devices):
         """Create a Mouse object that will send USB mouse HID reports.
 
         Devices can be a sequence of devices that includes a keyboard device or a keyboard device
@@ -1158,7 +1164,7 @@ class MouseGadget:
         return min(127, max(-127, dist))
 
 
-class DummyGadget:
+class DummyDevice:
     def __init__(self, actual_gadget):
         self._actual_gadget = actual_gadget
 
@@ -1195,7 +1201,7 @@ class DummyGadget:
 
 
 class DeviceLink:
-    def __init__(self, device_in: InputDevice, device_out: GadgetDevice):
+    def __init__(self, device_in: InputDevice, device_out: Device):
         self._device_in = None
         self._device_in_name = None
         self._device_in_path = None
@@ -1205,7 +1211,7 @@ class DeviceLink:
             self._device_in_path = device_in.path
         self._device_out = device_out
         self._device_out_enabled = False
-        self._device_out_dummy = DummyGadget(device_out)
+        self._device_out_dummy = DummyDevice(device_out)
         if device_out:
             self._device_out_enabled = True
 
@@ -1228,10 +1234,10 @@ class DeviceLink:
                 logger.error(f"Error resetting input {self._device_in_path} [{e}]")
                 await asyncio.sleep(5)
 
-    def output(self) -> GadgetDevice:
-        if not self._device_out_enabled:
-            return self._device_out_dummy
-        return self._device_out
+    def output(self) -> Device:
+        if self._device_out_enabled:
+            return self._device_out
+        return self._device_out_dummy
 
     def enable_output(self, enabled: bool = True):
         self._device_out_enabled = enabled

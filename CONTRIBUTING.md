@@ -1,7 +1,8 @@
 <!-- omit in toc -->
 # Contributing to Bluetooth 2 USB
 
-Thank you for considering contributing to Bluetooth 2 USB! We value your effort and are happy to provide guidelines to help you get started. Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open-source project.
+Thank you for considering contributing to Bluetooth 2 USB! We value your effort and are happy to provide guidelines to help you get started. Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open-source project. But don't be too concerned if you're still new to all this. The maintainers are happy to assist and guide new contributors! 
+
 <!-- omit in toc -->
 ## Table of Contents
 
