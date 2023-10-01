@@ -140,6 +140,7 @@ Follow these steps to install and configure the project:
                 └─36719 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
     Sep 29 20:17:10 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
+    Sep 29 20:17:10 raspberrypi python3.11[36719]: 23-09-29 20:17:10 [INFO] Launching Bluetooth 2 USB v0.2.0
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
@@ -219,8 +220,8 @@ This could be due to a number of reasons. Try these steps:
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
   ```console
   user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
-  23-09-29 21:03:00 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log')
-  23-09-29 21:03:00 [INFO] Script starting up...
+  23-09-29 21:03:00 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False)
+  23-09-29 21:03:00 [INFO] Launching Bluetooth 2 USB v0.2.0
   23-09-29 21:03:00 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1)]
   23-09-29 21:03:01 [DEBUG] Sandbox mode disabled. All output devices activated.
   23-09-29 21:03:01 [DEBUG] Registered device link: [Moody Keyboard]>>[/dev/hidg1]
