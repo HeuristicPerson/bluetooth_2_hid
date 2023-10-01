@@ -58,12 +58,12 @@ Follow these steps to install and configure the project:
 
 1. Install an OS on your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34))
    
-2. Connect to a network via Ethernet cable or [WI-FI](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). 
+2. Connect to a network via Ethernet cable or [Wi-Fi](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). 
    
 3. (*optional*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
 
-   > [!NOTE]
-   > These settings may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [at first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
+> [!NOTE]
+> These settings may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [at first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
    
 4. Connect to the Pi and update the packages:
    
