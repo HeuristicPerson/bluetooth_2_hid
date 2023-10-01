@@ -33,6 +33,8 @@ except ImportError as e:
     raise
 
 _VERSION = "0.2.0"
+_VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
+
 logger = lib.logger.get_logger()
 
 
@@ -350,14 +352,14 @@ async def _main(args: Namespace) -> NoReturn:
 
 if __name__ == "__main__":
     """
-    Entry point for the script. Sets up logging, parses command-line arguments, 
+    Entry point for the script. Sets up logging, parses command-line arguments,
     and starts the event loop.
     """
     try:
         args = parse_args()
 
         if args.version:
-            print(f"Bluetooth 2 USB v{_VERSION}")
+            print(_VERSIONED_NAME)
             unregister_disable()
             sys.exit(0)
 
@@ -368,6 +370,7 @@ if __name__ == "__main__":
             lib.logger.add_file_handler(args.log_path)
 
         logger.debug(f"CLI args: {args}")
+        logger.info(f"Launching {_VERSIONED_NAME}")
 
         asyncio.run(_main(args))
 
