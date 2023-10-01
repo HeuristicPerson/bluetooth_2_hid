@@ -367,11 +367,8 @@ if __name__ == "__main__":
             lib.logger.add_file_handler(args.log_path)
 
         logger.debug(f"CLI args: {args}")
-        logger.info("Script starting up...")
 
         asyncio.run(_main(args))
-
-        logger.info("Script shutting down...")
 
     except Exception as e:
         logger.exception(f"Houston, we have an unhandled problem. Abort mission. [{e}]")
