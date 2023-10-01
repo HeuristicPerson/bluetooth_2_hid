@@ -18,8 +18,9 @@
 - [6. Troubleshooting](#6-troubleshooting)
   - [6.1. The Pi keeps rebooting or crashes randomly](#61-the-pi-keeps-rebooting-or-crashes-randomly)
   - [6.2. The installation was successful, but I don't see any output on the target device](#62-the-installation-was-successful-but-i-dont-see-any-output-on-the-target-device)
-  - [6.3. I have a different issue](#63-i-have-a-different-issue)
-  - [6.4. Everything is working, but can it help me with Bitcoin mining?](#64-everything-is-working-but-can-it-help-me-with-bitcoin-mining)
+  - [6.3. In bluetoothctl, my device is constantly switching on/off](#63-in-bluetoothctl-my-device-is-constantly-switching-onoff)
+  - [6.4. I have a different issue](#64-i-have-a-different-issue)
+  - [6.5. Everything is working, but can it help me with Bitcoin mining?](#65-everything-is-working-but-can-it-help-me-with-bitcoin-mining)
 - [7. Bonus points](#7-bonus-points)
 - [8. Contributing](#8-contributing)
 - [9. License](#9-license)
@@ -80,11 +81,12 @@ Follow these steps to install and configure the project:
    ... wait for your devices to show up and note their MAC addresses (you may also type the first characters and hit `TAB` for auto-completion in the following commands) ...
 
    ```console
-   pair a1:b2:c3:d4:e5:f6
-   trust a1:b2:c3:d4:e5:f6
+   pair A1:B2:C3:D4:E5:F6
+   trust A1:B2:C3:D4:E5:F6
    ```
 
-   (replace `a1:b2:c3:d4:e5:f6` by your Bluetooth device's MAC)
+   > [!NOTE]
+   > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
 
 ### 4.2. Setup 
 
@@ -145,7 +147,8 @@ Follow these steps to install and configure the project:
 
     And change `event3` and `event2` according to step **10.3.** 
    
-    (`Ctrl + X` > `Y` > `Enter` to exit)
+   > [!NOTE]
+   > `Ctrl + X` > `Y` > `Enter` to save and exit nano
 
 12. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
@@ -251,6 +254,32 @@ This could be due to a number of reasons. Try these steps:
 
 - Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
   
+- Verify that your Bluetooth devices are paired, trusted, connected and *not* blocked:
+  
+  ```console
+  user@raspberrypi:~/bluetooth_2_usb $ bluetoothctl
+  Agent registered
+  [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
+  [Moody]# info A1:B2:C3:D4:E5:F6
+  Device A1:B2:C3:D4:E5:F6 (random)
+          Name: Moody
+          Alias: Moody
+          Paired: yes     <---
+          Trusted: yes    <---
+          Blocked: no     <---
+          Connected: yes  <---
+          WakeAllowed: no
+          LegacyPairing: no
+          UUID: Generic Access Profile    (00001800-0000-1000-8000-00805f9b34fb)
+          UUID: Generic Attribute Profile (00001801-0000-1000-8000-00805f9b34fb)
+          UUID: Device Information        (0000180a-0000-1000-8000-00805f9b34fb)
+          UUID: Human Interface Device    (00001812-0000-1000-8000-00805f9b34fb)
+          UUID: Nordic UART Service       (6e400001-b5a3-f393-e0a9-e50e24dcca9e)
+  ```
+  
+  > [!NOTE]
+  > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
+
 - Reload and restart service:
   
   ```console
@@ -270,7 +299,32 @@ This could be due to a number of reasons. Try these steps:
   
 - Try connecting to a different host 
 
-### 6.3. I have a different issue 
+### 6.3. In bluetoothctl, my device is constantly switching on/off
+
+This is a common issue, especially when the device gets paired with multiple hosts. One simple fix/workaround is to re-pair the device:
+
+```console
+bluetoothctl
+scan on
+block A1:B2:C3:D4:E5:F6
+remove A1:B2:C3:D4:E5:F6
+pair A1:B2:C3:D4:E5:F6
+trust A1:B2:C3:D4:E5:F6
+```
+
+If the issue persists, it's worth trying to delete the cache:
+
+```console
+sudo -i
+cd '/var/lib/bluetooth/0A:1B:2C:3D:4E:5F/cache'
+rm -rf 'A1:B2:C3:D4:E5:F6'
+exit
+```
+
+> [!NOTE]
+> Replace `0A:1B:2C:3D:4E:5F` by your Pi's Bluetooth controller's MAC and `A1:B2:C3:D4:E5:F6` by your input device's MAC
+
+### 6.4. I have a different issue 
 
 Here's a few things you could try:
 
@@ -335,7 +389,7 @@ Here's a few things you could try:
   
 - For more help, open an [issue](https://github.com/quaxalber/bluetooth_2_usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth_2_usb)
 
-### 6.4. Everything is working, but can it help me with Bitcoin mining? 
+### 6.5. Everything is working, but can it help me with Bitcoin mining? 
 
 Absolutely! [Here's how](https://bit.ly/42BTC). 
 
