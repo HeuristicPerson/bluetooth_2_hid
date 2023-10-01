@@ -109,7 +109,7 @@ Follow these steps to install and configure the project:
    ```
  
  > [!NOTE]
- > Many distros, including Raspberry Pi OS, are usually one or two minor versions behind the latest Python version. You could opt for a rolling-release OS, such as Manjaro. Otherwise the installer will [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh).
+ > Many point-release distros, including Raspberry Pi OS, are usually one or two minor versions behind the latest Python version. You could opt for a rolling-release OS, such as [Manjaro](https://github.com/manjaro-arm/rpi4-images). Or you let the installer [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh). Depending on your hardware, this may take a moment. 
 
 9. Restart the Pi (prompt at the end of `install.sh`)
    
