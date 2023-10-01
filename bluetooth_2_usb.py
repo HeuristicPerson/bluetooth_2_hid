@@ -32,7 +32,7 @@ except ImportError as e:
     print(f"Error importing modules. [{e}]")
     raise
 
-_VERSION = "0.1.0"
+_VERSION = "0.2.0"
 logger = lib.logger.get_logger()
 
 
