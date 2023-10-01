@@ -113,29 +113,29 @@ Follow these steps to install and configure the project:
    
 10. Check which Linux input devices your Bluetooth devices are mapped to:
    
-   10.1. Start an interactive Python session:
+    10.1. Start an interactive Python session:
 
-   ```console
-   python3.11
-   ```
+    ```console
+    python3.11
+    ```
 
-   10.2. Copy & paste these commands (`Enter` twice):
+    10.2. Copy & paste these commands (`Enter` twice):
 
-   ```python
-   import evdev
-   devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-   for device in devices:
-       print(device.path, device.name, device.phys)
-   ```
+    ```python
+    import evdev
+    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    for device in devices:
+        print(device.path, device.name, device.phys)
+    ```
 
-   10.3. Note the device paths of the devices you want to use:
+    10.3. Note the device paths of the devices you want to use:
 
-   ```console
-   /dev/input/event3 Moody Mouse a1:b2:c3:d4:e5:f6     <---
-   /dev/input/event2 Moody Keyboard a1:b2:c3:d4:e5:f6  <---
-   /dev/input/event1 vc4-hdmi-1 vc4-hdmi-1/input0
-   /dev/input/event0 vc4-hdmi-0 vc4-hdmi-0/input0
-   ```
+    ```console
+    /dev/input/event3 Moody Mouse a1:b2:c3:d4:e5:f6     <---
+    /dev/input/event2 Moody Keyboard a1:b2:c3:d4:e5:f6  <---
+    /dev/input/event1 vc4-hdmi-1 vc4-hdmi-1/input0
+    /dev/input/event0 vc4-hdmi-0 vc4-hdmi-0/input0
+    ```
 
 11. Specify the correct input devices in `bluetooth_2_usb.service`:
     
