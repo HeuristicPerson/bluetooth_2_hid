@@ -54,9 +54,9 @@ class ComboDeviceHidProxy:
         # Device links, that have been registered to this instance, but not
         # necessarily connected. Only connected links are ready to be used.
         self._registered_links: List[DeviceLink] = []
-        self._is_sandbox = False
-        self._gadgets_enabled = False
-        self._task_group = None
+        self._is_sandbox: bool = False
+        self._gadgets_enabled: bool = False
+        self._task_group: TaskGroup = None
 
     def _init_devices(
         self, keyboard_paths: List[str], mouse_paths: List[str], is_sandbox: bool
@@ -350,7 +350,8 @@ async def _main(args: Namespace) -> NoReturn:
 
 if __name__ == "__main__":
     """
-    Entry point for the script. Sets up logging, parses command-line arguments, and starts the event loop.
+    Entry point for the script. Sets up logging, parses command-line arguments, 
+    and starts the event loop.
     """
     try:
         args = parse_args()
