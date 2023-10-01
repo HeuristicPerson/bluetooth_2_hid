@@ -110,11 +110,11 @@ Follow these steps to install and configure the project:
    > Many distros, including Raspberry Pi OS, are usually one or two minor versions behind the latest Python version. You could opt for a rolling-release OS, such as Manjaro. Otherwise the installer will [build Python 3.11 from source and install it as Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh).
 
    > [!IMPORTANT]
-   > If you want to let the installer build from source, remember to set up a network first! See step **2.**
+   > If you want to let the installer build from source, remember to [set up a network](#41-prerequisites) first!
 
 8. Restart the Pi (prompt at the end of `install.sh`)
    
-9.  Check which Linux input devices your Bluetooth devices are mapped to:
+9. Check which Linux input devices your Bluetooth devices are mapped to:
    
    9.1. Start an interactive Python session:
 
