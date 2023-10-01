@@ -57,6 +57,9 @@ Follow these steps to install and configure the project:
    ```console
    bluetoothctl
    scan on
+   ```
+   ... wait for your devices to show up and note their MAC addresses (you may also type the first characters and hit `TAB` for auto-completion in the following commands) ...
+   ```console
    pair a1:b2:c3:d4:e5:f6
    trust a1:b2:c3:d4:e5:f6
    ```
@@ -137,7 +140,6 @@ Follow these steps to install and configure the project:
                 └─36719 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
     Sep 29 20:17:10 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
-    Sep 29 20:17:10 raspberrypi python3.11[36719]: 23-09-29 20:17:10 [INFO] Script starting up...
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
