@@ -357,6 +357,7 @@ if __name__ == "__main__":
     """
     try:
         args = parse_args()
+        logger.debug(f"CLI args: {args}")
 
         if args.version:
             print(_VERSIONED_NAME)
@@ -366,10 +367,12 @@ if __name__ == "__main__":
         if args.debug:
             logger.setLevel(logging.DEBUG)
 
+        log_handlers_message = "Logging to stdout"
         if args.log_to_file:
             lib.logger.add_file_handler(args.log_path)
+            log_handlers_message += f" and to {args.log_path}"
+        logger.debug(log_handlers_message)
 
-        logger.debug(f"CLI args: {args}")
         logger.info(f"Launching {_VERSIONED_NAME}")
 
         asyncio.run(_main(args))
