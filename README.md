@@ -63,7 +63,7 @@ Follow these steps to install and configure the project:
 3. (*optional*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
 
 > [!NOTE]
-> These settings may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [at first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
+> These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [at first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
    
 4. Connect to the Pi and update the packages:
    
@@ -147,8 +147,8 @@ Follow these steps to install and configure the project:
 
     And change `event3` and `event2` according to step **10.3.** 
    
-   > [!NOTE]
-   > `Ctrl + X` > `Y` > `Enter` to save and exit nano
+    > [!NOTE]
+    > `Ctrl + X` > `Y` > `Enter` to save and exit nano
 
 12. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
     
@@ -184,7 +184,8 @@ Follow these steps to install and configure the project:
     Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
 
-    Something is off? Try yourself in [Troubleshooting](#6-troubleshooting)! 
+    > [!NOTE]
+    > Something seems off? Try yourself in [Troubleshooting](#6-troubleshooting)! 
     
 ## 5. Usage
 
@@ -259,7 +260,7 @@ This could be due to a number of reasons. Try these steps:
   ```console
   user@raspberrypi:~/bluetooth_2_usb $ bluetoothctl
   Agent registered
-  [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
+  [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
   [Moody]# info A1:B2:C3:D4:E5:F6
   Device A1:B2:C3:D4:E5:F6 (random)
           Name: Moody
