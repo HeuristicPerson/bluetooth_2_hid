@@ -125,7 +125,7 @@ Follow these steps to install and configure the project:
     import evdev
     devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
     for device in devices:
-        print(device.name, device.phys, device.path)
+        print(f"{device.name}\t{device.phys}\t{device.path}")
     ```
 
     10.3. Note the device paths of the devices you want to use:
