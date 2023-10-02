@@ -8,7 +8,7 @@ try:
     import asyncio
     from asyncio import TaskGroup, Task
     from datetime import datetime
-    import logging
+    from logging import DEBUG
     import signal
     import sys
     from typing import Collection, List, NoReturn, Optional, Tuple
@@ -350,7 +350,7 @@ async def _main() -> NoReturn:
         sys.exit(0)
 
     if args.debug:
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(DEBUG)
 
     log_handlers_message = "Logging to stdout"
 
