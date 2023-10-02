@@ -5,7 +5,6 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 
 
 try:
-    from argparse import Namespace
     import asyncio
     from asyncio import TaskGroup, Task
     from datetime import datetime
@@ -338,44 +337,41 @@ signal.signal(signal.SIGINT, _signal_handler)
 signal.signal(signal.SIGTERM, _signal_handler)
 
 
-async def _main(args: Namespace) -> NoReturn:
+async def _main() -> NoReturn:
     """
-    Run the main event loop to read events from the input device
-    and forward them to the corresponding USB device.
+    Parses command-line arguments, sets up logging and starts the event loop which reads
+    events from the input devices and forwards them to the corresponding USB gadget device.
+    """
+    args = parse_args()
 
-    Parameters:
-        args (Namespace): Command-line arguments.
-    """
+    if args.version:
+        print(_VERSIONED_NAME)
+        unregister_disable()
+        sys.exit(0)
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
+    log_handlers_message = "Logging to stdout"
+
+    if args.log_to_file:
+        lib.logger.add_file_handler(args.log_path)
+        log_handlers_message += f" and to {args.log_path}"
+
+    logger.debug(f"CLI args: {args}")
+    logger.debug(log_handlers_message)
+    logger.info(f"Launching {_VERSIONED_NAME}")
+
     proxy = ComboDeviceHidProxy(args.keyboards, args.mice, args.sandbox)
     await proxy.async_connect_registered_links()
 
 
 if __name__ == "__main__":
     """
-    Entry point for the script. Sets up logging, parses command-line arguments,
-    and starts the event loop.
+    Entry point for the script.
     """
     try:
-        args = parse_args()
-        logger.debug(f"CLI args: {args}")
-
-        if args.version:
-            print(_VERSIONED_NAME)
-            unregister_disable()
-            sys.exit(0)
-
-        if args.debug:
-            logger.setLevel(logging.DEBUG)
-
-        log_handlers_message = "Logging to stdout"
-        if args.log_to_file:
-            lib.logger.add_file_handler(args.log_path)
-            log_handlers_message += f" and to {args.log_path}"
-        logger.debug(log_handlers_message)
-
-        logger.info(f"Launching {_VERSIONED_NAME}")
-
-        asyncio.run(_main(args))
+        asyncio.run(_main())
 
     except Exception as e:
         logger.exception(f"Houston, we have an unhandled problem. Abort mission. [{e}]")
