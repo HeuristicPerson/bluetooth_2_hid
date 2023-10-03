@@ -302,6 +302,35 @@ class Keycode:
     RIGHT_GUI = 0xE7
     """GUI modifier right of the spacebar"""
 
+    KP_COMMA = 0x85
+    KP_EQSIGN = 0x86
+    EXECUTE = 0x74
+    HELP = 0x75
+    MENU = 0x76
+    SELECT = 0x77
+    STOP = 0x78
+    AGAIN = 0x79
+    UNDO = 0x7A
+    CUT = 0x7B
+    COPY = 0x7C
+    PASTE = 0x7D
+    FIND = 0x7E
+    MUTE = 0x7F
+    VOLUP = 0x80
+    VOLDOWN = 0x81
+    LOCKING_CAPSLOCK = 0x82
+    LOCKING_NUMLOCK = 0x83
+    LOCKING_SCROLLOCK = 0x84
+    ALTERASE = 0x99
+    ATTENTION = 0x9A
+    CANCEL = 0x9B
+    CLEAR = 0x9C
+    PRIOR = 0x9D
+    RETURN = 0x9E
+    SEPARATOR = 0x9F
+    OUT = 0xA0
+    OPER = 0xA1
+
     # pylint: enable-msg=invalid-name
     @classmethod
     def modifier_bit(cls, keycode: int) -> int:
