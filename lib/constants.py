@@ -304,7 +304,6 @@ class Keycode:
     RIGHT_GUI = 0xE7
     """GUI modifier right of the spacebar"""
 
-
     # pylint: enable-msg=invalid-name
     @classmethod
     def modifier_bit(cls, keycode: int) -> int:
