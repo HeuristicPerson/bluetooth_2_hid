@@ -47,7 +47,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 ## 3. Requirements
 
 - ([Single-board](https://en.wikipedia.org/wiki/Single-board_computer)) computer with Bluetooth support, e.g. Raspberry Pi 4B or Raspberry Pi Zero **_W_**
-- Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/)
+- Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/) (recommended)
 - Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 
 ## 4. Installation
@@ -58,7 +58,7 @@ Follow these steps to install and configure the project:
 
 1. Install an OS on your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34))
    
-2. Connect to a network via Ethernet cable or [Wi-Fi](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). 
+2. Connect to a network via Ethernet cable or [Wi-Fi](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). Make sure this network has Internet access.
    
 3. (*optional*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
 
