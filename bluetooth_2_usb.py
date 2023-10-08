@@ -13,7 +13,7 @@ try:
     import sys
     from typing import Collection, List, NoReturn, Tuple
 
-    from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
+    from evdev import ecodes, InputDevice, InputEvent, categorize, list_devices
 
     from lib.argpaser import parse_args
     from lib.constants import key_event
