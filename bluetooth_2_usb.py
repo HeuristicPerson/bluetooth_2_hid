@@ -13,7 +13,7 @@ try:
     import sys
     from typing import Collection, List, NoReturn, Tuple
 
-    sys.path.append("submodules")
+    sys.path.append("submodules/Adafruit_CircuitPython_HID")
 
     from adafruit_hid.keyboard import Keyboard
     from adafruit_hid.mouse import Mouse
