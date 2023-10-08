@@ -11,7 +11,7 @@ try:
     from logging import DEBUG
     import signal
     import sys
-    from typing import Collection, List, NoReturn, Optional, Tuple
+    from typing import Collection, List, NoReturn, Tuple
 
     from evdev import InputDevice, InputEvent, categorize, ecodes, list_devices
 
@@ -44,9 +44,9 @@ class ComboDeviceHidProxy:
 
     def __init__(
         self,
-        keyboard_paths: Optional[List[str]] = None,
-        mouse_paths: Optional[List[str]] = None,
-        is_sandbox: Optional[bool] = False,
+        keyboard_paths: List[str] = [],
+        mouse_paths: List[str] = [],
+        is_sandbox: bool = False,
     ) -> None:
         self._init_variables()
         self._init_devices(keyboard_paths, mouse_paths, is_sandbox)
@@ -57,10 +57,13 @@ class ComboDeviceHidProxy:
         self._registered_links: List[DeviceLink] = []
         self._is_sandbox: bool = False
         self._gadgets_enabled: bool = False
-        self._task_group: TaskGroup = None
+        self._task_group: TaskGroup
 
     def _init_devices(
-        self, keyboard_paths: List[str], mouse_paths: List[str], is_sandbox: bool
+        self,
+        keyboard_paths: List[str] = [],
+        mouse_paths: List[str] = [],
+        is_sandbox: bool = False,
     ) -> None:
         try:
             self.enable_usb_gadgets()
@@ -91,18 +94,20 @@ class ComboDeviceHidProxy:
         if gadgets_enabled:
             # We have to use BOOT_MOUSE since for some reason MOUSE freezes on any input.
             # This should be fine though. Also it's important to enable mouse first.
-            lib.usb_hid.enable([OutputDevice.BOOT_MOUSE, OutputDevice.KEYBOARD])
+            lib.usb_hid.enable([OutputDevice.BOOT_MOUSE, OutputDevice.KEYBOARD])  # type: ignore
         else:
             lib.usb_hid.disable()
 
     def _log_gadgets(self) -> None:
         if self._gadgets_enabled:
-            logger.debug(f"Available output devices: {lib.usb_hid.devices}")
+            logger.debug(f"Available output devices: {lib.usb_hid.devices}")  # type: ignore
         else:
             logger.warning(f"All output devices disabled!")
 
     def _create_and_register_links(
-        self, keyboard_paths: List[str], mouse_paths: List[str]
+        self,
+        keyboard_paths: List[str],
+        mouse_paths: List[str],
     ) -> None:
         keyboards = [self.create_keyboard_link(path) for path in keyboard_paths]
         mice = [self.create_mouse_link(path) for path in mouse_paths]
@@ -119,14 +124,14 @@ class ComboDeviceHidProxy:
             self._registered_links.append(link)
 
     def create_keyboard_link(self, keyboard_path: str) -> DeviceLink:
-        return self._create_device_link(keyboard_path, Keyboard())
+        return self._create_device_link(keyboard_path, Keyboard())  # type: ignore
 
     def create_mouse_link(self, mouse_path: str) -> DeviceLink:
-        return self._create_device_link(mouse_path, Mouse())
+        return self._create_device_link(mouse_path, Mouse())  # type: ignore
 
     def _create_device_link(
         self, device_in_path: str, device_out: OutputDevice
-    ) -> DeviceLink:
+    ) -> DeviceLink | None:
         if not device_in_path:
             return None
 
@@ -187,11 +192,10 @@ class ComboDeviceHidProxy:
 
     async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
         logger.info(f"Starting event loop for {repr(device_link)}")
+        should_reconnect = True
+        device_in = device_link.input()
 
         try:
-            should_reconnect = True
-            device_in = device_link.input()
-
             await self._async_relay_input_events_loop(device_link)
 
         except OSError as e:
@@ -228,16 +232,16 @@ class ComboDeviceHidProxy:
         if self._is_key_up_or_down(event):
             await self._async_send_key(event, device_out)
         elif self._is_mouse_movement(event):
-            await self._async_move_mouse(event, device_out)
+            await self._async_move_mouse(event, device_out)  # type: ignore
 
     def _is_key_up_or_down(self, event: InputEvent) -> bool:
-        return event.type == ecodes.EV_KEY and event.value in [
+        return event.type == ecodes.EV_KEY and event.value in [  # type: ignore
             key_event.DOWN,
             key_event.UP,
         ]
 
     def _is_mouse_movement(self, event: InputEvent) -> bool:
-        return event.type == ecodes.EV_REL
+        return event.type == ecodes.EV_REL  # type: ignore
 
     async def _async_send_key(
         self, event: InputEvent, device_out: OutputDevice
@@ -248,9 +252,9 @@ class ComboDeviceHidProxy:
 
         try:
             if event.value == key_event.DOWN:
-                device_out.press(key)
+                device_out.press(key)  # type: ignore
             elif event.value == key_event.UP:
-                device_out.release(key)
+                device_out.release(key)  # type: ignore
 
         except Exception as e:
             logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
@@ -267,11 +271,11 @@ class ComboDeviceHidProxy:
     def _get_mouse_movement(self, event: InputEvent) -> Tuple[int, int, int]:
         x, y, mwheel = 0, 0, 0
 
-        if event.code == ecodes.REL_X:
+        if event.code == ecodes.REL_X:  # type: ignore
             x = event.value
-        elif event.code == ecodes.REL_Y:
+        elif event.code == ecodes.REL_Y:  # type: ignore
             y = event.value
-        elif event.code == ecodes.REL_WHEEL:
+        elif event.code == ecodes.REL_WHEEL:  # type: ignore
             mwheel = event.value
 
         return x, y, mwheel
@@ -320,7 +324,7 @@ def _elapsed_seconds_since(reference_time: datetime) -> float:
     return (current_time - reference_time).total_seconds()
 
 
-def _get_task(task_name: str) -> Task:
+def _get_task(task_name: str) -> Task | None:
     for task in asyncio.all_tasks():
         if task.get_name() == task_name:
             return task
