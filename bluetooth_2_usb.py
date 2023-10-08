@@ -115,18 +115,18 @@ class ComboDeviceHidProxy:
         # Use list unpacking to get a nice comma-separated sequence of all devices
         self.register_device_links(*keyboards, *mice)
 
-    def register_device_links(self, *device_links: DeviceLink) -> None:
+    def register_device_links(self, *device_links: DeviceLink | None) -> None:
         for link in device_links:
             self._register_single_link(link)
 
-    def _register_single_link(self, link: DeviceLink) -> None:
+    def _register_single_link(self, link: DeviceLink | None) -> None:
         if link and link not in self._registered_links:
             self._registered_links.append(link)
 
-    def create_keyboard_link(self, keyboard_path: str) -> DeviceLink:
+    def create_keyboard_link(self, keyboard_path: str) -> DeviceLink | None:
         return self._create_device_link(keyboard_path, Keyboard())  # type: ignore
 
-    def create_mouse_link(self, mouse_path: str) -> DeviceLink:
+    def create_mouse_link(self, mouse_path: str) -> DeviceLink | None:
         return self._create_device_link(mouse_path, Mouse())  # type: ignore
 
     def _create_device_link(
