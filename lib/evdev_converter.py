@@ -1,7 +1,7 @@
 from evdev import ecodes
 
 import lib.logger
-from lib.constants import Keycode, MouseButton
+from adafruit_hid.keycode import Keycode, MouseButton
 
 logger = lib.logger.get_logger()
 
@@ -106,7 +106,7 @@ _EVDEV_TO_HID_MAPPING = {
     ecodes.KEY_COMPOSE: Keycode.APPLICATION,
     ecodes.KEY_POWER: Keycode.POWER,
     ecodes.KEY_KPEQUAL: Keycode.KEYPAD_EQUALS,
-    ecodes.KEY_KPCOMMA: Keycode.KP_COMMA,
+    ecodes.KEY_KPCOMMA: Keycode.KEYPAD_COMMA,
     ecodes.KEY_F13: Keycode.F13,
     ecodes.KEY_F14: Keycode.F14,
     ecodes.KEY_F15: Keycode.F15,
@@ -167,7 +167,7 @@ Mapping from evdev ecode to HID Keycode
 """
 
 
-def to_hid_key(ecode: int) -> int:
+def to_hid_key(ecode: int) -> int | None:
     hid_key = _EVDEV_TO_HID_MAPPING.get(ecode, None)
     logger.debug(f"Converted ecode {ecode} to HID keycode {hid_key}")
     if hid_key is None:

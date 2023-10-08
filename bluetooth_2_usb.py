@@ -13,20 +13,18 @@ try:
     import sys
     from typing import Collection, List, NoReturn, Tuple
 
-    from evdev import ecodes, InputDevice, InputEvent, categorize, list_devices
+    sys.path.append("submodules")
 
-    from lib.argpaser import parse_args
-    from lib.constants import key_event
+    from adafruit_hid.keyboard import Keyboard
+    from adafruit_hid.mouse import Mouse
+    from evdev import ecodes, InputDevice, InputEvent, KeyEvent, categorize, list_devices
+    import usb_hid
+    from usb_hid import Device as OutputDevice, unregister_disable
+
+    from lib.args import parse_args
+    from lib.device_link import DeviceLink
     import lib.evdev_converter as converter
     import lib.logger
-    import lib.usb_hid
-    from lib.usb_hid import (
-        Device as OutputDevice,
-        Mouse,
-        Keyboard,
-        DeviceLink,
-        unregister_disable,
-    )
 except ImportError as e:
     print(f"Error importing modules. [{e}]")
     raise
@@ -94,13 +92,13 @@ class ComboDeviceHidProxy:
         if gadgets_enabled:
             # We have to use BOOT_MOUSE since for some reason MOUSE freezes on any input.
             # This should be fine though. Also it's important to enable mouse first.
-            lib.usb_hid.enable([OutputDevice.BOOT_MOUSE, OutputDevice.KEYBOARD])  # type: ignore
+            usb_hid.enable([OutputDevice.BOOT_MOUSE, OutputDevice.KEYBOARD])  # type: ignore
         else:
-            lib.usb_hid.disable()
+            usb_hid.disable()
 
     def _log_gadgets(self) -> None:
         if self._gadgets_enabled:
-            logger.debug(f"Available output devices: {lib.usb_hid.devices}")  # type: ignore
+            logger.debug(f"Available output devices: {usb_hid.devices}")  # type: ignore
         else:
             logger.warning(f"All output devices disabled!")
 
@@ -124,10 +122,10 @@ class ComboDeviceHidProxy:
             self._registered_links.append(link)
 
     def create_keyboard_link(self, keyboard_path: str) -> DeviceLink | None:
-        return self._create_device_link(keyboard_path, Keyboard())  # type: ignore
+        return self._create_device_link(keyboard_path, Keyboard(usb_hid.devices))  # type: ignore
 
     def create_mouse_link(self, mouse_path: str) -> DeviceLink | None:
-        return self._create_device_link(mouse_path, Mouse())  # type: ignore
+        return self._create_device_link(mouse_path, Mouse(usb_hid.devices))  # type: ignore
 
     def _create_device_link(
         self, device_in_path: str, device_out: OutputDevice
@@ -236,8 +234,8 @@ class ComboDeviceHidProxy:
 
     def _is_key_up_or_down(self, event: InputEvent) -> bool:
         return event.type == ecodes.EV_KEY and event.value in [  # type: ignore
-            key_event.DOWN,
-            key_event.UP,
+            KeyEvent.key_down,
+            KeyEvent.key_up,
         ]
 
     def _is_mouse_movement(self, event: InputEvent) -> bool:
@@ -251,9 +249,9 @@ class ComboDeviceHidProxy:
             return
 
         try:
-            if event.value == key_event.DOWN:
+            if event.value == KeyEvent.key_down:
                 device_out.press(key)  # type: ignore
-            elif event.value == key_event.UP:
+            elif event.value == KeyEvent.key_up:
                 device_out.release(key)  # type: ignore
 
         except Exception as e:
