@@ -4,6 +4,9 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 """
 
 
+import os
+
+
 try:
     import asyncio
     from asyncio import TaskGroup, Task
@@ -13,15 +16,15 @@ try:
     import sys
     from typing import Collection, List, NoReturn, Tuple
 
-    sys.path.append("submodules/Adafruit_Blinka/src")
-    sys.path.append("submodules/Adafruit_CircuitPython_HID")
-    sys.path.append("submodules/python-evdev")
+    sys.path.append(os.path.abspath("submodules/Adafruit_Blinka/src"))
+    sys.path.append(os.path.abspath("submodules/Adafruit_CircuitPython_HID"))
+    sys.path.append(os.path.abspath("submodules/python-evdev"))
 
+    from adafruit_hid.keyboard import Keyboard
+    from adafruit_hid.mouse import Mouse
     from evdev import ecodes, InputDevice, InputEvent, KeyEvent, categorize, list_devices
     import usb_hid
     from usb_hid import Device as OutputDevice, unregister_disable
-    from adafruit_hid.keyboard import Keyboard
-    from adafruit_hid.mouse import Mouse
 
     from lib.args import parse_args
     from lib.device_link import DeviceLink
