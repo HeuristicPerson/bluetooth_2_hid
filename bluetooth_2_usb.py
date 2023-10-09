@@ -19,7 +19,7 @@ try:
     sys.path.append(os.path.abspath("submodules/Adafruit_Blinka/src"))
     sys.path.append(os.path.abspath("submodules/Adafruit_CircuitPython_HID"))
     sys.path.append(os.path.abspath("submodules/python-evdev"))
-
+    print(sys.path)
     from adafruit_hid.keyboard import Keyboard
     from adafruit_hid.mouse import Mouse
     from evdev import ecodes, InputDevice, InputEvent, KeyEvent, categorize, list_devices
