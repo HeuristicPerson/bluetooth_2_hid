@@ -17,7 +17,9 @@ try:
     from typing import Collection, List, NoReturn, Tuple
 
     base_path = sys.path[0]
-    sys.path.append(os.path.join(base_path, "submodules"))
+    sys.path.append(os.path.join(base_path, "submodules/Adafruit_Blinka/src"))
+    sys.path.append(os.path.join(base_path, "submodules/Adafruit_CircuitPython_HID"))
+    sys.path.append(os.path.join(base_path, "submodules/python-evdev"))
 
     from adafruit_hid.keyboard import Keyboard
     from adafruit_hid.mouse import Mouse
