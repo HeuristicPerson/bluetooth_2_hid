@@ -17,11 +17,11 @@ try:
     sys.path.append("submodules/Adafruit_CircuitPython_HID")
     sys.path.append("submodules/python-evdev")
 
-    from adafruit_hid.keyboard import Keyboard
-    from adafruit_hid.mouse import Mouse
     from evdev import ecodes, InputDevice, InputEvent, KeyEvent, categorize, list_devices
     import usb_hid
     from usb_hid import Device as OutputDevice, unregister_disable
+    from adafruit_hid.keyboard import Keyboard
+    from adafruit_hid.mouse import Mouse
 
     from lib.args import parse_args
     from lib.device_link import DeviceLink
