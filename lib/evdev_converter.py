@@ -1,7 +1,7 @@
 from evdev import ecodes
 
 import lib.logger
-from adafruit_hid.keycode import Keycode, MouseButton
+from adafruit_hid import ConsumerControlCode, Keycode, MouseButton
 
 logger = lib.logger.get_logger()
 
@@ -137,13 +137,13 @@ _EVDEV_TO_HID_MAPPING = {
     ecodes.KEY_RIGHTSHIFT: Keycode.RIGHT_SHIFT,
     ecodes.KEY_RIGHTALT: Keycode.RIGHT_ALT,
     ecodes.KEY_RIGHTMETA: Keycode.RIGHT_GUI,
-    ecodes.KEY_PLAYPAUSE: None,
-    ecodes.KEY_STOPCD: None,
-    ecodes.KEY_PREVIOUSSONG: None,
-    ecodes.KEY_NEXTSONG: None,
-    ecodes.KEY_EJECTCD: None,
-    ecodes.KEY_VOLUMEUP: None,
-    ecodes.KEY_VOLUMEDOWN: None,
+    ecodes.KEY_PLAYPAUSE: ConsumerControlCode.PLAY_PAUSE,
+    ecodes.KEY_STOPCD: ConsumerControlCode.STOP,
+    ecodes.KEY_PREVIOUSSONG: ConsumerControlCode.SCAN_PREVIOUS_TRACK,
+    ecodes.KEY_NEXTSONG: ConsumerControlCode.SCAN_NEXT_TRACK,
+    ecodes.KEY_EJECTCD: ConsumerControlCode.EJECT,
+    ecodes.KEY_VOLUMEUP: ConsumerControlCode.VOLUME_INCREMENT,
+    ecodes.KEY_VOLUMEDOWN: ConsumerControlCode.VOLUME_DECREMENT,
     ecodes.KEY_WWW: None,
     ecodes.KEY_MAIL: None,
     ecodes.KEY_FORWARD: None,
@@ -155,7 +155,7 @@ _EVDEV_TO_HID_MAPPING = {
     ecodes.KEY_SLEEP: None,
     ecodes.KEY_REFRESH: None,
     ecodes.KEY_CALC: None,
-    ecodes.KEY_MUTE: None,
+    ecodes.KEY_MUTE: ConsumerControlCode.MUTE,
     ecodes.KEY_COFFEE: None,
     ecodes.KEY_BACK: None,
     ecodes.BTN_LEFT: MouseButton.LEFT,
