@@ -14,18 +14,17 @@ try:
     import sys
     from typing import Collection, List, NoReturn, Tuple
 
-    base_path = sys.path[0]
     required_submodules = [
         "Adafruit_Blinka/src",
         "Adafruit_CircuitPython_HID",
         "python-evdev",
     ]
+    base_path = sys.path[0]
     for module in required_submodules:
         module_path = os.path.join(base_path, "submodules", module)
         sys.path.append(module_path)
 
-    from adafruit_hid.keyboard import Keyboard
-    from adafruit_hid.mouse import Mouse
+    from adafruit_hid import ConsumerControl, Keyboard, Mouse
     from evdev import (
         ecodes,
         InputDevice,
@@ -35,7 +34,7 @@ try:
         list_devices,
     )
     import usb_hid
-    from usb_hid import Device as OutputDevice, unregister_disable
+    from usb_hid import Device as GadgetDevice, unregister_disable
 
     from lib.args import parse_args
     from lib.device_link import DeviceLink
@@ -108,7 +107,7 @@ class ComboDeviceHidProxy:
         if gadgets_enabled:
             # We have to use BOOT_MOUSE since for some reason MOUSE freezes on any input.
             # This should be fine though. Also it's important to enable mouse first.
-            usb_hid.enable([OutputDevice.BOOT_MOUSE, OutputDevice.KEYBOARD])  # type: ignore
+            usb_hid.enable([GadgetDevice.BOOT_MOUSE, GadgetDevice.KEYBOARD])  # type: ignore
         else:
             usb_hid.disable()
 
@@ -144,7 +143,7 @@ class ComboDeviceHidProxy:
         return self._create_device_link(mouse_path, Mouse(usb_hid.devices))  # type: ignore
 
     def _create_device_link(
-        self, device_in_path: str, device_out: OutputDevice
+        self, device_in_path: str, device_out: GadgetDevice
     ) -> DeviceLink | None:
         if not device_in_path:
             return None
@@ -239,7 +238,7 @@ class ComboDeviceHidProxy:
             await self._async_relay_single_event(event, device_out)
 
     async def _async_relay_single_event(
-        self, event: InputEvent, device_out: OutputDevice
+        self, event: InputEvent, device_out: GadgetDevice
     ) -> None:
         logger.debug(f"Received event: [{categorize(event)}] for {device_out}")
 
@@ -258,7 +257,7 @@ class ComboDeviceHidProxy:
         return event.type == ecodes.EV_REL  # type: ignore
 
     async def _async_send_key(
-        self, event: InputEvent, device_out: OutputDevice
+        self, event: InputEvent, device_out: GadgetDevice
     ) -> None:
         key = converter.to_hid_key(event.code)
         if key is None:
