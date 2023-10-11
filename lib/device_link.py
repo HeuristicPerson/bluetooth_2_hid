@@ -97,13 +97,13 @@ class DeviceLink:
                 logger.error(f"Error resetting input {self._input_device_path} [{e}]")
                 await asyncio.sleep(5)
 
-    def keyboard(self) -> Keyboard | DummyGadget | None:
+    def keyboard_gadget(self) -> Keyboard | DummyGadget | None:
         return self._gadget_or_dummy(self._keyboard_gadget)
 
-    def mouse(self) -> Mouse | DummyGadget | None:
+    def mouse_gadget(self) -> Mouse | DummyGadget | None:
         return self._gadget_or_dummy(self._mouse_gadget)
 
-    def consumer_control(self) -> ConsumerControl | DummyGadget | None:
+    def consumer_gadget(self) -> ConsumerControl | DummyGadget | None:
         return self._gadget_or_dummy(self._consumer_control_gadget)
 
     def _gadget_or_dummy(

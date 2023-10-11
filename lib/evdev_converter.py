@@ -192,11 +192,11 @@ def get_output_device(
     output_device = None
 
     if is_consumer_control_code(event):
-        output_device = device_link.consumer_control()
+        output_device = device_link.consumer_gadget()
     elif is_mouse_button(event):
-        output_device = device_link.mouse()
+        output_device = device_link.mouse_gadget()
     else:
-        output_device = device_link.keyboard()
+        output_device = device_link.keyboard_gadget()
 
     if output_device is None:
         logger.debug("Output device not available!")

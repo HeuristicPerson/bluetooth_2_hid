@@ -260,7 +260,7 @@ class ComboDeviceHidProxy:
         if converter.is_key_event(event):
             await self._async_send_key(event, device_link)
         elif converter.is_mouse_movement(event):
-            await self._async_move_mouse(event, device_link.mouse())
+            await self._async_move_mouse(event, device_link.mouse_gadget())
 
     async def _async_send_key(self, event: InputEvent, device_link: DeviceLink) -> None:
         key = converter.to_hid_key(event)
