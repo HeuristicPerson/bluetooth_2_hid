@@ -38,6 +38,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 - Simple installation and highly automated setup 
 - Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
+- Supports multimedia keys (e.g. mute, volume up/down, etc.)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
 - Installation as a systemd service
@@ -133,8 +134,8 @@ Follow these steps to install and configure the project:
     10.3. Note the device paths of the devices you want to use:
 
     ```console
-    Moody Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event3  <---
-    Moody Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
+    AceRK Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event3  <---
+    AceRK Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
     vc4-hdmi-1      vc4-hdmi-1/input0  /dev/input/event1
     vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
     ```
@@ -306,9 +307,11 @@ This is a common issue, especially when the device gets paired with multiple hos
 
 ```console
 bluetoothctl
-scan on
+power off
+power on
 block A1:B2:C3:D4:E5:F6
 remove A1:B2:C3:D4:E5:F6
+scan on
 pair A1:B2:C3:D4:E5:F6
 trust A1:B2:C3:D4:E5:F6
 ```
@@ -415,5 +418,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 * [Mike Redrobe](https://github.com/mikerr/pihidproxy) for the idea and the basic code logic and [HeuristicPerson's bluetooth_2_hid](https://github.com/HeuristicPerson/bluetooth_2_hid) based off this.
 * [Georgi Valkov](https://github.com/gvalkov) for [python-evdev](https://github.com/gvalkov/python-evdev) making reading input devices a walk in the park. 
-* The folks at [Adafruit](https://www.adafruit.com/) for [CircuitPython HID](https://github.com/adafruit/Adafruit_CircuitPython_HID) and [usb_hid](https://github.com/quaxalber/Adafruit_Blinka/blob/main/src/usb_hid.py) providing super smooth access to USB gadgets. 
+* The folks at [Adafruit](https://www.adafruit.com/) for [CircuitPython HID](https://github.com/adafruit/Adafruit_CircuitPython_HID) and [Blinka](https://github.com/quaxalber/Adafruit_Blinka/blob/main/src/usb_hid.py) providing super smooth access to USB gadgets. 
 * Special thanks to the open-source community for various other libraries and tools.
