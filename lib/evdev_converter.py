@@ -189,11 +189,12 @@ def to_hid_key(event: InputEvent):
 def get_output_device(
     event: InputEvent, device_link: DeviceLink
 ) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
-    ecode: int = event.code
     output_device = None
 
-    if is_consumer_control_code(ecode):
+    if is_consumer_control_code(event):
         output_device = device_link.consumer_control()
+    elif is_mouse_button(event):
+        output_device = device_link.mouse()
     else:
         output_device = device_link.keyboard()
 
@@ -203,8 +204,16 @@ def get_output_device(
     return output_device
 
 
-def is_consumer_control_code(ecode: int) -> bool:
-    return ecode in [
+def is_mouse_button(event: InputEvent) -> bool:
+    return event.code in [
+        ecodes.BTN_LEFT,
+        ecodes.BTN_RIGHT,
+        ecodes.BTN_MIDDLE,
+    ]
+
+
+def is_consumer_control_code(event: InputEvent) -> bool:
+    return event.code in [
         ecodes.KEY_OPEN,
         ecodes.KEY_HELP,
         ecodes.KEY_PROPS,
