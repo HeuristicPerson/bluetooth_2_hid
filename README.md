@@ -133,8 +133,8 @@ Follow these steps to install and configure the project:
     10.3. Note the device paths of the devices you want to use:
 
     ```console
-    Moody Mouse     a1:b2:c3:d4:e5:f6  /dev/input/event3  <---
-    Moody Keyboard  a1:b2:c3:d4:e5:f6  /dev/input/event2  <---
+    Moody Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event3  <---
+    Moody Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
     vc4-hdmi-1      vc4-hdmi-1/input0  /dev/input/event1
     vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
     ```
@@ -170,18 +170,18 @@ Follow these steps to install and configure the project:
     ```console
     user@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
     ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
-      Loaded: loaded (/home/user/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
-      Active: active (running) since Fri 2023-09-29 20:17:10 BST; 20min ago
-    Main PID: 36719 (python3.11)
+        Loaded: loaded (/home/user/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
+        Active: active (running) since Wed 2023-10-11 18:00:58 BST; 11s ago
+      Main PID: 4256 (python3.11)
           Tasks: 1 (limit: 8755)
-          CPU: 367ms
-      CGroup: /system.slice/bluetooth_2_usb.service
-                └─36719 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
+            CPU: 328ms
+        CGroup: /system.slice/bluetooth_2_usb.service
+                └─4256 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
-    Sep 29 20:17:10 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
-    Sep 29 20:17:10 raspberrypi python3.11[36719]: 23-09-29 20:17:10 [INFO] Launching Bluetooth 2 USB v0.2.0
-    Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "a1:b2:c3:d4:e5:f6"] >> [Keyboard gadget (/dev/hidg1)]
-    Sep 29 20:17:11 raspberrypi python3.11[36719]: 23-09-29 20:17:11 [INFO] Started event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "a1:b2:c3:d4:e5:f6"] >> [Boot mouse gadget (/dev/hidg0)]
+    Oct 11 18:00:58 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
+    Oct 11 18:00:58 raspberrypi python3.11[4256]: 23-10-11 18:00:58 [INFO] Launching Bluetooth 2 USB v0.3.0
+    Oct 11 18:01:01 raspberrypi python3.11[4256]: 23-10-11 18:01:01 [INFO] Starting event loop for AceRK Keyboard: [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
+    Oct 11 18:01:01 raspberrypi python3.11[4256]: 23-10-11 18:01:01 [INFO] Starting event loop for AceRK Mouse: [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
 
 > [!NOTE]
@@ -261,10 +261,10 @@ This could be due to a number of reasons. Try these steps:
   user@raspberrypi:~/bluetooth_2_usb $ bluetoothctl
   Agent registered
   [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
-  [Moody]# info A1:B2:C3:D4:E5:F6
+  [AceRK]# info A1:B2:C3:D4:E5:F6
   Device A1:B2:C3:D4:E5:F6 (random)
-          Name: Moody
-          Alias: Moody
+          Name: AceRK
+          Alias: AceRK
           Paired: yes     <---
           Trusted: yes    <---
           Blocked: no     <---
@@ -365,25 +365,26 @@ Here's a few things you could try:
   
   ```console
   user@raspberrypi:~/bluetooth_2_usb $ sudo service bluetooth_2_usb stop
-  user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
-  23-10-01 13:59:05 [DEBUG] Logging to stdout
-  23-10-01 13:59:05 [INFO] Launching Bluetooth 2 USB v0.2.0
-  23-10-01 13:59:05 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1)]
-  23-10-01 13:59:06 [DEBUG] Sandbox mode disabled. All output devices activated.
-  23-10-01 13:59:06 [DEBUG] Registered device link: [Moody Keyboard]>>[/dev/hidg1]
-  23-10-01 13:59:06 [DEBUG] Registered device link: [Moody Mouse]>>[/dev/hidg0]
-  23-10-01 13:59:06 [DEBUG] Link [Moody Keyboard]>>[/dev/hidg1] connected.
-  23-10-01 13:59:06 [DEBUG] Link [Moody Mouse]>>[/dev/hidg0] connected.
-  23-10-01 13:59:06 [DEBUG] Current tasks: {<Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb.py:350> cb=[_run_until_complete_cb() at /usr/local/lib/python3.11/asyncio/base_events.py:180]>, <Task pending name='[Moody Mouse]>>[/dev/hidg0]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /usr/bin/bluetooth_2_usb.py:189> cb=[TaskGroup._on_task_done()]>, <Task pending name='[Moody Keyboard]>>[/dev/hidg1]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /usr/bin/bluetooth_2_usb.py:189> cb=[TaskGroup._on_task_done()]>}
-  23-10-01 13:59:06 [INFO] Starting event loop for Moody Keyboard: [device /dev/input/event2, name "Moody Keyboard", phys "e4:5f:01:01:c4:8c"] >> [Keyboard gadget (/dev/hidg1)]
-  23-10-01 13:59:06 [INFO] Starting event loop for Moody Mouse: [device /dev/input/event3, name "Moody Mouse", phys "e4:5f:01:01:c4:8c"] >> [Boot mouse gadget (/dev/hidg0)]
-  23-10-01 13:59:35 [DEBUG] Received event: [event at 1696165175.121823, code 04, type 04, val 458792] for /dev/hidg1
-  23-10-01 13:59:35 [DEBUG] Received event: [key event at 1696165175.121823, 42 (KEY_LEFTSHIFT), down] for /dev/hidg1
-  23-10-01 13:59:35 [DEBUG] Converted ecode 42 to HID keycode 225
-  23-10-01 13:59:35 [DEBUG] Received event: [synchronization event at 1696165175.121823, SYN_REPORT] for /dev/hidg1
-  23-10-01 13:59:41 [DEBUG] Received event: [relative axis event at 1696165181.118076, REL_X] for /dev/hidg0
-  23-10-01 13:59:41 [DEBUG] Moving mouse /dev/hidg0: (x, y, mwheel) = (50, 0, 0)
-  23-10-01 13:59:41 [DEBUG] Received event: [synchronization event at 1696165181.118076, SYN_REPORT] for /dev/hidg0
+  user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  23-10-11 17:53:19 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False)
+  23-10-11 17:53:19 [DEBUG] Logging to stdout
+  23-10-11 17:53:19 [INFO] Launching Bluetooth 2 USB v0.3.0
+  23-10-11 17:53:19 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
+  23-10-11 17:53:22 [DEBUG] Sandbox mode disabled. All output devices activated.
+  23-10-11 17:53:22 [DEBUG] Registered device link: [AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]
+  23-10-11 17:53:22 [DEBUG] Registered device link: [AceRK Mouse]>>[/dev/hidg0]
+  23-10-11 17:53:22 [DEBUG] Link [AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2] connected.
+  23-10-11 17:53:22 [DEBUG] Link [AceRK Mouse]>>[/dev/hidg0] connected.
+  23-10-11 17:53:22 [DEBUG] Current tasks: {<Task pending name='[AceRK Mouse]>>[/dev/hidg0]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:222> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:380> cb=[_run_until_complete_cb() at /usr/local/lib/python3.11/asyncio/base_events.py:180]>, <Task pending name='[AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:222> cb=[TaskGroup._on_task_done()]>}
+  23-10-11 17:53:22 [INFO] Starting event loop for AceRK Keyboard: [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
+  23-10-11 17:53:22 [INFO] Starting event loop for AceRK Mouse: [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
+  23-10-11 17:53:47 [DEBUG] Received event: [event at 1697043227.896161, code 04, type 04, val 458756]
+  23-10-11 17:53:47 [DEBUG] Received event: [key event at 1697043227.896161, 30 (KEY_A), down]
+  23-10-11 17:53:47 [DEBUG] Converted ecode 30 to HID keycode 4
+  23-10-11 17:53:47 [DEBUG] Received event: [synchronization event at 1697043227.896161, SYN_REPORT]
+  23-10-11 17:53:59 [DEBUG] Received event: [relative axis event at 1697043239.157504, REL_X]
+  23-10-11 17:53:59 [DEBUG] Moving mouse /dev/hidg0: (x, y, mwheel) = (125, 0, 0)
+  23-10-11 17:53:59 [DEBUG] Received event: [synchronization event at 1697043239.157504, SYN_REPORT]
   ``` 
 
 - Still not resolved? Double-check the [installation instructions](#4-installation)
