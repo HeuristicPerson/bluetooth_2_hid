@@ -1,11 +1,19 @@
-from evdev import ecodes
+from typing import Tuple
 
+from adafruit_hid.consumer_control import ConsumerControl
+from adafruit_hid.consumer_control_code import ConsumerControlCode
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keycode import Keycode, MouseButton
+from adafruit_hid.mouse import Mouse
+from evdev import ecodes, InputEvent, KeyEvent
+
+from lib.device_link import DeviceLink, DummyGadget
 import lib.logger
-from adafruit_hid import ConsumerControlCode, Keycode, MouseButton
+
 
 logger = lib.logger.get_logger()
 
-_EVDEV_TO_HID_MAPPING = {
+_EVDEV_TO_HID_MAPPING: dict[int, int] = {
     ecodes.KEY_RESERVED: None,
     ecodes.KEY_A: Keycode.A,
     ecodes.KEY_B: Keycode.B,
@@ -119,6 +127,14 @@ _EVDEV_TO_HID_MAPPING = {
     ecodes.KEY_F22: Keycode.F22,
     ecodes.KEY_F23: Keycode.F23,
     ecodes.KEY_F24: Keycode.F24,
+    ecodes.KEY_LEFTCTRL: Keycode.LEFT_CONTROL,
+    ecodes.KEY_LEFTSHIFT: Keycode.LEFT_SHIFT,
+    ecodes.KEY_LEFTALT: Keycode.LEFT_ALT,
+    ecodes.KEY_LEFTMETA: Keycode.LEFT_GUI,
+    ecodes.KEY_RIGHTCTRL: Keycode.RIGHT_CONTROL,
+    ecodes.KEY_RIGHTSHIFT: Keycode.RIGHT_SHIFT,
+    ecodes.KEY_RIGHTALT: Keycode.RIGHT_ALT,
+    ecodes.KEY_RIGHTMETA: Keycode.RIGHT_GUI,
     ecodes.KEY_OPEN: None,
     ecodes.KEY_HELP: None,
     ecodes.KEY_PROPS: None,
@@ -129,14 +145,6 @@ _EVDEV_TO_HID_MAPPING = {
     ecodes.KEY_COPY: None,
     ecodes.KEY_PASTE: None,
     ecodes.KEY_AGAIN: None,
-    ecodes.KEY_LEFTCTRL: Keycode.LEFT_CONTROL,
-    ecodes.KEY_LEFTSHIFT: Keycode.LEFT_SHIFT,
-    ecodes.KEY_LEFTALT: Keycode.LEFT_ALT,
-    ecodes.KEY_LEFTMETA: Keycode.LEFT_GUI,
-    ecodes.KEY_RIGHTCTRL: Keycode.RIGHT_CONTROL,
-    ecodes.KEY_RIGHTSHIFT: Keycode.RIGHT_SHIFT,
-    ecodes.KEY_RIGHTALT: Keycode.RIGHT_ALT,
-    ecodes.KEY_RIGHTMETA: Keycode.RIGHT_GUI,
     ecodes.KEY_PLAYPAUSE: ConsumerControlCode.PLAY_PAUSE,
     ecodes.KEY_STOPCD: ConsumerControlCode.STOP,
     ecodes.KEY_PREVIOUSSONG: ConsumerControlCode.SCAN_PREVIOUS_TRACK,
@@ -167,9 +175,94 @@ Mapping from evdev ecode to HID Keycode
 """
 
 
-def to_hid_key(ecode: int) -> int | None:
+def to_hid_key(event: InputEvent):
+    ecode: int = event.code
     hid_key = _EVDEV_TO_HID_MAPPING.get(ecode, None)
+
     logger.debug(f"Converted ecode {ecode} to HID keycode {hid_key}")
     if hid_key is None:
-        logger.warning(f"Unsupported key pressed: {ecode}")
+        logger.debug(f"Unsupported key pressed: {ecode}")
+
     return hid_key
+
+
+def get_output_device(
+    event: InputEvent, device_link: DeviceLink
+) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
+    ecode: int = event.code
+    output_device = None
+
+    if is_consumer_control_code(ecode):
+        output_device = device_link.consumer_control()
+    else:
+        output_device = device_link.keyboard()
+
+    if output_device is None:
+        logger.debug("Output device not available!")
+
+    return output_device
+
+
+def is_consumer_control_code(ecode: int) -> bool:
+    return ecode in [
+        ecodes.KEY_OPEN,
+        ecodes.KEY_HELP,
+        ecodes.KEY_PROPS,
+        ecodes.KEY_FRONT,
+        ecodes.KEY_MENU,
+        ecodes.KEY_UNDO,
+        ecodes.KEY_CUT,
+        ecodes.KEY_COPY,
+        ecodes.KEY_PASTE,
+        ecodes.KEY_AGAIN,
+        ecodes.KEY_PLAYPAUSE,
+        ecodes.KEY_STOPCD,
+        ecodes.KEY_PREVIOUSSONG,
+        ecodes.KEY_NEXTSONG,
+        ecodes.KEY_EJECTCD,
+        ecodes.KEY_VOLUMEUP,
+        ecodes.KEY_VOLUMEDOWN,
+        ecodes.KEY_WWW,
+        ecodes.KEY_MAIL,
+        ecodes.KEY_FORWARD,
+        ecodes.KEY_STOP,
+        ecodes.KEY_FIND,
+        ecodes.KEY_SCROLLUP,
+        ecodes.KEY_SCROLLDOWN,
+        ecodes.KEY_EDIT,
+        ecodes.KEY_SLEEP,
+        ecodes.KEY_REFRESH,
+        ecodes.KEY_CALC,
+        ecodes.KEY_MUTE,
+        ecodes.KEY_COFFEE,
+        ecodes.KEY_BACK,
+    ]
+
+
+def is_key_event(event: InputEvent) -> bool:
+    return event.type == ecodes.EV_KEY
+
+
+def is_key_up(event: InputEvent) -> bool:
+    return event.type == ecodes.EV_KEY and event.value == KeyEvent.key_up
+
+
+def is_key_down(event: InputEvent) -> bool:
+    return event.type == ecodes.EV_KEY and event.value == KeyEvent.key_down
+
+
+def is_mouse_movement(event: InputEvent) -> bool:
+    return event.type == ecodes.EV_REL
+
+
+def get_mouse_movement(event: InputEvent) -> Tuple[int, int, int]:
+    x, y, mwheel = 0, 0, 0
+
+    if event.code == ecodes.REL_X:
+        x = event.value
+    elif event.code == ecodes.REL_Y:
+        y = event.value
+    elif event.code == ecodes.REL_WHEEL:
+        mwheel = event.value
+
+    return x, y, mwheel

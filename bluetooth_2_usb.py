@@ -12,7 +12,7 @@ try:
     import os
     import signal
     import sys
-    from typing import Collection, List, NoReturn, Tuple
+    from typing import Collection, List, NoReturn
 
     required_submodules = [
         "Adafruit_Blinka/src",
@@ -24,12 +24,12 @@ try:
         module_path = os.path.join(base_path, "submodules", module)
         sys.path.append(module_path)
 
-    from adafruit_hid import ConsumerControl, Keyboard, Mouse
+    from adafruit_hid.consumer_control import ConsumerControl
+    from adafruit_hid.keyboard import Keyboard
+    from adafruit_hid.mouse import Mouse
     from evdev import (
-        ecodes,
         InputDevice,
         InputEvent,
-        KeyEvent,
         categorize,
         list_devices,
     )
@@ -107,13 +107,19 @@ class ComboDeviceHidProxy:
         if gadgets_enabled:
             # We have to use BOOT_MOUSE since for some reason MOUSE freezes on any input.
             # This should be fine though. Also it's important to enable mouse first.
-            usb_hid.enable([GadgetDevice.BOOT_MOUSE, GadgetDevice.KEYBOARD])  # type: ignore
+            usb_hid.enable(
+                [
+                    GadgetDevice.BOOT_MOUSE,
+                    GadgetDevice.KEYBOARD,
+                    GadgetDevice.CONSUMER_CONTROL,
+                ]
+            )
         else:
             usb_hid.disable()
 
     def _log_gadgets(self) -> None:
         if self._gadgets_enabled:
-            logger.debug(f"Available output devices: {usb_hid.devices}")  # type: ignore
+            logger.debug(f"Available output devices: {usb_hid.devices}")
         else:
             logger.warning(f"All output devices disabled!")
 
@@ -137,19 +143,29 @@ class ComboDeviceHidProxy:
             self._registered_links.append(link)
 
     def create_keyboard_link(self, keyboard_path: str) -> DeviceLink | None:
-        return self._create_device_link(keyboard_path, Keyboard(usb_hid.devices))  # type: ignore
+        return self._create_device_link(
+            keyboard_path,
+            keyboard_gadget=Keyboard(usb_hid.devices),
+            consumer_control_gadget=ConsumerControl(usb_hid.devices),
+        )
 
     def create_mouse_link(self, mouse_path: str) -> DeviceLink | None:
-        return self._create_device_link(mouse_path, Mouse(usb_hid.devices))  # type: ignore
+        return self._create_device_link(mouse_path, mouse_gadget=Mouse(usb_hid.devices))
 
     def _create_device_link(
-        self, device_in_path: str, device_out: GadgetDevice
+        self,
+        device_in_path: str,
+        keyboard_gadget: Keyboard = None,
+        mouse_gadget: Mouse = None,
+        consumer_control_gadget: ConsumerControl = None,
     ) -> DeviceLink | None:
         if not device_in_path:
             return None
 
         device_in = InputDevice(device_in_path)
-        device_link = DeviceLink(device_in, device_out)
+        device_link = DeviceLink(
+            device_in, keyboard_gadget, mouse_gadget, consumer_control_gadget
+        )
 
         return device_link
 
@@ -163,12 +179,12 @@ class ComboDeviceHidProxy:
             return
         self._is_sandbox = sandbox_enabled
 
-        outputs_enabled = not sandbox_enabled
-        self._enable_outputs(outputs_enabled)
+        gadgets_enabled = not sandbox_enabled
+        self._enable_gadgets(gadgets_enabled)
 
-    def _enable_outputs(self, outputs_enabled: bool) -> None:
+    def _enable_gadgets(self, gadgets_enabled: bool) -> None:
         for link in self._registered_links:
-            link.enable_output(outputs_enabled)
+            link.enable_gadgets(gadgets_enabled)
 
     def _log_sandbox_status(self) -> None:
         if self._is_sandbox:
@@ -229,69 +245,50 @@ class ComboDeviceHidProxy:
 
     async def _async_relay_input_events_loop(self, device_link: DeviceLink):
         device_in = device_link.input()
-        device_out = device_link.output()
 
         async for event in device_in.async_read_loop():
             if not event:
                 continue
 
-            await self._async_relay_single_event(event, device_out)
+            await self._async_relay_single_event(event, device_link)
 
     async def _async_relay_single_event(
-        self, event: InputEvent, device_out: GadgetDevice
+        self, event: InputEvent, device_link: DeviceLink
     ) -> None:
-        logger.debug(f"Received event: [{categorize(event)}] for {device_out}")
+        logger.debug(f"Received event: [{categorize(event)}]")
 
-        if self._is_key_up_or_down(event):
-            await self._async_send_key(event, device_out)
-        elif self._is_mouse_movement(event):
-            await self._async_move_mouse(event, device_out)  # type: ignore
+        if converter.is_key_event(event):
+            await self._async_send_key(event, device_link)
+        elif converter.is_mouse_movement(event):
+            await self._async_move_mouse(event, device_link.mouse())
 
-    def _is_key_up_or_down(self, event: InputEvent) -> bool:
-        return event.type == ecodes.EV_KEY and event.value in [  # type: ignore
-            KeyEvent.key_down,
-            KeyEvent.key_up,
-        ]
+    async def _async_send_key(self, event: InputEvent, device_link: DeviceLink) -> None:
+        key = converter.to_hid_key(event)
+        device_out = converter.get_output_device(event, device_link)
 
-    def _is_mouse_movement(self, event: InputEvent) -> bool:
-        return event.type == ecodes.EV_REL  # type: ignore
-
-    async def _async_send_key(
-        self, event: InputEvent, device_out: GadgetDevice
-    ) -> None:
-        key = converter.to_hid_key(event.code)
-        if key is None:
+        if key is None or device_out is None:
             return
 
         try:
-            if event.value == KeyEvent.key_down:
-                device_out.press(key)  # type: ignore
-            elif event.value == KeyEvent.key_up:
-                device_out.release(key)  # type: ignore
+            if converter.is_key_up(event):
+                device_out.release(key)
+            elif converter.is_key_down(event):
+                device_out.press(key)
 
         except Exception as e:
             logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
 
-    async def _async_move_mouse(self, event: InputEvent, mouse_out: Mouse) -> None:
-        x, y, mwheel = self._get_mouse_movement(event)
-        logger.debug(f"Moving mouse {mouse_out}: (x, y, mwheel) = {(x, y, mwheel)}")
+    async def _async_move_mouse(self, event: InputEvent, mouse: Mouse) -> None:
+        if mouse is None:
+            return
+
+        x, y, mwheel = converter.get_mouse_movement(event)
+        logger.debug(f"Moving mouse {mouse}: (x, y, mwheel) = {(x, y, mwheel)}")
 
         try:
-            mouse_out.move(x, y, mwheel)
+            mouse.move(x, y, mwheel)
         except Exception as e:
-            logger.error(f"Error sending [{categorize(event)}] to {mouse_out} [{e}]")
-
-    def _get_mouse_movement(self, event: InputEvent) -> Tuple[int, int, int]:
-        x, y, mwheel = 0, 0, 0
-
-        if event.code == ecodes.REL_X:  # type: ignore
-            x = event.value
-        elif event.code == ecodes.REL_Y:  # type: ignore
-            y = event.value
-        elif event.code == ecodes.REL_WHEEL:  # type: ignore
-            mwheel = event.value
-
-        return x, y, mwheel
+            logger.error(f"Error sending [{categorize(event)}] to {mouse} [{e}]")
 
     async def _async_wait_for_device(
         self, device_in: InputDevice, delay_seconds: float = 1

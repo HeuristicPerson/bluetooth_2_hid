@@ -1,64 +1,25 @@
 import asyncio
+
+from adafruit_hid.consumer_control import ConsumerControl
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.mouse import Mouse
 from evdev import InputDevice
-from usb_hid import Device as OutputDevice
+from usb_hid import Device as GadgetDevice
 
 import lib.logger
 
 logger = lib.logger.get_logger()
 
 
-class DeviceLink:
-    def __init__(self, device_in: InputDevice, device_out: OutputDevice):
-        self._device_in = None
-        self._device_in_name = None
-        self._device_in_path = None
-        if isinstance(device_in, InputDevice):
-            self._device_in = device_in
-            self._device_in_name = device_in.name
-            self._device_in_path = device_in.path
-        self._device_out = device_out
-        self._device_out_enabled = False
-        self._device_out_dummy = _DummyDevice(device_out)
-        if device_out:
-            self._device_out_enabled = True
-
-    def __repr__(self):
-        return f"{self._device_in_name}: [{self._device_in}] >> [{repr(self.output())}]"
-
-    def __str__(self):
-        return f"[{self._device_in_name}]>>[{self.output()}]"
-
-    def input(self) -> InputDevice:
-        return self._device_in
-
-    async def async_reset_input(self) -> None:
-        self._device_in = None
-        while True:
-            try:
-                self._device_in = InputDevice(self._device_in_path)
-                break
-            except Exception as e:
-                logger.error(f"Error resetting input {self._device_in_path} [{e}]")
-                await asyncio.sleep(5)
-
-    def output(self) -> OutputDevice:
-        if self._device_out_enabled:
-            return self._device_out
-        return self._device_out_dummy
-
-    def enable_output(self, enabled: bool = True):
-        self._device_out_enabled = enabled
-
-
-class _DummyDevice:
+class DummyGadget:
     def __init__(self, actual_gadget):
         self._actual_gadget = actual_gadget
 
     def __repr__(self):
-        return f"Dummy {repr(self._actual_gadget)}"
+        return repr(self._actual_gadget)
 
     def __str__(self):
-        return f"{self._actual_gadget} (Dummy)"
+        return str(self._actual_gadget)
 
     def press(self, *keycodes: int) -> None:
         pass
@@ -84,3 +45,75 @@ class _DummyDevice:
 
     def move(self, x: int = 0, y: int = 0, wheel: int = 0) -> None:
         pass
+
+
+class DeviceLink:
+    def __init__(
+        self,
+        input_device: InputDevice,
+        keyboard_gadget: Keyboard = None,
+        mouse_gadget: Mouse = None,
+        consumer_control_gadget: ConsumerControl = None,
+    ):
+        self._input_device = None
+        self._input_device_name = None
+        self._input_device_path = None
+
+        if input_device:
+            self._input_device = input_device
+            self._input_device_name = input_device.name
+            self._input_device_path = input_device.path
+
+        self._gadgets_enabled = True
+
+        self._keyboard_gadget = keyboard_gadget
+        self._mouse_gadget = mouse_gadget
+        self._consumer_control_gadget = consumer_control_gadget
+
+        self._active_gadgets = [
+            gadget
+            for gadget in [keyboard_gadget, mouse_gadget, consumer_control_gadget]
+            if gadget is not None
+        ]
+
+    def __repr__(self):
+        active_gadgets_repr = [repr(g) for g in self._active_gadgets]
+        return f"{self._input_device_name}: [{self._input_device}] >> [{' + '.join(active_gadgets_repr)}]"
+
+    def __str__(self):
+        active_gadgets_str = [str(g) for g in self._active_gadgets]
+        return f"[{self._input_device_name}]>>[{'+'.join(active_gadgets_str)}]"
+
+    def input(self) -> InputDevice:
+        return self._input_device
+
+    async def async_reset_input(self) -> None:
+        self._input_device = None
+        while True:
+            try:
+                self._input_device = InputDevice(self._input_device_path)
+                break
+            except Exception as e:
+                logger.error(f"Error resetting input {self._input_device_path} [{e}]")
+                await asyncio.sleep(5)
+
+    def keyboard(self) -> Keyboard | DummyGadget | None:
+        return self._gadget_or_dummy(self._keyboard_gadget)
+
+    def mouse(self) -> Mouse | DummyGadget | None:
+        return self._gadget_or_dummy(self._mouse_gadget)
+
+    def consumer_control(self) -> ConsumerControl | DummyGadget | None:
+        return self._gadget_or_dummy(self._consumer_control_gadget)
+
+    def _gadget_or_dummy(
+        self, gadget: ConsumerControl | Keyboard | Mouse
+    ) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
+        if self._gadgets_enabled:
+            return gadget
+        elif gadget is not None:
+            return DummyGadget(gadget)
+        return None
+
+    def enable_gadgets(self, enabled: bool = True):
+        self._gadgets_enabled = enabled
