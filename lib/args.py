@@ -1,7 +1,7 @@
 from argparse import Namespace
 import argparse
 
-from lib.usb_hid import unregister_disable
+from usb_hid import unregister_disable
 
 
 class CustomArgumentParser(argparse.ArgumentParser):
