@@ -44,6 +44,7 @@ append_if_not_exist() {
 
 colored_output ${GREEN} "Installing bluetooth_2_usb..."
 
+colored_output ${GREEN} "Updating submodules..."
 git submodule update --init --recursive
 
 append_if_not_exist "dtoverlay=dwc2" "/boot/config.txt"
