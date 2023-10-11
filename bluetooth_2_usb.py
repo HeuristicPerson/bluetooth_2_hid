@@ -44,7 +44,7 @@ except ImportError as e:
     print(f"Error importing modules. [{e}]")
     raise
 
-_VERSION = "0.2.0"
+_VERSION = "0.3.0"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
 
 logger = lib.logger.get_logger()
