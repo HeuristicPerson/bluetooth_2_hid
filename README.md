@@ -259,6 +259,13 @@ This could be due to a number of reasons. Try these steps:
 - Verify that your Bluetooth devices are paired, trusted, connected and *not* blocked:
   
   ```console
+  bluetoothctl
+  info A1:B2:C3:D4:E5:F6
+  ```
+  
+  It should look like this:
+
+  ```console
   user@raspberrypi:~/bluetooth_2_usb $ bluetoothctl
   Agent registered
   [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
