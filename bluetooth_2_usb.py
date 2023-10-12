@@ -18,7 +18,7 @@ required_submodules = [
     "Adafruit_CircuitPython_HID",
     "python-evdev",
 ]
-working_dir = os.getcwd()
+working_dir = sys.path[0]
 for module in required_submodules:
     module_path = os.path.join(working_dir, "submodules", module)
     sys.path.append(module_path)
