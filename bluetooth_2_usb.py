@@ -18,9 +18,9 @@ required_submodules = [
     "Adafruit_CircuitPython_HID",
     "python-evdev",
 ]
-base_path = sys.path[0]
+working_dir = os.getcwd()
 for module in required_submodules:
-    module_path = os.path.join(base_path, "submodules", module)
+    module_path = os.path.join(working_dir, "submodules", module)
     sys.path.append(module_path)
 
 from adafruit_hid.consumer_control import ConsumerControl
