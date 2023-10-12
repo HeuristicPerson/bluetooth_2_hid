@@ -150,17 +150,17 @@ class ComboDeviceHidProxy:
 
     def _create_device_link(
         self,
-        device_in_path: str,
+        input_device_path: str,
         keyboard_gadget: Keyboard = None,
         mouse_gadget: Mouse = None,
         consumer_control_gadget: ConsumerControl = None,
     ) -> DeviceLink | None:
-        if not device_in_path:
+        if not input_device_path:
             return None
 
-        device_in = InputDevice(device_in_path)
+        input_device = InputDevice(input_device_path)
         device_link = DeviceLink(
-            device_in, keyboard_gadget, mouse_gadget, consumer_control_gadget
+            input_device, keyboard_gadget, mouse_gadget, consumer_control_gadget
         )
 
         return device_link
@@ -218,31 +218,31 @@ class ComboDeviceHidProxy:
     async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
         logger.info(f"Starting event loop for {repr(device_link)}")
         should_reconnect = True
-        device_in = device_link.input()
+        input_device = device_link.input_device()
 
         try:
             await self._async_relay_input_events_loop(device_link)
 
         except OSError as e:
-            logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
-            reconnected = await self._async_wait_for_device(device_in)
-            self._log_reconnection_outcome(device_in, reconnected)
+            logger.critical(f"{input_device.name} disconnected. Reconnecting... [{e}]")
+            reconnected = await self._async_wait_for_device(input_device)
+            self._log_reconnection_outcome(input_device, reconnected)
 
         except asyncio.exceptions.CancelledError:
-            logger.critical(f"{device_in.name} received a cancellation request.")
+            logger.critical(f"{input_device.name} received a cancellation request.")
             should_reconnect = False
 
         except Exception as e:
-            logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
+            logger.error(f"{input_device.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(5)
 
         finally:
             await self._async_disconnect_device_link(device_link, should_reconnect)
 
     async def _async_relay_input_events_loop(self, device_link: DeviceLink):
-        device_in = device_link.input()
+        input_device = device_link.input_device()
 
-        async for event in device_in.async_read_loop():
+        async for event in input_device.async_read_loop():
             if not event:
                 continue
 
@@ -287,31 +287,31 @@ class ComboDeviceHidProxy:
             logger.error(f"Error sending [{categorize(event)}] to {mouse} [{e}]")
 
     async def _async_wait_for_device(
-        self, device_in: InputDevice, delay_seconds: float = 1
+        self, input_device: InputDevice, delay_seconds: float = 1
     ) -> bool:
         await asyncio.sleep(delay_seconds)
         last_log_time = datetime.now()
 
-        while device_in.path not in list_devices():
-            last_log_time = self._log_reconnection_attempt(device_in, last_log_time)
+        while input_device.path not in list_devices():
+            last_log_time = self._log_reconnection_attempt(input_device, last_log_time)
             await asyncio.sleep(delay_seconds)
 
         return True
 
     def _log_reconnection_attempt(
-        self, device_in: InputDevice, last_log_time: datetime
+        self, input_device: InputDevice, last_log_time: datetime
     ) -> datetime:
         if _elapsed_seconds_since(last_log_time) >= 60:
-            logger.debug(f"Still trying to reconnect to {device_in.name}...")
+            logger.debug(f"Still trying to reconnect to {input_device.name}...")
             last_log_time = datetime.now()
 
         return last_log_time
 
-    def _log_reconnection_outcome(self, device_in: InputDevice, reconnected: bool):
+    def _log_reconnection_outcome(self, input_device: InputDevice, reconnected: bool):
         if reconnected:
-            logger.info(f"Successfully reconnected to {device_in.name}.")
+            logger.info(f"Successfully reconnected to {input_device.name}.")
         else:
-            logger.critical(f"Reconnecting to {device_in.name} failed.")
+            logger.critical(f"Reconnecting to {input_device.name} failed.")
 
     async def _async_disconnect_device_link(
         self, device_link: DeviceLink, reconnect: bool = False
@@ -321,7 +321,7 @@ class ComboDeviceHidProxy:
             task.cancel()
 
         if reconnect:
-            await device_link.async_reset_input()
+            await device_link.async_reset_input_device()
             self._connect_single_link(device_link)
 
 

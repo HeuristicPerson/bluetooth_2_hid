@@ -84,10 +84,10 @@ class DeviceLink:
         active_gadgets_str = [str(g) for g in self._active_gadgets]
         return f"[{self._input_device_name}]>>[{'+'.join(active_gadgets_str)}]"
 
-    def input(self) -> InputDevice:
+    def input_device(self) -> InputDevice:
         return self._input_device
 
-    async def async_reset_input(self) -> None:
+    async def async_reset_input_device(self) -> None:
         self._input_device = None
         while True:
             try:
