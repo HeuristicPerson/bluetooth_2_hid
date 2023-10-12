@@ -18,7 +18,7 @@ required_submodules = [
     "Adafruit_CircuitPython_HID",
     "python-evdev",
 ]
-working_dir = os.getcwd()
+working_dir = sys.path[0]
 for module in required_submodules:
     module_path = os.path.join(working_dir, "submodules", module)
     sys.path.append(module_path)
@@ -40,7 +40,7 @@ from lib.device_link import DeviceLink
 import lib.evdev_adapter as evdev_adapter
 import lib.logger
 
-_VERSION = "0.3.1"
+_VERSION = "0.3.2"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
 
 logger = lib.logger.get_logger()
