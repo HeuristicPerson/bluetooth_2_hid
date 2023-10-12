@@ -4,45 +4,41 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 """
 
 
-try:
-    import asyncio
-    from asyncio import TaskGroup, Task
-    from datetime import datetime
-    from logging import DEBUG
-    import os
-    import signal
-    import sys
-    from typing import Collection, List, NoReturn
+import asyncio
+from asyncio import TaskGroup, Task
+from datetime import datetime
+from logging import DEBUG
+import os
+import signal
+import sys
+from typing import Collection, List, NoReturn
 
-    required_submodules = [
-        "Adafruit_Blinka/src",
-        "Adafruit_CircuitPython_HID",
-        "python-evdev",
-    ]
-    base_path = sys.path[0]
-    for module in required_submodules:
-        module_path = os.path.join(base_path, "submodules", module)
-        sys.path.append(module_path)
+required_submodules = [
+    "Adafruit_Blinka/src",
+    "Adafruit_CircuitPython_HID",
+    "python-evdev",
+]
+base_path = sys.path[0]
+for module in required_submodules:
+    module_path = os.path.join(base_path, "submodules", module)
+    sys.path.append(module_path)
 
-    from adafruit_hid.consumer_control import ConsumerControl
-    from adafruit_hid.keyboard import Keyboard
-    from adafruit_hid.mouse import Mouse
-    from evdev import (
-        InputDevice,
-        InputEvent,
-        categorize,
-        list_devices,
-    )
-    import usb_hid
-    from usb_hid import Device as GadgetDevice, unregister_disable
+from adafruit_hid.consumer_control import ConsumerControl
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.mouse import Mouse
+from evdev import (
+    InputDevice,
+    InputEvent,
+    categorize,
+    list_devices,
+)
+import usb_hid
+from usb_hid import Device as GadgetDevice, unregister_disable
 
-    from lib.args import parse_args
-    from lib.device_link import DeviceLink
-    import lib.evdev_converter as converter
-    import lib.logger
-except ImportError as e:
-    print(f"Error importing modules. [{e}]")
-    raise
+from lib.args import parse_args
+from lib.device_link import DeviceLink
+import lib.evdev_converter as converter
+import lib.logger
 
 _VERSION = "0.3.0"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
