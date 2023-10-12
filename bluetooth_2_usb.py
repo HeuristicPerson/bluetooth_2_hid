@@ -4,45 +4,41 @@ Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to 
 """
 
 
-try:
-    import asyncio
-    from asyncio import TaskGroup, Task
-    from datetime import datetime
-    from logging import DEBUG
-    import os
-    import signal
-    import sys
-    from typing import Collection, List, NoReturn
+import asyncio
+from asyncio import TaskGroup, Task
+from datetime import datetime
+from logging import DEBUG
+import os
+import signal
+import sys
+from typing import Collection, List, NoReturn
 
-    required_submodules = [
-        "Adafruit_Blinka/src",
-        "Adafruit_CircuitPython_HID",
-        "python-evdev",
-    ]
-    base_path = sys.path[0]
-    for module in required_submodules:
-        module_path = os.path.join(base_path, "submodules", module)
-        sys.path.append(module_path)
+required_submodules = [
+    "Adafruit_Blinka/src",
+    "Adafruit_CircuitPython_HID",
+    "python-evdev",
+]
+working_dir = os.getcwd()
+for module in required_submodules:
+    module_path = os.path.join(working_dir, "submodules", module)
+    sys.path.append(module_path)
 
-    from adafruit_hid.consumer_control import ConsumerControl
-    from adafruit_hid.keyboard import Keyboard
-    from adafruit_hid.mouse import Mouse
-    from evdev import (
-        InputDevice,
-        InputEvent,
-        categorize,
-        list_devices,
-    )
-    import usb_hid
-    from usb_hid import Device as GadgetDevice, unregister_disable
+from adafruit_hid.consumer_control import ConsumerControl
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.mouse import Mouse
+from evdev import (
+    InputDevice,
+    InputEvent,
+    categorize,
+    list_devices,
+)
+import usb_hid
+from usb_hid import Device as GadgetDevice, unregister_disable
 
-    from lib.args import parse_args
-    from lib.device_link import DeviceLink
-    import lib.evdev_converter as converter
-    import lib.logger
-except ImportError as e:
-    print(f"Error importing modules. [{e}]")
-    raise
+from lib.args import parse_args
+from lib.device_link import DeviceLink
+import lib.evdev_adapter as evdev_adapter
+import lib.logger
 
 _VERSION = "0.3.0"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
@@ -154,17 +150,17 @@ class ComboDeviceHidProxy:
 
     def _create_device_link(
         self,
-        device_in_path: str,
+        input_device_path: str,
         keyboard_gadget: Keyboard = None,
         mouse_gadget: Mouse = None,
         consumer_control_gadget: ConsumerControl = None,
     ) -> DeviceLink | None:
-        if not device_in_path:
+        if not input_device_path:
             return None
 
-        device_in = InputDevice(device_in_path)
+        input_device = InputDevice(input_device_path)
         device_link = DeviceLink(
-            device_in, keyboard_gadget, mouse_gadget, consumer_control_gadget
+            input_device, keyboard_gadget, mouse_gadget, consumer_control_gadget
         )
 
         return device_link
@@ -222,31 +218,31 @@ class ComboDeviceHidProxy:
     async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
         logger.info(f"Starting event loop for {repr(device_link)}")
         should_reconnect = True
-        device_in = device_link.input()
+        input_device = device_link.input_device()
 
         try:
             await self._async_relay_input_events_loop(device_link)
 
         except OSError as e:
-            logger.critical(f"{device_in.name} disconnected. Reconnecting... [{e}]")
-            reconnected = await self._async_wait_for_device(device_in)
-            self._log_reconnection_outcome(device_in, reconnected)
+            logger.critical(f"{input_device.name} disconnected. Reconnecting... [{e}]")
+            reconnected = await self._async_wait_for_device(input_device)
+            self._log_reconnection_outcome(input_device, reconnected)
 
         except asyncio.exceptions.CancelledError:
-            logger.critical(f"{device_in.name} received a cancellation request.")
+            logger.critical(f"{input_device.name} received a cancellation request.")
             should_reconnect = False
 
         except Exception as e:
-            logger.error(f"{device_in.name} failed! Restarting task... [{e}]")
+            logger.error(f"{input_device.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(5)
 
         finally:
             await self._async_disconnect_device_link(device_link, should_reconnect)
 
     async def _async_relay_input_events_loop(self, device_link: DeviceLink):
-        device_in = device_link.input()
+        input_device = device_link.input_device()
 
-        async for event in device_in.async_read_loop():
+        async for event in input_device.async_read_loop():
             if not event:
                 continue
 
@@ -257,22 +253,22 @@ class ComboDeviceHidProxy:
     ) -> None:
         logger.debug(f"Received event: [{categorize(event)}]")
 
-        if converter.is_key_event(event):
+        if evdev_adapter.is_key_event(event):
             await self._async_send_key(event, device_link)
-        elif converter.is_mouse_movement(event):
+        elif evdev_adapter.is_mouse_movement(event):
             await self._async_move_mouse(event, device_link.mouse_gadget())
 
     async def _async_send_key(self, event: InputEvent, device_link: DeviceLink) -> None:
-        key = converter.to_hid_key(event)
-        device_out = converter.get_output_device(event, device_link)
+        key = evdev_adapter.to_hid_key(event)
+        device_out = evdev_adapter.get_output_device(event, device_link)
 
         if key is None or device_out is None:
             return
 
         try:
-            if converter.is_key_up(event):
+            if evdev_adapter.is_key_up(event):
                 device_out.release(key)
-            elif converter.is_key_down(event):
+            elif evdev_adapter.is_key_down(event):
                 device_out.press(key)
 
         except Exception as e:
@@ -282,7 +278,7 @@ class ComboDeviceHidProxy:
         if mouse is None:
             return
 
-        x, y, mwheel = converter.get_mouse_movement(event)
+        x, y, mwheel = evdev_adapter.get_mouse_movement(event)
         logger.debug(f"Moving mouse {mouse}: (x, y, mwheel) = {(x, y, mwheel)}")
 
         try:
@@ -291,31 +287,31 @@ class ComboDeviceHidProxy:
             logger.error(f"Error sending [{categorize(event)}] to {mouse} [{e}]")
 
     async def _async_wait_for_device(
-        self, device_in: InputDevice, delay_seconds: float = 1
+        self, input_device: InputDevice, delay_seconds: float = 1
     ) -> bool:
         await asyncio.sleep(delay_seconds)
         last_log_time = datetime.now()
 
-        while device_in.path not in list_devices():
-            last_log_time = self._log_reconnection_attempt(device_in, last_log_time)
+        while input_device.path not in list_devices():
+            last_log_time = self._log_reconnection_attempt(input_device, last_log_time)
             await asyncio.sleep(delay_seconds)
 
         return True
 
     def _log_reconnection_attempt(
-        self, device_in: InputDevice, last_log_time: datetime
+        self, input_device: InputDevice, last_log_time: datetime
     ) -> datetime:
         if _elapsed_seconds_since(last_log_time) >= 60:
-            logger.debug(f"Still trying to reconnect to {device_in.name}...")
+            logger.debug(f"Still trying to reconnect to {input_device.name}...")
             last_log_time = datetime.now()
 
         return last_log_time
 
-    def _log_reconnection_outcome(self, device_in: InputDevice, reconnected: bool):
+    def _log_reconnection_outcome(self, input_device: InputDevice, reconnected: bool):
         if reconnected:
-            logger.info(f"Successfully reconnected to {device_in.name}.")
+            logger.info(f"Successfully reconnected to {input_device.name}.")
         else:
-            logger.critical(f"Reconnecting to {device_in.name} failed.")
+            logger.critical(f"Reconnecting to {input_device.name} failed.")
 
     async def _async_disconnect_device_link(
         self, device_link: DeviceLink, reconnect: bool = False
@@ -325,7 +321,7 @@ class ComboDeviceHidProxy:
             task.cancel()
 
         if reconnect:
-            await device_link.async_reset_input()
+            await device_link.async_reset_input_device()
             self._connect_single_link(device_link)
 
 
