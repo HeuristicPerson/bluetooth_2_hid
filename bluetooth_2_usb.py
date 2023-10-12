@@ -37,7 +37,7 @@ from usb_hid import Device as GadgetDevice, unregister_disable
 
 from lib.args import parse_args
 from lib.device_link import DeviceLink
-import lib.evdev_converter as converter
+import lib.evdev_adapter as evdev_adapter
 import lib.logger
 
 _VERSION = "0.3.0"
@@ -253,22 +253,22 @@ class ComboDeviceHidProxy:
     ) -> None:
         logger.debug(f"Received event: [{categorize(event)}]")
 
-        if converter.is_key_event(event):
+        if evdev_adapter.is_key_event(event):
             await self._async_send_key(event, device_link)
-        elif converter.is_mouse_movement(event):
+        elif evdev_adapter.is_mouse_movement(event):
             await self._async_move_mouse(event, device_link.mouse_gadget())
 
     async def _async_send_key(self, event: InputEvent, device_link: DeviceLink) -> None:
-        key = converter.to_hid_key(event)
-        device_out = converter.get_output_device(event, device_link)
+        key = evdev_adapter.to_hid_key(event)
+        device_out = evdev_adapter.get_output_device(event, device_link)
 
         if key is None or device_out is None:
             return
 
         try:
-            if converter.is_key_up(event):
+            if evdev_adapter.is_key_up(event):
                 device_out.release(key)
-            elif converter.is_key_down(event):
+            elif evdev_adapter.is_key_down(event):
                 device_out.press(key)
 
         except Exception as e:
@@ -278,7 +278,7 @@ class ComboDeviceHidProxy:
         if mouse is None:
             return
 
-        x, y, mwheel = converter.get_mouse_movement(event)
+        x, y, mwheel = evdev_adapter.get_mouse_movement(event)
         logger.debug(f"Moving mouse {mouse}: (x, y, mwheel) = {(x, y, mwheel)}")
 
         try:
