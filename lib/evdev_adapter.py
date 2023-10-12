@@ -253,11 +253,11 @@ def is_key_event(event: InputEvent) -> bool:
 
 
 def is_key_up(event: InputEvent) -> bool:
-    return event.type == ecodes.EV_KEY and event.value == KeyEvent.key_up
+    return is_key_event(event) and event.value == KeyEvent.key_up
 
 
 def is_key_down(event: InputEvent) -> bool:
-    return event.type == ecodes.EV_KEY and event.value == KeyEvent.key_down
+    return is_key_event(event) and event.value == KeyEvent.key_down
 
 
 def is_mouse_movement(event: InputEvent) -> bool:
