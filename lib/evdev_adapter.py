@@ -3,18 +3,18 @@ from typing import Tuple
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.consumer_control_code import ConsumerControlCode
 from adafruit_hid.keyboard import Keyboard
-from adafruit_hid.keycode import Keycode, MouseButton
+from adafruit_hid.keycode import Keycode
 from adafruit_hid.mouse import Mouse
-from evdev import ecodes, InputEvent, KeyEvent
+from evdev import InputEvent, KeyEvent
 
 from lib.device_link import DeviceLink, DummyGadget
+from lib.ecodes import ecodes
 import lib.logger
 
 
 logger = lib.logger.get_logger()
 
 _EVDEV_TO_HID_MAPPING: dict[int, int] = {
-    ecodes.KEY_RESERVED: None,
     ecodes.KEY_A: Keycode.A,
     ecodes.KEY_B: Keycode.B,
     ecodes.KEY_C: Keycode.C,
@@ -135,40 +135,38 @@ _EVDEV_TO_HID_MAPPING: dict[int, int] = {
     ecodes.KEY_RIGHTSHIFT: Keycode.RIGHT_SHIFT,
     ecodes.KEY_RIGHTALT: Keycode.RIGHT_ALT,
     ecodes.KEY_RIGHTMETA: Keycode.RIGHT_GUI,
-    ecodes.KEY_OPEN: None,
-    ecodes.KEY_HELP: None,
-    ecodes.KEY_PROPS: None,
-    ecodes.KEY_FRONT: None,
-    ecodes.KEY_MENU: None,
-    ecodes.KEY_UNDO: None,
-    ecodes.KEY_CUT: None,
-    ecodes.KEY_COPY: None,
-    ecodes.KEY_PASTE: None,
-    ecodes.KEY_AGAIN: None,
+    ecodes.BTN_LEFT: Keycode.MOUSE_LEFT,
+    ecodes.BTN_RIGHT: Keycode.MOUSE_RIGHT,
+    ecodes.BTN_MIDDLE: Keycode.MOUSE_MIDDLE,
+    ecodes.KEY_OPEN: ConsumerControlCode.AC_OPEN,
+    ecodes.KEY_HELP: ConsumerControlCode.AL_INTEGRATED_HELP_CENTER,
+    ecodes.KEY_PROPS: ConsumerControlCode.AC_PROPERTIES,
+    ecodes.KEY_MENU: ConsumerControlCode.MENU,
+    ecodes.KEY_UNDO: ConsumerControlCode.AC_UNDO,
+    ecodes.KEY_CUT: ConsumerControlCode.AC_CUT,
+    ecodes.KEY_COPY: ConsumerControlCode.AC_COPY,
+    ecodes.KEY_PASTE: ConsumerControlCode.AC_PASTE,
+    ecodes.KEY_AGAIN: ConsumerControlCode.AC_REDO_REPEAT,
     ecodes.KEY_PLAYPAUSE: ConsumerControlCode.PLAY_PAUSE,
     ecodes.KEY_STOPCD: ConsumerControlCode.STOP,
     ecodes.KEY_PREVIOUSSONG: ConsumerControlCode.SCAN_PREVIOUS_TRACK,
     ecodes.KEY_NEXTSONG: ConsumerControlCode.SCAN_NEXT_TRACK,
     ecodes.KEY_EJECTCD: ConsumerControlCode.EJECT,
+    ecodes.KEY_MUTE: ConsumerControlCode.MUTE,
     ecodes.KEY_VOLUMEUP: ConsumerControlCode.VOLUME_INCREMENT,
     ecodes.KEY_VOLUMEDOWN: ConsumerControlCode.VOLUME_DECREMENT,
-    ecodes.KEY_WWW: None,
-    ecodes.KEY_MAIL: None,
-    ecodes.KEY_FORWARD: None,
-    ecodes.KEY_STOP: None,
-    ecodes.KEY_FIND: None,
-    ecodes.KEY_SCROLLUP: None,
-    ecodes.KEY_SCROLLDOWN: None,
-    ecodes.KEY_EDIT: None,
-    ecodes.KEY_SLEEP: None,
-    ecodes.KEY_REFRESH: None,
-    ecodes.KEY_CALC: None,
-    ecodes.KEY_MUTE: ConsumerControlCode.MUTE,
-    ecodes.KEY_COFFEE: None,
-    ecodes.KEY_BACK: None,
-    ecodes.BTN_LEFT: MouseButton.LEFT,
-    ecodes.BTN_RIGHT: MouseButton.RIGHT,
-    ecodes.BTN_MIDDLE: MouseButton.MIDDLE,
+    ecodes.KEY_WWW: ConsumerControlCode.AL_INTERNET_BROWSER,
+    ecodes.KEY_MAIL: ConsumerControlCode.AL_EMAIL_READER,
+    ecodes.KEY_FORWARD: ConsumerControlCode.AC_FORWARD,
+    ecodes.KEY_BACK: ConsumerControlCode.AC_BACK,
+    ecodes.KEY_STOP: ConsumerControlCode.AC_STOP,
+    ecodes.KEY_FIND: ConsumerControlCode.AC_SEARCH,
+    ecodes.KEY_SCROLLUP: ConsumerControlCode.AC_SCROLL_UP,
+    ecodes.KEY_SCROLLDOWN: ConsumerControlCode.AC_SCROLL_DOWN,
+    ecodes.KEY_EDIT: ConsumerControlCode.AC_EDIT,
+    ecodes.KEY_REFRESH: ConsumerControlCode.AC_REFRESH,
+    ecodes.KEY_CALC: ConsumerControlCode.AL_CALCULATOR,
+    ecodes.KEY_COFFEE: ConsumerControlCode.AL_TERMINAL_LOCK_SCREENSAVER,
 }
 """
 Mapping from evdev ecode to HID Keycode
@@ -217,7 +215,6 @@ def is_consumer_control_code(event: InputEvent) -> bool:
         ecodes.KEY_OPEN,
         ecodes.KEY_HELP,
         ecodes.KEY_PROPS,
-        ecodes.KEY_FRONT,
         ecodes.KEY_MENU,
         ecodes.KEY_UNDO,
         ecodes.KEY_CUT,
@@ -239,7 +236,6 @@ def is_consumer_control_code(event: InputEvent) -> bool:
         ecodes.KEY_SCROLLUP,
         ecodes.KEY_SCROLLDOWN,
         ecodes.KEY_EDIT,
-        ecodes.KEY_SLEEP,
         ecodes.KEY_REFRESH,
         ecodes.KEY_CALC,
         ecodes.KEY_MUTE,
