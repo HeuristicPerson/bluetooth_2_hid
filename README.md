@@ -38,7 +38,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 - Simple installation and highly automated setup 
 - Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
-- Supports multimedia keys (e.g. mute, volume up/down, etc.)
+- Supports [147 multimedia keys](https://github.com/quaxalber/bluetooth_2_usb/blob/main/lib/evdev_adapter.py#L142) (e.g. mute, volume up/down, launch browser, etc.)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
 - Installation as a systemd service
@@ -180,7 +180,7 @@ Follow these steps to install and configure the project:
                 └─4256 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
     Oct 11 18:00:58 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
-    Oct 11 18:00:58 raspberrypi python3.11[4256]: 23-10-11 18:00:58 [INFO] Launching Bluetooth 2 USB v0.3.2
+    Oct 11 18:00:58 raspberrypi python3.11[4256]: 23-10-11 18:00:58 [INFO] Launching Bluetooth 2 USB v0.4.0
     Oct 11 18:01:01 raspberrypi python3.11[4256]: 23-10-11 18:01:01 [INFO] Starting event loop for AceRK Keyboard: [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
     Oct 11 18:01:01 raspberrypi python3.11[4256]: 23-10-11 18:01:01 [INFO] Starting event loop for AceRK Mouse: [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
@@ -378,7 +378,7 @@ Here's a few things you could try:
   user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
   23-10-11 17:53:19 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False)
   23-10-11 17:53:19 [DEBUG] Logging to stdout
-  23-10-11 17:53:19 [INFO] Launching Bluetooth 2 USB v0.3.2
+  23-10-11 17:53:19 [INFO] Launching Bluetooth 2 USB v0.4.0
   23-10-11 17:53:19 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
   23-10-11 17:53:22 [DEBUG] Sandbox mode disabled. All output devices activated.
   23-10-11 17:53:22 [DEBUG] Registered device link: [AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]
