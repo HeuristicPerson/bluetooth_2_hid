@@ -212,7 +212,7 @@ class ComboDeviceHidProxy:
             self._async_relay_input_events(device_link), name=str(device_link)
         )
 
-        _logger.debug(f"Link {device_link} connected.")
+        _logger.debug(f"Connected device link: {device_link}")
 
     async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
         _logger.info(f"Starting event loop for {repr(device_link)}")
