@@ -358,7 +358,6 @@ _CONSUMER_KEYS = set(
         ecodes.KEY_VOICECOMMAND,
         ecodes.KEY_DICTATE,
         ecodes.KEY_EMOJI_PICKER,
-        ecodes.ABS_VOLUME,
         ecodes.KEY_MUTE,
         ecodes.KEY_BASSBOOST,
         ecodes.KEY_VOLUMEUP,
