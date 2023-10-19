@@ -14,7 +14,7 @@ import lib.logger
 
 _logger = lib.logger.get_logger()
 
-_evdev_to_hid: dict[int, int] = {
+_EVDEV_TO_HID: dict[int, int] = {
     ecodes.KEY_A: Keycode.A,
     ecodes.KEY_B: Keycode.B,
     ecodes.KEY_C: Keycode.C,
@@ -299,7 +299,7 @@ Mapping from evdev ecode to HID Keycode
 
 def to_hid_key(event: InputEvent):
     ecode: int = event.code
-    hid_key = _evdev_to_hid.get(ecode, None)
+    hid_key = _EVDEV_TO_HID.get(ecode, None)
 
     _logger.debug(f"Converted ecode ecode {ecode} to HID usage ID {hid_key}")
     if hid_key is None:
