@@ -207,7 +207,6 @@ _EVDEV_TO_HID: dict[int, int] = {
     ecodes.KEY_VOICECOMMAND: ConsumerControlCode.VOICE_COMMAND,
     ecodes.KEY_DICTATE: ConsumerControlCode.START_OR_STOP_VOICE_DICTATION_SESSION,
     ecodes.KEY_EMOJI_PICKER: ConsumerControlCode.INVOKE_OR_DISMISS_EMOJI_PICKER,
-    ecodes.ABS_VOLUME: ConsumerControlCode.VOLUME,
     ecodes.KEY_MUTE: ConsumerControlCode.MUTE,
     ecodes.KEY_BASSBOOST: ConsumerControlCode.BASS_BOOST,
     ecodes.KEY_VOLUMEUP: ConsumerControlCode.VOLUME_INCREMENT,
@@ -476,7 +475,9 @@ def find_key_name(event: InputEvent) -> str | None:
     ecode: int = event.code
 
     for attribute in dir(ecodes):
-        if getattr(ecodes, attribute, None) == ecode:
+        if getattr(ecodes, attribute, None) == ecode and attribute.startswith(
+            ("KEY_", "BTN_")
+        ):
             return attribute
 
     return None
@@ -484,6 +485,7 @@ def find_key_name(event: InputEvent) -> str | None:
 
 def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
     hid_class = get_hid_class(event)
+    _logger.debug(hid_class)
 
     for attribute in dir(hid_class):
         if getattr(hid_class, attribute, None) == hid_usage_id:
@@ -499,7 +501,6 @@ def get_hid_class(event: InputEvent) -> ConsumerControl | Keyboard | Mouse | Non
         return Mouse
     else:
         return Keyboard
-
 
 
 def get_output_device(
