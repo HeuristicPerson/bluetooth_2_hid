@@ -12,7 +12,7 @@ from lib.ecodes import ecodes
 import lib.logger
 
 
-logger = lib.logger.get_logger()
+_logger = lib.logger.get_logger()
 
 _evdev_to_hid: dict[int, int] = {
     ecodes.KEY_A: Keycode.A,
@@ -135,11 +135,15 @@ _evdev_to_hid: dict[int, int] = {
     ecodes.KEY_RIGHTSHIFT: Keycode.RIGHT_SHIFT,
     ecodes.KEY_RIGHTALT: Keycode.RIGHT_ALT,
     ecodes.KEY_RIGHTMETA: Keycode.RIGHT_GUI,
+    #
     # Mouse buttons
+    #
     ecodes.BTN_LEFT: Keycode.MOUSE_LEFT,
     ecodes.BTN_RIGHT: Keycode.MOUSE_RIGHT,
     ecodes.BTN_MIDDLE: Keycode.MOUSE_MIDDLE,
-    # Mapping from evdev ecodes to HID Usage IDs: https://github.com/torvalds/linux/blob/11d3f72613957cba0783938a1ceddffe7dbbf5a1/drivers/hid/hid-input.c#L1069
+    #
+    # Mapping from evdev ecodes to HID UsageIDs from consumer page (0x0C): https://github.com/torvalds/linux/blob/11d3f72613957cba0783938a1ceddffe7dbbf5a1/drivers/hid/hid-input.c#L1069
+    #
     ecodes.KEY_POWER: ConsumerControlCode.POWER,
     ecodes.KEY_RESTART: ConsumerControlCode.RESET,
     ecodes.KEY_SLEEP: ConsumerControlCode.SLEEP,
@@ -297,9 +301,9 @@ def to_hid_key(event: InputEvent):
     ecode: int = event.code
     hid_key = _evdev_to_hid.get(ecode, None)
 
-    logger.debug(f"Converted ecode ecode {ecode} to HID usage ID {hid_key}")
+    _logger.debug(f"Converted ecode ecode {ecode} to HID usage ID {hid_key}")
     if hid_key is None:
-        logger.debug(f"Unsupported key pressed: {ecode}")
+        _logger.debug(f"Unsupported key pressed: {ecode}")
 
     return hid_key
 
@@ -317,7 +321,7 @@ def get_output_device(
         output_device = device_link.keyboard_gadget()
 
     if output_device is None:
-        logger.debug("Output device not available!")
+        _logger.debug("Output device not available!")
 
     return output_device
 

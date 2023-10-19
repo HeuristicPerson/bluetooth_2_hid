@@ -43,7 +43,7 @@ import lib.logger
 _VERSION = "0.4.0"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
 
-logger = lib.logger.get_logger()
+_logger = lib.logger.get_logger()
 
 
 class ComboDeviceHidProxy:
@@ -81,7 +81,7 @@ class ComboDeviceHidProxy:
             self._log_registered_links()
 
         except Exception as e:
-            logger.error(f"Failed to initialize devices. [{e}]")
+            _logger.error(f"Failed to initialize devices. [{e}]")
             raise
 
     def enable_usb_gadgets(self, gadgets_enabled: bool = True) -> None:
@@ -91,7 +91,7 @@ class ComboDeviceHidProxy:
 
         except Exception as e:
             action = "enable" if gadgets_enabled else "disable"
-            logger.error(f"Failed to {action} gadget devices. [{e}]")
+            _logger.error(f"Failed to {action} gadget devices. [{e}]")
             raise
 
     def _check_enable_gadgets(self, gadgets_enabled: bool) -> None:
@@ -115,9 +115,9 @@ class ComboDeviceHidProxy:
 
     def _log_gadgets(self) -> None:
         if self._gadgets_enabled:
-            logger.debug(f"Available output devices: {usb_hid.devices}")
+            _logger.debug(f"Available output devices: {usb_hid.devices}")
         else:
-            logger.warning(f"All output devices disabled!")
+            _logger.warning(f"All output devices disabled!")
 
     def _create_and_register_links(
         self,
@@ -184,39 +184,39 @@ class ComboDeviceHidProxy:
 
     def _log_sandbox_status(self) -> None:
         if self._is_sandbox:
-            logger.warning("Sandbox mode enabled! All output devices deactivated.")
+            _logger.warning("Sandbox mode enabled! All output devices deactivated.")
         else:
-            logger.debug("Sandbox mode disabled. All output devices activated.")
+            _logger.debug("Sandbox mode disabled. All output devices activated.")
 
     def _log_registered_links(self) -> None:
         for link in self._registered_links:
-            logger.debug(f"Registered device link: {link}")
+            _logger.debug(f"Registered device link: {link}")
 
     async def async_connect_registered_links(self) -> NoReturn:
         try:
             async with TaskGroup() as self._task_group:
                 self._connect_device_links(self._registered_links)
 
-            logger.critical("Event loop closed.")
+            _logger.critical("Event loop closed.")
 
         except* Exception as e:
-            logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
+            _logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
 
     def _connect_device_links(self, device_links: Collection[DeviceLink]) -> None:
         for link in device_links:
             self._connect_single_link(link)
 
-        logger.debug(f"Current tasks: {asyncio.all_tasks()}")
+        _logger.debug(f"Current tasks: {asyncio.all_tasks()}")
 
     def _connect_single_link(self, device_link: DeviceLink) -> None:
         self._task_group.create_task(
             self._async_relay_input_events(device_link), name=str(device_link)
         )
 
-        logger.debug(f"Link {device_link} connected.")
+        _logger.debug(f"Link {device_link} connected.")
 
     async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
-        logger.info(f"Starting event loop for {repr(device_link)}")
+        _logger.info(f"Starting event loop for {repr(device_link)}")
         should_reconnect = True
         input_device = device_link.input_device()
 
@@ -224,16 +224,16 @@ class ComboDeviceHidProxy:
             await self._async_relay_input_events_loop(device_link)
 
         except OSError as e:
-            logger.critical(f"{input_device.name} disconnected. Reconnecting... [{e}]")
+            _logger.critical(f"{input_device.name} disconnected. Reconnecting... [{e}]")
             reconnected = await self._async_wait_for_device(input_device)
             self._log_reconnection_outcome(input_device, reconnected)
 
         except asyncio.exceptions.CancelledError:
-            logger.critical(f"{input_device.name} received a cancellation request.")
+            _logger.critical(f"{input_device.name} received a cancellation request.")
             should_reconnect = False
 
         except Exception as e:
-            logger.error(f"{input_device.name} failed! Restarting task... [{e}]")
+            _logger.error(f"{input_device.name} failed! Restarting task... [{e}]")
             await asyncio.sleep(5)
 
         finally:
@@ -251,7 +251,7 @@ class ComboDeviceHidProxy:
     async def _async_relay_single_event(
         self, event: InputEvent, device_link: DeviceLink
     ) -> None:
-        logger.debug(f"Received event: [{categorize(event)}]")
+        _logger.debug(f"Received event: [{categorize(event)}]")
 
         if evdev_adapter.is_key_event(event):
             await self._async_send_key(event, device_link)
@@ -272,19 +272,19 @@ class ComboDeviceHidProxy:
                 device_out.press(key)
 
         except Exception as e:
-            logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
+            _logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
 
     async def _async_move_mouse(self, event: InputEvent, mouse: Mouse) -> None:
         if mouse is None:
             return
 
         x, y, mwheel = evdev_adapter.get_mouse_movement(event)
-        logger.debug(f"Moving mouse {mouse}: (x, y, mwheel) = {(x, y, mwheel)}")
+        _logger.debug(f"Moving mouse {mouse}: (x, y, mwheel) = {(x, y, mwheel)}")
 
         try:
             mouse.move(x, y, mwheel)
         except Exception as e:
-            logger.error(f"Error sending [{categorize(event)}] to {mouse} [{e}]")
+            _logger.error(f"Error sending [{categorize(event)}] to {mouse} [{e}]")
 
     async def _async_wait_for_device(
         self, input_device: InputDevice, delay_seconds: float = 1
@@ -302,16 +302,16 @@ class ComboDeviceHidProxy:
         self, input_device: InputDevice, last_log_time: datetime
     ) -> datetime:
         if _elapsed_seconds_since(last_log_time) >= 60:
-            logger.debug(f"Still trying to reconnect to {input_device.name}...")
+            _logger.debug(f"Still trying to reconnect to {input_device.name}...")
             last_log_time = datetime.now()
 
         return last_log_time
 
     def _log_reconnection_outcome(self, input_device: InputDevice, reconnected: bool):
         if reconnected:
-            logger.info(f"Successfully reconnected to {input_device.name}.")
+            _logger.info(f"Successfully reconnected to {input_device.name}.")
         else:
-            logger.critical(f"Reconnecting to {input_device.name} failed.")
+            _logger.critical(f"Reconnecting to {input_device.name} failed.")
 
     async def _async_disconnect_device_link(
         self, device_link: DeviceLink, reconnect: bool = False
@@ -339,7 +339,7 @@ def _get_task(task_name: str) -> Task | None:
 
 
 def _signal_handler(sig, frame) -> NoReturn:
-    logger.info(f"Exiting gracefully. Received signal: {sig}, frame: {frame}")
+    _logger.info(f"Exiting gracefully. Received signal: {sig}, frame: {frame}")
     sys.exit(0)
 
 
@@ -360,7 +360,7 @@ async def _main() -> NoReturn:
         sys.exit(0)
 
     if args.debug:
-        logger.setLevel(DEBUG)
+        _logger.setLevel(DEBUG)
 
     log_handlers_message = "Logging to stdout"
 
@@ -368,9 +368,9 @@ async def _main() -> NoReturn:
         lib.logger.add_file_handler(args.log_path)
         log_handlers_message += f" and to {args.log_path}"
 
-    logger.debug(f"CLI args: {args}")
-    logger.debug(log_handlers_message)
-    logger.info(f"Launching {_VERSIONED_NAME}")
+    _logger.debug(f"CLI args: {args}")
+    _logger.debug(log_handlers_message)
+    _logger.info(f"Launching {_VERSIONED_NAME}")
 
     proxy = ComboDeviceHidProxy(args.keyboards, args.mice, args.sandbox)
     await proxy.async_connect_registered_links()
@@ -384,5 +384,5 @@ if __name__ == "__main__":
         asyncio.run(_main())
 
     except Exception as e:
-        logger.exception(f"Houston, we have an unhandled problem. Abort mission. [{e}]")
+        _logger.exception(f"Houston, we have an unhandled problem. Abort mission. [{e}]")
         raise
