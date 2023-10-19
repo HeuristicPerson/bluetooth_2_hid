@@ -292,7 +292,7 @@ _EVDEV_TO_HID: dict[int, int] = {
 }
 """Mapping from evdev ecode to HID UsageID"""
 
-_CONSUMER_CONTROL_CODES = set(
+_CONSUMER_KEYS = set(
     [
         ecodes.KEY_POWER,
         ecodes.KEY_RESTART,
@@ -495,7 +495,7 @@ def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
 def get_hid_class(event: InputEvent) -> ConsumerControl | Keyboard | Mouse | None:
     hid_type = None
 
-    if is_consumer_control_code(event):
+    if is_consumer_key(event):
         hid_type = ConsumerControl
     elif is_mouse_button(event):
         hid_type = Mouse
@@ -510,7 +510,7 @@ def get_output_device(
 ) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
     output_device = None
 
-    if is_consumer_control_code(event):
+    if is_consumer_key(event):
         output_device = device_link.consumer_gadget()
     elif is_mouse_button(event):
         output_device = device_link.mouse_gadget()
@@ -527,8 +527,8 @@ def is_mouse_button(event: InputEvent) -> bool:
     return event.code in _MOUSE_BUTTONS
 
 
-def is_consumer_control_code(event: InputEvent) -> bool:
-    return event.code in _CONSUMER_CONTROL_CODES
+def is_consumer_key(event: InputEvent) -> bool:
+    return event.code in _CONSUMER_KEYS
 
 
 def is_key_event(event: InputEvent) -> bool:
