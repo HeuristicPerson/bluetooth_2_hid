@@ -59,8 +59,8 @@ def parse_args() -> Namespace:
         "--log_path",
         "-p",
         type=str,
-        default="/var/log/bluetooth_2_usb/bluetooth_2_usb.log",
-        help="The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.",
+        default="/var/log/bluetooth2usb/bluetooth2usb.log",
+        help="The path of the log file. Default is /var/log/bluetooth2usb/bluetooth2usb.log.",
     )
     parser.add_argument(
         "--version",

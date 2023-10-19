@@ -38,7 +38,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 - Simple installation and highly automated setup 
 - Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
-- Supports [146 multimedia keys](https://github.com/quaxalber/bluetooth_2_usb/blob/8b1c5f8097bbdedfe4cef46e07686a1059ea2979/lib/evdev_adapter.py#L142) (e.g. mute, volume up/down, launch browser, etc.)
+- Supports [146 multimedia keys](https://github.com/quaxalber/bluetooth2usb/blob/8b1c5f8097bbdedfe4cef46e07686a1059ea2979/lib/evdev_adapter.py#L142) (e.g. mute, volume up/down, launch browser, etc.)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
 - Installation as a systemd service
@@ -94,13 +94,13 @@ Follow these steps to install and configure the project:
 6. On the Pi, clone the repository:  
    
    ```console
-   git clone https://github.com/quaxalber/bluetooth_2_usb.git
+   git clone https://github.com/quaxalber/bluetooth2usb.git
    ```
    
 7. Navigate to the project folder: 
    
    ```console
-   cd bluetooth_2_usb
+   cd bluetooth2usb
    ```
 
 8. Run the installation script as root: 
@@ -110,7 +110,7 @@ Follow these steps to install and configure the project:
    ```
  
  > [!NOTE]
- > Many point-release distros, including Raspberry Pi OS, are one or two minor versions behind the latest Python version. At the time of writing this, RPi OS ships with Python 3.9.2. You could opt for a different OS, such as [Ubuntu](https://ubuntu.com/download/raspberry-pi) or [pure Debian](https://raspi.debian.net/tested-images/). Or you let the installer [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh). This is the recommended approach. Depending on your hardware, this may take a moment though. 
+ > Many point-release distros, including Raspberry Pi OS, are one or two minor versions behind the latest Python version. At the time of writing this, RPi OS ships with Python 3.9.2. You could opt for a different OS, such as [Ubuntu](https://ubuntu.com/download/raspberry-pi) or [pure Debian](https://raspi.debian.net/tested-images/). Or you let the installer [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth2usb/blob/master/install_python_3.11.sh). This is the recommended approach. Depending on your hardware, this may take a moment though. 
 
 9. Restart the Pi (prompt at the end of `install.sh`)
    
@@ -140,10 +140,10 @@ Follow these steps to install and configure the project:
     vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
     ```
 
-11. Specify the correct input devices in `bluetooth_2_usb.service`:
+11. Specify the correct input devices in `bluetooth2usb.service`:
     
     ```console
-    nano bluetooth_2_usb.service
+    nano bluetooth2usb.service
     ```
 
     And change `event3` and `event2` according to step **10.3.** 
@@ -157,27 +157,27 @@ Follow these steps to install and configure the project:
     
     ```console
     sudo systemctl daemon-reload
-    sudo service bluetooth_2_usb restart
+    sudo service bluetooth2usb restart
     ```
 
 14. Verify that the service is running:
     
     ```console
-    service bluetooth_2_usb status
+    service bluetooth2usb status
     ```
 
     It should look something like this:
 
     ```console
-    user@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
-    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
-        Loaded: loaded (/home/user/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
+    user@raspberrypi:~/bluetooth2usb $ service bluetooth2usb status
+    ● bluetooth2usb.service - Bluetooth to USB HID proxy
+        Loaded: loaded (/home/user/bluetooth2usb/bluetooth2usb.service; enabled; vendor preset: enabled)
         Active: active (running) since Wed 2023-10-11 18:00:58 BST; 11s ago
       Main PID: 4256 (python3.11)
           Tasks: 1 (limit: 8755)
             CPU: 328ms
-        CGroup: /system.slice/bluetooth_2_usb.service
-                └─4256 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
+        CGroup: /system.slice/bluetooth2usb.service
+                └─4256 python3.11 /usr/bin/bluetooth2usb.py -k /dev/input/event2 -m /dev/input/event3
 
     Oct 11 18:00:58 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
     Oct 11 18:00:58 raspberrypi python3.11[4256]: 23-10-11 18:00:58 [INFO] Launching Bluetooth 2 USB v0.4.1
@@ -200,8 +200,8 @@ Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB 
 Currently you can provide the following CLI arguments:
 
 ```console
-user@raspberrypi:~/bluetooth_2_usb $ python3.11 bluetooth_2_usb.py -h
-usage: bluetooth_2_usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH] [--version]
+user@raspberrypi:~/bluetooth2usb $ python3.11 bluetooth2usb.py -h
+usage: bluetooth2usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH] [--version]
 
 Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
 
@@ -214,13 +214,13 @@ options:
   --debug, -d           Enable debug mode. Increases log verbosity
   --log_to_file, -f     Add a handler that logs to file additionally to stdout.
   --log_path LOG_PATH, -p LOG_PATH
-                        The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.
+                        The path of the log file. Default is /var/log/bluetooth2usb/bluetooth2usb.log.
   --version, -v         Display the version number of this software.
 ```
 
 ### 5.2. Consuming the API from your Python code
 
-The API is designed such that it may be consumed both via CLI and from within external Python code. More details on this [coming soon](https://github.com/quaxalber/bluetooth_2_usb/issues/16)! 
+The API is designed such that it may be consumed both via CLI and from within external Python code. More details on this [coming soon](https://github.com/quaxalber/bluetooth2usb/issues/16)! 
 
 ## 6. Troubleshooting
 
@@ -251,10 +251,10 @@ This could be due to a number of reasons. Try these steps:
 - Verify that the service is running:
   
   ```console
-  service bluetooth_2_usb status
+  service bluetooth2usb status
   ```
 
-- Verify that you specified the correct input devices in `bluetooth_2_usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
+- Verify that you specified the correct input devices in `bluetooth2usb.service` and that sandbox mode is off (that is no `--sandbox` or `-s` flag)
   
 - Verify that your Bluetooth devices are paired, trusted, connected and *not* blocked:
   
@@ -266,7 +266,7 @@ This could be due to a number of reasons. Try these steps:
   It should look like this:
 
   ```console
-  user@raspberrypi:~/bluetooth_2_usb $ bluetoothctl
+  user@raspberrypi:~/bluetooth2usb $ bluetoothctl
   Agent registered
   [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
   [AceRK]# info A1:B2:C3:D4:E5:F6
@@ -293,7 +293,7 @@ This could be due to a number of reasons. Try these steps:
   
   ```console
   sudo systemctl daemon-reload
-  sudo service bluetooth_2_usb restart
+  sudo service bluetooth2usb restart
   ```
 
 - Reboot Pi
@@ -339,7 +339,7 @@ exit
 
 Here's a few things you could try:
 
-- Check the log files (default at `/var/log/bluetooth_2_usb/`) for errors
+- Check the log files (default at `/var/log/bluetooth2usb/`) for errors
   
 > [!NOTE]
 > Logging to file requires the `-f` flag
@@ -347,35 +347,35 @@ Here's a few things you could try:
 - You may also query the journal to inspect the service logs in real-time:
   
   ```console
-  journalctl -u bluetooth_2_usb.service -n 20 -f
+  journalctl -u bluetooth2usb.service -n 20 -f
   ```
 
-- Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth_2_usb.service`. 
+- Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth2usb.service`. 
   
 - Reload and restart service:
   
   ```console
   sudo systemctl daemon-reload
-  sudo service bluetooth_2_usb restart
+  sudo service bluetooth2usb restart
   ```
 
 - For easier degguging, you may also stop the service 
   
   ```console
-  sudo service bluetooth_2_usb stop
+  sudo service bluetooth2usb stop
   ```
 
   and run the script manually, modifying arguments as required, e.g.:
 
   ```console
-  sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  sudo python3.11 bluetooth2usb.py -k /dev/input/event2 -m /dev/input/event3 -d
   ```
 
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
   
   ```console
-  user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
-  23-10-19 19:00:52 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False)
+  user@raspberrypi:~/bluetooth2usb $ sudo python3.11 bluetooth2usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  23-10-19 19:00:52 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth2usb/bluetooth2usb.log', version=False)
   23-10-19 19:00:52 [DEBUG] Logging to stdout
   23-10-19 19:00:52 [INFO] Launching Bluetooth 2 USB v0.4.1
   23-10-19 19:00:52 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
@@ -384,7 +384,7 @@ Here's a few things you could try:
   23-10-19 19:00:55 [DEBUG] Registered device link: [AceRK Mouse]>>[/dev/hidg0]
   23-10-19 19:00:55 [DEBUG] Connected device link: [AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]
   23-10-19 19:00:55 [DEBUG] Connected device link: [AceRK Mouse]>>[/dev/hidg0]
-  23-10-19 19:00:55 [DEBUG] Current tasks: {<Task pending name='[AceRK Mouse]>>[/dev/hidg0]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:217> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:375> cb=[_run_until_complete_cb() at /usr/local/lib/python3.11/asyncio/base_events.py:180]>, <Task pending name='[AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:217> cb=[TaskGroup._on_task_done()]>}
+  23-10-19 19:00:55 [DEBUG] Current tasks: {<Task pending name='[AceRK Mouse]>>[/dev/hidg0]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth2usb/bluetooth2usb.py:217> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /home/user/bluetooth2usb/bluetooth2usb.py:375> cb=[_run_until_complete_cb() at /usr/local/lib/python3.11/asyncio/base_events.py:180]>, <Task pending name='[AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth2usb/bluetooth2usb.py:217> cb=[TaskGroup._on_task_done()]>}
   23-10-19 19:00:55 [INFO] Starting event loop for AceRK Keyboard: [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
   23-10-19 19:00:55 [INFO] Starting event loop for AceRK Mouse: [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
   23-10-19 19:01:07 [DEBUG] Received event: [event at 1697738467.740064, code 04, type 04, val 458756]
@@ -402,7 +402,7 @@ Here's a few things you could try:
 
 - Still not resolved? Double-check the [installation instructions](#4-installation)
   
-- For more help, open an [issue](https://github.com/quaxalber/bluetooth_2_usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth_2_usb)
+- For more help, open an [issue](https://github.com/quaxalber/bluetooth2usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth2usb)
 
 ### 6.5. Everything is working, but can it help me with Bitcoin mining? 
 

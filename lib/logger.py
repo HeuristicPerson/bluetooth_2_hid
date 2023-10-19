@@ -1,6 +1,6 @@
 import logging
 
-_logger = logging.getLogger("bluetooth_2_usb")
+_logger = logging.getLogger("bluetooth2usb")
 _formatter = logging.Formatter(
     "%(asctime)s [%(levelname)s] %(message)s", datefmt="%y-%m-%d %H:%M:%S"
 )

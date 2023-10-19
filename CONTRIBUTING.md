@@ -84,7 +84,7 @@ This will automatically reformat your code to conform to the project's coding st
 
 ## 5. Reporting Issues
 
-Please use the GitHub [issue tracker](https://github.com/quaxalber/bluetooth_2_usb/issues) to report any bugs or to request new features. Make sure to check for existing issues that are related to yours before creating a new one.
+Please use the GitHub [issue tracker](https://github.com/quaxalber/bluetooth2usb/issues) to report any bugs or to request new features. Make sure to check for existing issues that are related to yours before creating a new one.
 
 ## 6. Additional Resources
 
