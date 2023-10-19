@@ -463,11 +463,11 @@ def to_hid_usage_id(event: InputEvent) -> int | None:
     hid_usage_name = find_usage_name(event, hid_usage_id)
 
     if hid_usage_id is None or hid_usage_name is None:
-        _logger.debug(f"Unsupported key pressed: {format(ecode, 'X')} ({key_name})")
-    else:
-        _logger.debug(
-            f"Converted evdev ecode {format(ecode, 'X')} ({key_name}) to HID UsageID {format(hid_usage_id, 'X')} ({hid_usage_name})"
-        )
+        _logger.debug(f"Unsupported key pressed: 0x{ecode:X} ({key_name})")
+
+    _logger.debug(
+        f"Converted evdev ecode 0x{ecode:X} ({key_name}) to HID UsageID 0x{hid_usage_id:X} ({hid_usage_name})"
+    )
 
     return hid_usage_id
 
@@ -493,16 +493,13 @@ def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
 
 
 def get_hid_class(event: InputEvent) -> ConsumerControl | Keyboard | Mouse | None:
-    hid_type = None
-
     if is_consumer_key(event):
-        hid_type = ConsumerControl
+        return ConsumerControl
     elif is_mouse_button(event):
-        hid_type = Mouse
+        return Mouse
     else:
-        hid_type = Keyboard
+        return Keyboard
 
-    return hid_type
 
 
 def get_output_device(
