@@ -459,7 +459,7 @@ def to_hid_usage_id(event: InputEvent) -> int | None:
     ecode: int = event.code
     hid_usage_id = _EVDEV_TO_HID.get(ecode, None)
 
-    key_name = find_key_name(ecode)
+    key_name = find_key_name(event)
     hid_usage_name = find_usage_name(event, hid_usage_id)
 
     if hid_usage_id is None or hid_usage_name is None:
