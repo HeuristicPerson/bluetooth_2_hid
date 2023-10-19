@@ -1,9 +1,9 @@
-from typing import Tuple
+from functools import lru_cache
 
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.consumer_control_code import ConsumerControlCode
 from adafruit_hid.keyboard import Keyboard
-from adafruit_hid.keycode import Keycode
+from adafruit_hid.keycode import Keycode, MouseButton
 from adafruit_hid.mouse import Mouse
 from evdev import InputEvent, KeyEvent
 
@@ -12,9 +12,9 @@ from lib.ecodes import ecodes
 import lib.logger
 
 
-logger = lib.logger.get_logger()
+_logger = lib.logger.get_logger()
 
-_evdev_to_hid: dict[int, int] = {
+_EVDEV_TO_HID: dict[int, int] = {
     ecodes.KEY_A: Keycode.A,
     ecodes.KEY_B: Keycode.B,
     ecodes.KEY_C: Keycode.C,
@@ -135,11 +135,15 @@ _evdev_to_hid: dict[int, int] = {
     ecodes.KEY_RIGHTSHIFT: Keycode.RIGHT_SHIFT,
     ecodes.KEY_RIGHTALT: Keycode.RIGHT_ALT,
     ecodes.KEY_RIGHTMETA: Keycode.RIGHT_GUI,
+    #
     # Mouse buttons
-    ecodes.BTN_LEFT: Keycode.MOUSE_LEFT,
-    ecodes.BTN_RIGHT: Keycode.MOUSE_RIGHT,
-    ecodes.BTN_MIDDLE: Keycode.MOUSE_MIDDLE,
-    # Mapping from evdev ecodes to HID Usage IDs: https://github.com/torvalds/linux/blob/11d3f72613957cba0783938a1ceddffe7dbbf5a1/drivers/hid/hid-input.c#L1069
+    #
+    ecodes.BTN_LEFT: MouseButton.LEFT,
+    ecodes.BTN_RIGHT: MouseButton.RIGHT,
+    ecodes.BTN_MIDDLE: MouseButton.MIDDLE,
+    #
+    # Mapping from evdev ecodes to HID UsageIDs from consumer page (0x0C): https://github.com/torvalds/linux/blob/11d3f72613957cba0783938a1ceddffe7dbbf5a1/drivers/hid/hid-input.c#L1069
+    #
     ecodes.KEY_POWER: ConsumerControlCode.POWER,
     ecodes.KEY_RESTART: ConsumerControlCode.RESET,
     ecodes.KEY_SLEEP: ConsumerControlCode.SLEEP,
@@ -205,7 +209,6 @@ _evdev_to_hid: dict[int, int] = {
     ecodes.KEY_VOICECOMMAND: ConsumerControlCode.VOICE_COMMAND,
     ecodes.KEY_DICTATE: ConsumerControlCode.START_OR_STOP_VOICE_DICTATION_SESSION,
     ecodes.KEY_EMOJI_PICKER: ConsumerControlCode.INVOKE_OR_DISMISS_EMOJI_PICKER,
-    ecodes.ABS_VOLUME: ConsumerControlCode.VOLUME,
     ecodes.KEY_MUTE: ConsumerControlCode.MUTE,
     ecodes.KEY_BASSBOOST: ConsumerControlCode.BASS_BOOST,
     ecodes.KEY_VOLUMEUP: ConsumerControlCode.VOLUME_INCREMENT,
@@ -288,50 +291,10 @@ _evdev_to_hid: dict[int, int] = {
     ecodes.KEY_KBDINPUTASSIST_CANCEL: ConsumerControlCode.KEYBOARD_INPUT_ASSIST_CANCEL,
     ecodes.KEY_SCALE: ConsumerControlCode.AC_DESKTOP_SHOW_ALL_WINDOWS,
 }
-"""
-Mapping from evdev ecode to HID Keycode
-"""
+"""Mapping from evdev ecode to HID UsageID"""
 
-
-def to_hid_key(event: InputEvent):
-    ecode: int = event.code
-    hid_key = _evdev_to_hid.get(ecode, None)
-
-    logger.debug(f"Converted ecode ecode {ecode} to HID usage ID {hid_key}")
-    if hid_key is None:
-        logger.debug(f"Unsupported key pressed: {ecode}")
-
-    return hid_key
-
-
-def get_output_device(
-    event: InputEvent, device_link: DeviceLink
-) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
-    output_device = None
-
-    if is_consumer_control_code(event):
-        output_device = device_link.consumer_gadget()
-    elif is_mouse_button(event):
-        output_device = device_link.mouse_gadget()
-    else:
-        output_device = device_link.keyboard_gadget()
-
-    if output_device is None:
-        logger.debug("Output device not available!")
-
-    return output_device
-
-
-def is_mouse_button(event: InputEvent) -> bool:
-    return event.code in [
-        ecodes.BTN_LEFT,
-        ecodes.BTN_RIGHT,
-        ecodes.BTN_MIDDLE,
-    ]
-
-
-def is_consumer_control_code(event: InputEvent) -> bool:
-    return event.code in [
+_CONSUMER_KEYS = set(
+    [
         ecodes.KEY_POWER,
         ecodes.KEY_RESTART,
         ecodes.KEY_SLEEP,
@@ -397,7 +360,6 @@ def is_consumer_control_code(event: InputEvent) -> bool:
         ecodes.KEY_VOICECOMMAND,
         ecodes.KEY_DICTATE,
         ecodes.KEY_EMOJI_PICKER,
-        ecodes.ABS_VOLUME,
         ecodes.KEY_MUTE,
         ecodes.KEY_BASSBOOST,
         ecodes.KEY_VOLUMEUP,
@@ -480,6 +442,94 @@ def is_consumer_control_code(event: InputEvent) -> bool:
         ecodes.KEY_KBDINPUTASSIST_CANCEL,
         ecodes.KEY_SCALE,
     ]
+)
+"""evdev ecodes that are mapped to HID UsageIDs from consumer page (0x0C)"""
+
+_MOUSE_BUTTONS = set(
+    [
+        ecodes.BTN_LEFT,
+        ecodes.BTN_RIGHT,
+        ecodes.BTN_MIDDLE,
+    ]
+)
+"""Mouse button ecodes"""
+
+
+def to_hid_usage_id(event: InputEvent) -> int | None:
+    ecode: int = event.code
+    hid_usage_id = _EVDEV_TO_HID.get(ecode, None)
+
+    key_name = find_key_name(event)
+    hid_usage_name = find_usage_name(event, hid_usage_id)
+
+    if hid_usage_id is None or hid_usage_name is None:
+        _logger.debug(f"Unsupported key pressed: 0x{ecode:X} ({key_name})")
+
+    _logger.debug(
+        f"Converted evdev ecode 0x{ecode:X} ({key_name}) to HID UsageID 0x{hid_usage_id:X} ({hid_usage_name})"
+    )
+
+    return hid_usage_id
+
+
+def find_key_name(event: InputEvent) -> str | None:
+    ecode: int = event.code
+
+    for attribute in dir(ecodes):
+        if getattr(ecodes, attribute, None) == ecode and attribute.startswith(
+            ("KEY_", "BTN_")
+        ):
+            return attribute
+
+    return None
+
+
+def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
+    code_type = get_hid_code_type(event)
+
+    for attribute in dir(code_type):
+        if getattr(code_type, attribute, None) == hid_usage_id:
+            return attribute
+
+    return None
+
+
+@lru_cache(maxsize=None)
+def get_hid_code_type(
+    event: InputEvent,
+) -> type[ConsumerControlCode] | type[Keycode] | type[MouseButton]:
+    if is_consumer_key(event):
+        return ConsumerControlCode
+    elif is_mouse_button(event):
+        return MouseButton
+    else:
+        return Keycode
+
+
+def get_output_device(
+    event: InputEvent, device_link: DeviceLink
+) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
+    output_device = None
+
+    if is_consumer_key(event):
+        output_device = device_link.consumer_gadget()
+    elif is_mouse_button(event):
+        output_device = device_link.mouse_gadget()
+    else:
+        output_device = device_link.keyboard_gadget()
+
+    if output_device is None:
+        _logger.debug("Output device not available!")
+
+    return output_device
+
+
+def is_mouse_button(event: InputEvent) -> bool:
+    return event.code in _MOUSE_BUTTONS
+
+
+def is_consumer_key(event: InputEvent) -> bool:
+    return event.code in _CONSUMER_KEYS
 
 
 def is_key_event(event: InputEvent) -> bool:
@@ -498,7 +548,7 @@ def is_mouse_movement(event: InputEvent) -> bool:
     return event.type == ecodes.EV_REL
 
 
-def get_mouse_movement(event: InputEvent) -> Tuple[int, int, int]:
+def get_mouse_movement(event: InputEvent) -> tuple[int, int, int]:
     x, y, mwheel = 0, 0, 0
 
     if event.code == ecodes.REL_X:

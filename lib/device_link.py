@@ -78,7 +78,7 @@ class DeviceLink:
 
     def __repr__(self):
         active_gadgets_repr = [repr(g) for g in self._active_gadgets]
-        return f"{self._input_device_name}: [{self._input_device}] >> [{' + '.join(active_gadgets_repr)}]"
+        return f"[{self._input_device}] >> [{' + '.join(active_gadgets_repr)}]"
 
     def __str__(self):
         active_gadgets_str = [str(g) for g in self._active_gadgets]
