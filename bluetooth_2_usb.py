@@ -3,7 +3,6 @@
 Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
 """
 
-
 import asyncio
 from asyncio import TaskGroup, Task
 from datetime import datetime
@@ -11,7 +10,7 @@ from logging import DEBUG
 import os
 import signal
 import sys
-from typing import Collection, List, NoReturn
+from typing import Collection, NoReturn
 
 required_submodules = [
     "Adafruit_Blinka/src",
@@ -53,8 +52,8 @@ class ComboDeviceHidProxy:
 
     def __init__(
         self,
-        keyboard_paths: List[str] = [],
-        mouse_paths: List[str] = [],
+        keyboard_paths: list[str] = [],
+        mouse_paths: list[str] = [],
         is_sandbox: bool = False,
     ) -> None:
         self._init_variables()
@@ -63,15 +62,15 @@ class ComboDeviceHidProxy:
     def _init_variables(self) -> None:
         # Device links, that have been registered to this instance, but not
         # necessarily connected. Only connected links are ready to be used.
-        self._registered_links: List[DeviceLink] = []
+        self._registered_links: list[DeviceLink] = []
         self._is_sandbox: bool = False
         self._gadgets_enabled: bool = False
         self._task_group: TaskGroup
 
     def _init_devices(
         self,
-        keyboard_paths: List[str] = [],
-        mouse_paths: List[str] = [],
+        keyboard_paths: list[str] = [],
+        mouse_paths: list[str] = [],
         is_sandbox: bool = False,
     ) -> None:
         try:
@@ -121,8 +120,8 @@ class ComboDeviceHidProxy:
 
     def _create_and_register_links(
         self,
-        keyboard_paths: List[str],
-        mouse_paths: List[str],
+        keyboard_paths: list[str],
+        mouse_paths: list[str],
     ) -> None:
         keyboards = [self.create_keyboard_link(path) for path in keyboard_paths]
         mice = [self.create_mouse_link(path) for path in mouse_paths]
@@ -259,17 +258,17 @@ class ComboDeviceHidProxy:
             await self._async_move_mouse(event, device_link.mouse_gadget())
 
     async def _async_send_key(self, event: InputEvent, device_link: DeviceLink) -> None:
-        key = evdev_adapter.to_hid_key(event)
+        hid_key = evdev_adapter.to_hid_usage_id(event)
         device_out = evdev_adapter.get_output_device(event, device_link)
 
-        if key is None or device_out is None:
+        if hid_key is None or device_out is None:
             return
 
         try:
             if evdev_adapter.is_key_up(event):
-                device_out.release(key)
+                device_out.release(hid_key)
             elif evdev_adapter.is_key_down(event):
-                device_out.press(key)
+                device_out.press(hid_key)
 
         except Exception as e:
             _logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
@@ -384,5 +383,7 @@ if __name__ == "__main__":
         asyncio.run(_main())
 
     except Exception as e:
-        _logger.exception(f"Houston, we have an unhandled problem. Abort mission. [{e}]")
+        _logger.exception(
+            f"Houston, we have an unhandled problem. Abort mission. [{e}]"
+        )
         raise
