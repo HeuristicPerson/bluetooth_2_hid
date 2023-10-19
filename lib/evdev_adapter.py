@@ -1,7 +1,9 @@
+from functools import lru_cache
+
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.consumer_control_code import ConsumerControlCode
 from adafruit_hid.keyboard import Keyboard
-from adafruit_hid.keycode import Keycode
+from adafruit_hid.keycode import Keycode, MouseButton
 from adafruit_hid.mouse import Mouse
 from evdev import InputEvent, KeyEvent
 
@@ -136,9 +138,9 @@ _EVDEV_TO_HID: dict[int, int] = {
     #
     # Mouse buttons
     #
-    ecodes.BTN_LEFT: Keycode.MOUSE_LEFT,
-    ecodes.BTN_RIGHT: Keycode.MOUSE_RIGHT,
-    ecodes.BTN_MIDDLE: Keycode.MOUSE_MIDDLE,
+    ecodes.BTN_LEFT: MouseButton.LEFT,
+    ecodes.BTN_RIGHT: MouseButton.RIGHT,
+    ecodes.BTN_MIDDLE: MouseButton.MIDDLE,
     #
     # Mapping from evdev ecodes to HID UsageIDs from consumer page (0x0C): https://github.com/torvalds/linux/blob/11d3f72613957cba0783938a1ceddffe7dbbf5a1/drivers/hid/hid-input.c#L1069
     #
@@ -483,23 +485,25 @@ def find_key_name(event: InputEvent) -> str | None:
 
 
 def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
-    hid_class = get_hid_class(event)
-    _logger.debug(hid_class)
+    code_type = get_hid_code_type(event)
 
-    for attribute in dir(hid_class):
-        if getattr(hid_class, attribute, None) == hid_usage_id:
+    for attribute in dir(code_type):
+        if getattr(code_type, attribute, None) == hid_usage_id:
             return attribute
 
     return None
 
 
-def get_hid_class(event: InputEvent) -> ConsumerControl | Keyboard | Mouse | None:
+@lru_cache(maxsize=None)
+def get_hid_code_type(
+    event: InputEvent,
+) -> type[ConsumerControlCode] | type[Keycode] | type[MouseButton]:
     if is_consumer_key(event):
-        return ConsumerControl
+        return ConsumerControlCode
     elif is_mouse_button(event):
-        return Mouse
+        return MouseButton
     else:
-        return Keyboard
+        return Keycode
 
 
 def get_output_device(
