@@ -462,12 +462,12 @@ def to_hid_usage_id(event: InputEvent) -> int | None:
     key_name = find_key_name(event)
     hid_usage_name = find_usage_name(event, hid_usage_id)
 
-    if hid_usage_id is None or hid_usage_name is None:
-        _logger.debug(f"Unsupported key pressed: 0x{ecode:X} ({key_name})")
-
-    _logger.debug(
-        f"Converted evdev ecode 0x{ecode:X} ({key_name}) to HID UsageID 0x{hid_usage_id:X} ({hid_usage_name})"
-    )
+    if hid_usage_id is None:
+        _logger.debug(f"Unsupported key pressed: 0x{ecode:02X} ({key_name})")
+    else:
+        _logger.debug(
+            f"Converted evdev ecode 0x{ecode:02X} ({key_name}) to HID UsageID 0x{hid_usage_id:02X} ({hid_usage_name})"
+        )
 
     return hid_usage_id
 
@@ -487,14 +487,13 @@ def find_key_name(event: InputEvent) -> str | None:
 def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
     code_type = get_hid_code_type(event)
 
-    for attribute in dir(code_type):
+    for attribute in _get_dir(code_type):
         if getattr(code_type, attribute, None) == hid_usage_id:
             return attribute
 
     return None
 
 
-@lru_cache(maxsize=None)
 def get_hid_code_type(
     event: InputEvent,
 ) -> type[ConsumerControlCode] | type[Keycode] | type[MouseButton]:
@@ -504,6 +503,13 @@ def get_hid_code_type(
         return MouseButton
     else:
         return Keycode
+
+
+@lru_cache()
+def _get_dir(
+    hid_code_type: type[ConsumerControlCode] | type[Keycode] | type[MouseButton],
+) -> list[str]:
+    return dir(hid_code_type)
 
 
 def get_output_device(
