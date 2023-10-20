@@ -79,8 +79,8 @@ class ComboDeviceHidProxy:
             self.enable_sandbox(is_sandbox)
             self._log_registered_links()
 
-        except Exception as e:
-            _logger.error(f"Failed to initialize devices. [{e}]")
+        except Exception as ex:
+            _logger.error(f"Failed to initialize devices. [{repr(ex)}]")
             raise
 
     def enable_usb_gadgets(self, gadgets_enabled: bool = True) -> None:
@@ -88,9 +88,9 @@ class ComboDeviceHidProxy:
             self._check_enable_gadgets(gadgets_enabled)
             self._log_gadgets()
 
-        except Exception as e:
+        except Exception as ex:
             action = "enable" if gadgets_enabled else "disable"
-            _logger.error(f"Failed to {action} gadget devices. [{e}]")
+            _logger.error(f"Failed to {action} gadget devices. [{repr(ex)}]")
             raise
 
     def _check_enable_gadgets(self, gadgets_enabled: bool) -> None:
@@ -203,8 +203,8 @@ class ComboDeviceHidProxy:
 
             _logger.critical("Event loop closed.")
 
-        except* Exception as e:
-            _logger.error(f"Error(s) in TaskGroup: [{e.exceptions}]")
+        except* Exception as ex:
+            _logger.error(f"Error(s) in TaskGroup: [{ex.exceptions}]")
 
     def _connect_device_links(self, device_links: Collection[DeviceLink]) -> None:
         for link in device_links:
@@ -227,8 +227,8 @@ class ComboDeviceHidProxy:
         try:
             await self._async_relay_input_events_loop(device_link)
 
-        except OSError as e:
-            _logger.critical(f"{input_device.name} disconnected. Reconnecting... [{e}]")
+        except OSError as ex:
+            _logger.critical(f"{input_device.name} disconnected. Reconnecting... [{repr(ex)}]")
             reconnected = await self._async_wait_for_device(input_device)
             self._log_reconnection_outcome(input_device, reconnected)
 
@@ -236,8 +236,8 @@ class ComboDeviceHidProxy:
             _logger.critical(f"{input_device.name} received a cancellation request.")
             should_reconnect = False
 
-        except Exception as e:
-            _logger.error(f"{input_device.name} failed! Restarting task... [{e}]")
+        except Exception as ex:
+            _logger.error(f"{input_device.name} failed! Restarting task... [{repr(ex)}]")
             await asyncio.sleep(5)
 
         finally:
@@ -260,7 +260,7 @@ class ComboDeviceHidProxy:
         if evdev_adapter.is_key_event(event):
             await self._async_send_key(event, device_link)
         elif evdev_adapter.is_mouse_movement(event):
-            await self._async_move_mouse(event, device_link.mouse_gadget())
+            await self._async_move_mouse(event, device_link.mouse_gadget)
 
     async def _async_send_key(self, event: InputEvent, device_link: DeviceLink) -> None:
         hid_key = evdev_adapter.to_hid_usage_id(event)
@@ -275,8 +275,8 @@ class ComboDeviceHidProxy:
             elif evdev_adapter.is_key_down(event):
                 device_out.press(hid_key)
 
-        except Exception as e:
-            _logger.error(f"Error sending [{categorize(event)}] to {device_out} [{e}]")
+        except Exception as ex:
+            _logger.error(f"Error sending [{categorize(event)}] to {device_out} [{repr(ex)}]")
 
     async def _async_move_mouse(self, event: InputEvent, mouse: Mouse) -> None:
         if mouse is None:
@@ -287,8 +287,8 @@ class ComboDeviceHidProxy:
 
         try:
             mouse.move(x, y, mwheel)
-        except Exception as e:
-            _logger.error(f"Error sending [{categorize(event)}] to {mouse} [{e}]")
+        except Exception as ex:
+            _logger.error(f"Error sending [{categorize(event)}] to {mouse} [{repr(ex)}]")
 
     async def _async_wait_for_device(
         self, input_device: InputDevice, delay_seconds: float = 1
@@ -387,8 +387,8 @@ if __name__ == "__main__":
     try:
         asyncio.run(_main())
 
-    except Exception as e:
+    except Exception as ex:
         _logger.exception(
-            f"Houston, we have an unhandled problem. Abort mission. [{e}]"
+            f"Houston, we have an unhandled problem. Abort mission. [{repr(ex)}]"
         )
         raise
