@@ -80,7 +80,7 @@ class ComboDeviceHidProxy:
             self._log_registered_links()
 
         except Exception as ex:
-            _logger.error(f"Failed to initialize devices. [{repr(ex)}]")
+            _logger.error(f"Failed to initialize devices. [{ex.with_traceback()}]")
             raise
 
     def enable_usb_gadgets(self, gadgets_enabled: bool = True) -> None:
@@ -90,7 +90,7 @@ class ComboDeviceHidProxy:
 
         except Exception as ex:
             action = "enable" if gadgets_enabled else "disable"
-            _logger.error(f"Failed to {action} gadget devices. [{repr(ex)}]")
+            _logger.error(f"Failed to {action} gadget devices. [{ex.with_traceback()}]")
             raise
 
     def _check_enable_gadgets(self, gadgets_enabled: bool) -> None:
@@ -228,7 +228,9 @@ class ComboDeviceHidProxy:
             await self._async_relay_input_events_loop(device_link)
 
         except OSError as ex:
-            _logger.critical(f"{input_device.name} disconnected. Reconnecting... [{repr(ex)}]")
+            _logger.critical(
+                f"{input_device.name} disconnected. Reconnecting... [{repr(ex)}]"
+            )
             reconnected = await self._async_wait_for_device(input_device)
             self._log_reconnection_outcome(input_device, reconnected)
 
@@ -237,7 +239,9 @@ class ComboDeviceHidProxy:
             should_reconnect = False
 
         except Exception as ex:
-            _logger.error(f"{input_device.name} failed! Restarting task... [{repr(ex)}]")
+            _logger.error(
+                f"{input_device.name} failed! Restarting task... [{ex.with_traceback()}]"
+            )
             await asyncio.sleep(5)
 
         finally:
@@ -276,7 +280,9 @@ class ComboDeviceHidProxy:
                 device_out.press(hid_key)
 
         except Exception as ex:
-            _logger.error(f"Error sending [{categorize(event)}] to {device_out} [{repr(ex)}]")
+            _logger.error(
+                f"Error sending [{categorize(event)}] to {device_out} [{ex.with_traceback()}]"
+            )
 
     async def _async_move_mouse(self, event: InputEvent, mouse: Mouse) -> None:
         if mouse is None:
@@ -288,7 +294,9 @@ class ComboDeviceHidProxy:
         try:
             mouse.move(x, y, mwheel)
         except Exception as ex:
-            _logger.error(f"Error sending [{categorize(event)}] to {mouse} [{repr(ex)}]")
+            _logger.error(
+                f"Error sending [{categorize(event)}] to {mouse} [{ex.with_traceback()}]"
+            )
 
     async def _async_wait_for_device(
         self, input_device: InputDevice, delay_seconds: float = 1
@@ -389,6 +397,6 @@ if __name__ == "__main__":
 
     except Exception as ex:
         _logger.exception(
-            f"Houston, we have an unhandled problem. Abort mission. [{repr(ex)}]"
+            f"Houston, we have an unhandled problem. Abort mission. [{ex.with_traceback()}]"
         )
         raise
