@@ -4,11 +4,10 @@ from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
 from evdev import InputDevice
-from usb_hid import Device as GadgetDevice
 
 import lib.logger
 
-logger = lib.logger.get_logger()
+_logger = lib.logger.get_logger()
 
 
 class DummyGadget:
@@ -64,11 +63,11 @@ class DeviceLink:
             self._input_device_name = input_device.name
             self._input_device_path = input_device.path
 
-        self.gadgets_enabled = True
-
         self._keyboard_gadget = keyboard_gadget
         self._mouse_gadget = mouse_gadget
         self._consumer_gadget = consumer_gadget
+
+        self.gadgets_enabled = True
 
         self._active_gadgets: list[ConsumerControl | Keyboard | Mouse | DummyGadget] = [
             gadget
@@ -94,8 +93,10 @@ class DeviceLink:
             try:
                 self._input_device = InputDevice(self._input_device_path)
                 break
-            except Exception as e:
-                logger.error(f"Error resetting input {self._input_device_path} [{e}]")
+            except Exception as ex:
+                _logger.error(
+                    f"Error resetting input {self._input_device_path} [{ex.with_traceback()}]"
+                )
                 await asyncio.sleep(5)
 
     @property
