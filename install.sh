@@ -42,7 +42,7 @@ append_if_not_exist() {
   fi
 }
 
-colored_output ${GREEN} "Installing bluetooth2usb..."
+colored_output ${GREEN} "Installing bluetooth_2_usb..."
 
 colored_output ${GREEN} "Updating submodules..."
 git submodule update --init --recursive
@@ -60,13 +60,13 @@ fi
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
 
-mkdir /var/log/bluetooth2usb
+mkdir /var/log/bluetooth_2_usb
 
-chmod 744 $currentScriptDirectory/bluetooth2usb.py
-ln -s $currentScriptDirectory/bluetooth2usb.py /usr/bin/
-ln -s $currentScriptDirectory/bluetooth2usb.service /etc/systemd/system/
+chmod 744 $currentScriptDirectory/bluetooth_2_usb.py
+ln -s $currentScriptDirectory/bluetooth_2_usb.py /usr/bin/
+ln -s $currentScriptDirectory/bluetooth_2_usb.service /etc/systemd/system/
 
-systemctl enable bluetooth2usb.service
+systemctl enable bluetooth_2_usb.service
 
 # Check for automation flag to bypass prompt
 if [ "$AUTO" == "true" ]; then
