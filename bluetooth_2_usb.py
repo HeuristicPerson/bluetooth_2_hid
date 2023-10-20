@@ -39,7 +39,7 @@ from lib.device_link import DeviceLink
 import lib.evdev_adapter as evdev_adapter
 import lib.logger
 
-_VERSION = "0.4.1"
+_VERSION = "0.4.2"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
 
 _logger = lib.logger.get_logger()
