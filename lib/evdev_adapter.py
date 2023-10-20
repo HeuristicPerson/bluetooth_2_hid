@@ -463,10 +463,10 @@ def to_hid_usage_id(event: InputEvent) -> int | None:
     hid_usage_name = find_usage_name(event, hid_usage_id)
 
     if hid_usage_id is None:
-        _logger.debug(f"Unsupported key pressed: 0x{ecode:0X} ({key_name})")
+        _logger.debug(f"Unsupported key pressed: 0x{ecode:02X} ({key_name})")
     else:
         _logger.debug(
-            f"Converted evdev ecode 0x{ecode:0X} ({key_name}) to HID UsageID 0x{hid_usage_id:0X} ({hid_usage_name})"
+            f"Converted evdev ecode 0x{ecode:02X} ({key_name}) to HID UsageID 0x{hid_usage_id:02X} ({hid_usage_name})"
         )
 
     return hid_usage_id
