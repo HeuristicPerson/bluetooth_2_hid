@@ -52,8 +52,8 @@ class ComboDeviceHidProxy:
 
     def __init__(
         self,
-        keyboard_paths: list[str] = [],
-        mouse_paths: list[str] = [],
+        keyboard_paths: list[str] = None,
+        mouse_paths: list[str] = None,
         is_sandbox: bool = False,
     ) -> None:
         self._init_variables()
@@ -69,8 +69,8 @@ class ComboDeviceHidProxy:
 
     def _init_devices(
         self,
-        keyboard_paths: list[str] = [],
-        mouse_paths: list[str] = [],
+        keyboard_paths: list[str] = None,
+        mouse_paths: list[str] = None,
         is_sandbox: bool = False,
     ) -> None:
         try:
@@ -120,9 +120,14 @@ class ComboDeviceHidProxy:
 
     def _create_and_register_links(
         self,
-        keyboard_paths: list[str],
-        mouse_paths: list[str],
+        keyboard_paths: list[str] = None,
+        mouse_paths: list[str] = None,
     ) -> None:
+        if keyboard_paths is None:
+            keyboard_paths = []
+        if mouse_paths is None:
+            mouse_paths = []
+
         keyboards = [self.create_keyboard_link(path) for path in keyboard_paths]
         mice = [self.create_mouse_link(path) for path in mouse_paths]
 
@@ -179,7 +184,7 @@ class ComboDeviceHidProxy:
 
     def _enable_gadgets(self, gadgets_enabled: bool) -> None:
         for link in self._registered_links:
-            link.enable_gadgets(gadgets_enabled)
+            link.gadgets_enabled = gadgets_enabled
 
     def _log_sandbox_status(self) -> None:
         if self._is_sandbox:
@@ -217,7 +222,7 @@ class ComboDeviceHidProxy:
     async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
         _logger.info(f"Starting event loop for {repr(device_link)}")
         should_reconnect = True
-        input_device = device_link.input_device()
+        input_device = device_link.input_device
 
         try:
             await self._async_relay_input_events_loop(device_link)
@@ -239,7 +244,7 @@ class ComboDeviceHidProxy:
             await self._async_disconnect_device_link(device_link, should_reconnect)
 
     async def _async_relay_input_events_loop(self, device_link: DeviceLink):
-        input_device = device_link.input_device()
+        input_device = device_link.input_device
 
         async for event in input_device.async_read_loop():
             if not event:

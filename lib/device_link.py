@@ -53,7 +53,7 @@ class DeviceLink:
         input_device: InputDevice,
         keyboard_gadget: Keyboard = None,
         mouse_gadget: Mouse = None,
-        consumer_control_gadget: ConsumerControl = None,
+        consumer_gadget: ConsumerControl = None,
     ):
         self._input_device = None
         self._input_device_name = None
@@ -64,15 +64,15 @@ class DeviceLink:
             self._input_device_name = input_device.name
             self._input_device_path = input_device.path
 
-        self._gadgets_enabled = True
+        self.gadgets_enabled = True
 
         self._keyboard_gadget = keyboard_gadget
         self._mouse_gadget = mouse_gadget
-        self._consumer_control_gadget = consumer_control_gadget
+        self._consumer_gadget = consumer_gadget
 
-        self._active_gadgets = [
+        self._active_gadgets: list[ConsumerControl | Keyboard | Mouse | DummyGadget] = [
             gadget
-            for gadget in [keyboard_gadget, mouse_gadget, consumer_control_gadget]
+            for gadget in [keyboard_gadget, mouse_gadget, consumer_gadget]
             if gadget is not None
         ]
 
@@ -84,6 +84,7 @@ class DeviceLink:
         active_gadgets_str = [str(g) for g in self._active_gadgets]
         return f"[{self._input_device_name}]>>[{'+'.join(active_gadgets_str)}]"
 
+    @property
     def input_device(self) -> InputDevice:
         return self._input_device
 
@@ -97,23 +98,27 @@ class DeviceLink:
                 logger.error(f"Error resetting input {self._input_device_path} [{e}]")
                 await asyncio.sleep(5)
 
+    @property
     def keyboard_gadget(self) -> Keyboard | DummyGadget | None:
         return self._gadget_or_dummy(self._keyboard_gadget)
 
+    @property
     def mouse_gadget(self) -> Mouse | DummyGadget | None:
         return self._gadget_or_dummy(self._mouse_gadget)
 
+    @property
     def consumer_gadget(self) -> ConsumerControl | DummyGadget | None:
-        return self._gadget_or_dummy(self._consumer_control_gadget)
+        return self._gadget_or_dummy(self._consumer_gadget)
 
     def _gadget_or_dummy(
         self, gadget: ConsumerControl | Keyboard | Mouse
     ) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
-        if self._gadgets_enabled:
+        if self.gadgets_enabled:
             return gadget
         elif gadget is not None:
             return DummyGadget(gadget)
         return None
 
-    def enable_gadgets(self, enabled: bool = True):
-        self._gadgets_enabled = enabled
+    @property
+    def active_gadgets(self) -> list[ConsumerControl | Keyboard | Mouse | DummyGadget]:
+        return self._active_gadgets
