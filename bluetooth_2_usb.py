@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
+Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB
+using Linux's gadget mode.
 """
 
 import asyncio
@@ -80,8 +81,8 @@ class ComboDeviceHidProxy:
             self.enable_sandbox(is_sandbox)
             self._log_registered_links()
 
-        except Exception as ex:
-            _logger.error(f"Failed to initialize devices. [{ex.with_traceback()}]")
+        except Exception:
+            _logger.exception(f"Failed to initialize devices.")
             raise
 
     def enable_usb_gadgets(self, gadgets_enabled: bool = True) -> None:
@@ -89,9 +90,9 @@ class ComboDeviceHidProxy:
             self._check_enable_gadgets(gadgets_enabled)
             self._log_gadgets()
 
-        except Exception as ex:
+        except Exception:
             action = "enable" if gadgets_enabled else "disable"
-            _logger.error(f"Failed to {action} gadget devices. [{ex.with_traceback()}]")
+            _logger.exception(f"Failed to {action} gadget devices.")
             raise
 
     def _check_enable_gadgets(self, gadgets_enabled: bool) -> None:
@@ -101,7 +102,7 @@ class ComboDeviceHidProxy:
         self._gadgets_enabled = gadgets_enabled
 
         if gadgets_enabled:
-            # We have to use BOOT_MOUSE since for some reason MOUSE freezes on any input.
+            # We have to use BOOT_MOUSE since somehow MOUSE freezes on any input.
             # This should be fine though. Also it's important to enable mouse first.
             usb_hid.enable(
                 [
@@ -239,10 +240,8 @@ class ComboDeviceHidProxy:
             _logger.critical(f"{input_device.name} received a cancellation request.")
             should_reconnect = False
 
-        except Exception as ex:
-            _logger.error(
-                f"{input_device.name} failed! Restarting task... [{ex.with_traceback()}]"
-            )
+        except Exception:
+            _logger.exception(f"{input_device.name} failed! Restarting task...")
             await asyncio.sleep(5)
 
         finally:
@@ -280,10 +279,8 @@ class ComboDeviceHidProxy:
             elif evdev_adapter.is_key_down(event):
                 device_out.press(hid_key)
 
-        except Exception as ex:
-            _logger.error(
-                f"Error sending [{categorize(event)}] to {device_out} [{ex.with_traceback()}]"
-            )
+        except Exception:
+            _logger.exception(f"Error sending [{categorize(event)}] to {device_out}")
 
     async def _async_move_mouse(self, event: InputEvent, mouse: Mouse) -> None:
         if mouse is None:
@@ -294,10 +291,8 @@ class ComboDeviceHidProxy:
 
         try:
             mouse.move(x, y, mwheel)
-        except Exception as ex:
-            _logger.error(
-                f"Error sending [{categorize(event)}] to {mouse} [{ex.with_traceback()}]"
-            )
+        except Exception:
+            _logger.exception(f"Error sending [{categorize(event)}] to {mouse}")
 
     async def _async_wait_for_device(
         self, input_device: InputDevice, delay_seconds: float = 1
@@ -362,8 +357,9 @@ signal.signal(signal.SIGTERM, _signal_handler)
 
 async def _main() -> NoReturn:
     """
-    Parses command-line arguments, sets up logging and starts the event loop which reads
-    events from the input devices and forwards them to the corresponding USB gadget device.
+    Parses command-line arguments, sets up logging and starts the event loop which
+    reads events from the input devices and forwards them to the corresponding USB
+    gadget device.
     """
     args = parse_args()
 
@@ -396,8 +392,5 @@ if __name__ == "__main__":
     try:
         asyncio.run(_main())
 
-    except Exception as ex:
-        _logger.exception(
-            f"Houston, we have an unhandled problem. Abort mission. [{ex.with_traceback()}]"
-        )
-        raise
+    except Exception:
+        _logger.exception("Houston, we have an unhandled problem. Abort mission.")
