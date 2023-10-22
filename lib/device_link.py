@@ -93,10 +93,8 @@ class DeviceLink:
             try:
                 self._input_device = InputDevice(self._input_device_path)
                 break
-            except Exception as ex:
-                _logger.error(
-                    f"Error resetting input {self._input_device_path} [{ex.with_traceback()}]"
-                )
+            except Exception:
+                _logger.exception(f"Error resetting input {self._input_device_path}")
                 await asyncio.sleep(5)
 
     @property

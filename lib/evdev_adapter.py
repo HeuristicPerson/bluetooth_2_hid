@@ -14,6 +14,7 @@ import lib.logger
 
 _logger = lib.logger.get_logger()
 
+
 _EVDEV_TO_HID: dict[int, int] = {
     ecodes.KEY_A: Keycode.A,
     ecodes.KEY_B: Keycode.B,
@@ -293,8 +294,9 @@ _EVDEV_TO_HID: dict[int, int] = {
 }
 """Mapping from evdev ecode to HID UsageID"""
 
+
 _CONSUMER_KEYS = set(
-    [
+    (
         ecodes.KEY_POWER,
         ecodes.KEY_RESTART,
         ecodes.KEY_SLEEP,
@@ -441,16 +443,17 @@ _CONSUMER_KEYS = set(
         ecodes.KEY_KBDINPUTASSIST_ACCEPT,
         ecodes.KEY_KBDINPUTASSIST_CANCEL,
         ecodes.KEY_SCALE,
-    ]
+    )
 )
 """evdev ecodes that are mapped to HID UsageIDs from consumer page (0x0C)"""
 
+
 _MOUSE_BUTTONS = set(
-    [
+    (
         ecodes.BTN_LEFT,
         ecodes.BTN_RIGHT,
         ecodes.BTN_MIDDLE,
-    ]
+    )
 )
 """Mouse button ecodes"""
 
