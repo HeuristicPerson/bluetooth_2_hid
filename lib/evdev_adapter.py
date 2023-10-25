@@ -478,8 +478,8 @@ def to_hid_usage_id(event: InputEvent) -> int | None:
 def find_key_name(event: InputEvent) -> str | None:
     ecode: int = event.code
 
-    for attribute in dir(ecodes):
-        if getattr(ecodes, attribute, None) == ecode and attribute.startswith(
+    for attribute in _cached_dir(ecodes):
+        if _cached_getattr(ecodes, attribute) == ecode and attribute.startswith(
             ("KEY_", "BTN_")
         ):
             return attribute
@@ -490,11 +490,23 @@ def find_key_name(event: InputEvent) -> str | None:
 def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
     code_type = get_hid_code_type(event)
 
-    for attribute in _get_dir(code_type):
-        if getattr(code_type, attribute, None) == hid_usage_id:
+    for attribute in _cached_dir(code_type):
+        if _cached_getattr(code_type, attribute) == hid_usage_id:
             return attribute
 
     return None
+
+
+@lru_cache(maxsize=512)
+def _cached_getattr(class_type, attribute):
+    return getattr(class_type, attribute, None)
+
+
+@lru_cache()
+def _cached_dir(
+    class_type: type,
+) -> list[str]:
+    return dir(class_type)
 
 
 def get_hid_code_type(
@@ -506,13 +518,6 @@ def get_hid_code_type(
         return MouseButton
     else:
         return Keycode
-
-
-@lru_cache()
-def _get_dir(
-    hid_code_type: type[ConsumerControlCode] | type[Keycode] | type[MouseButton],
-) -> list[str]:
-    return dir(hid_code_type)
 
 
 def get_output_device(
