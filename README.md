@@ -66,13 +66,13 @@ Follow these steps to install and configure the project:
 > [!NOTE]
 > These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
    
-4. Connect to the Pi and update the packages:
+4. Connect to the Pi and make sure `git` is installed:
    
    ```console
-   sudo apt update && sudo apt upgrade -y
+   sudo apt update && sudo apt upgrade -y && sudo apt install -y git
    ```
 
-5. Pair and trust any Bluetooth devices you wish to relay, either via GUI or:
+5. Pair and trust any Bluetooth devices you wish to relay, either via GUI or via CLI:
    
    ```console
    bluetoothctl
@@ -86,8 +86,8 @@ Follow these steps to install and configure the project:
    trust A1:B2:C3:D4:E5:F6
    ```
 
- > [!NOTE]
- > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
+   > [!NOTE]
+   > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
 
 ### 4.2. Setup 
 
@@ -97,70 +97,50 @@ Follow these steps to install and configure the project:
    git clone https://github.com/quaxalber/bluetooth_2_usb.git
    ```
    
-7. Navigate to the project folder: 
+7. Navigate to the project folder:
    
    ```console
    cd bluetooth_2_usb
    ```
 
-8. Run the installation script as root: 
-    
-   ```console
-   sudo bash install.sh
-   ```
- 
- > [!NOTE]
- > Many point-release distros, including Raspberry Pi OS, are one or two minor versions behind the latest Python version. At the time of writing this, RPi OS ships with Python 3.9.2. You could opt for a different OS, such as [Ubuntu](https://ubuntu.com/download/raspberry-pi) or [pure Debian](https://raspi.debian.net/tested-images/). Or you let the installer [build Python 3.11 from source and install it as a Debian package](https://github.com/quaxalber/bluetooth_2_usb/blob/master/install_python_3.11.sh). This is the recommended approach. Depending on your hardware, this may take a moment though. 
-
-9. Restart the Pi (prompt at the end of `install.sh`)
-   
-10. Check which Linux input devices your Bluetooth devices are mapped to:
-   
-    10.1. Start an interactive Python session:
+8.  Check which Linux input devices your Bluetooth devices are mapped to:
 
     ```console
-    python3.11
+    python3.11 bluetooth_2_usb.py -l
     ```
 
-    10.2. Copy & paste these commands (`Enter` twice):
-
-    ```python
-    import evdev
-    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-    for device in devices:
-        print(f"{device.name}\t{device.phys}\t{device.path}")
-    ```
-
-    10.3. Note the device paths of the devices you want to use:
+    ... and note the device paths of the devices you want to use:
 
     ```console
+    user@raspberrypi:~/bluetooth_2_usb $ python3.11 bluetooth_2_usb.py -l
     AceRK Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event3  <---
     AceRK Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
     vc4-hdmi-1      vc4-hdmi-1/input0  /dev/input/event1
     vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
     ```
 
-11. Specify the correct input devices in `bluetooth_2_usb.service`:
+9.  Specify the correct input devices in `bluetooth_2_usb.service`:
     
     ```console
     nano bluetooth_2_usb.service
     ```
 
-    And change `event3` and `event2` according to step **10.3.** 
+    And change `event3` and `event2` according to step **8.** 
+
+    > [!NOTE]
+    > `Ctrl + X` > `Y` > `Enter` to save and exit nano
+
+10. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
+
+11. Run the installation script as root: 
+    
+   ```console
+   sudo bash install.sh
+   ```
+
+12. Restart the Pi (prompt at the end of `install.sh`)
    
-> [!NOTE]
-> `Ctrl + X` > `Y` > `Enter` to save and exit nano
-
-12. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
-    
-13. Reload and restart service:
-    
-    ```console
-    sudo systemctl daemon-reload
-    sudo service bluetooth_2_usb restart
-    ```
-
-14. Verify that the service is running:
+13. Verify that the service is running:
     
     ```console
     service bluetooth_2_usb status
@@ -216,6 +196,7 @@ options:
   --log_path LOG_PATH, -p LOG_PATH
                         The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.
   --version, -v         Display the version number of this software.
+  --list_devices, -l    List all available input devices and exit.
 ```
 
 ### 5.2. Consuming the API from your Python code
