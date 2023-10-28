@@ -364,9 +364,10 @@ async def _main() -> NoReturn:
     args = parse_args()
 
     if args.version:
-        print(_VERSIONED_NAME)
-        unregister_disable()
-        sys.exit(0)
+        _print_version()
+
+    if args.list_devices:
+        _list_devices()
 
     if args.debug:
         _logger.setLevel(DEBUG)
@@ -383,6 +384,24 @@ async def _main() -> NoReturn:
 
     proxy = ComboDeviceHidProxy(args.keyboards, args.mice, args.sandbox)
     await proxy.async_connect_registered_links()
+
+
+def _list_devices():
+    devices = [InputDevice(path) for path in list_devices()]
+    for device in devices:
+        print(f"{device.name}\t{device.phys}\t{device.path}")
+
+    _exit_safely()
+
+
+def _print_version():
+    print(_VERSIONED_NAME)
+    _exit_safely()
+
+
+def _exit_safely():
+    unregister_disable()
+    sys.exit(0)
 
 
 if __name__ == "__main__":
