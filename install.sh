@@ -42,7 +42,8 @@ append_if_not_exist() {
   fi
 }
 
-colored_output ${GREEN} "Installing bluetooth_2_usb..."
+colored_output ${GREEN} "Installing bluetooth_2_usb prerequisites..."
+apt update && apt upgrade -y && apt install -y git python3.11
 
 colored_output ${GREEN} "Updating submodules..."
 git submodule update --init --recursive
@@ -51,11 +52,24 @@ append_if_not_exist "dtoverlay=dwc2" "/boot/config.txt"
 append_if_not_exist "dwc2" "/etc/modules"
 append_if_not_exist "libcomposite" "/etc/modules"
 
-# Check if python3.11 & pip3.11 are installed and install if not
-if ! (command -v python3.11 && command -v pip3.11) &> /dev/null; then
-  bash install_python_3.11.sh
-else
+# Check if python3.11 is installed and install if not
+if command -v python3.11 &> /dev/null; then
   colored_output ${GREEN} "$(python3.11 --version) already installed"
+else
+  # Check for automation flag to bypass prompt
+  if [ "$AUTO" == "true" ]; then
+    REPLY="y"
+  else
+    colored_output ${YELLOW} "Python 3.11 not installed. Building and installing from source now. Depending on your hardware, this may take a while. Continue? (y/n) " -n
+    # Read single character input
+    read -n 1 -r
+  fi
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    bash install_python_3.11.sh
+  else
+    colored_output ${RED} "Python 3.11 required but not installed. Please install Python 3.11 before running Bluetooth 2 USB."
+  fi
 fi
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
