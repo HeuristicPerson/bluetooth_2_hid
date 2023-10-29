@@ -66,10 +66,10 @@ Follow these steps to install and configure the project:
 > [!NOTE]
 > These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
    
-4. Connect to the Pi and make sure `git` is installed:
+4. Connect to the Pi and make sure `git` and `python3.11` are installed:
    
    ```console
-   sudo apt update && sudo apt upgrade -y && sudo apt install -y git
+   sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3.11
    ```
 
 5. Pair and trust any Bluetooth devices you wish to relay, either via GUI or via CLI:
@@ -102,8 +102,14 @@ Follow these steps to install and configure the project:
    ```console
    cd bluetooth_2_usb
    ```
-
-8.  Check which Linux input devices your Bluetooth devices are mapped to:
+   
+8. Init the submodules:
+   
+   ```console
+   git submodule update --init --recursive
+   ```
+  
+9.  Check which Linux input devices your Bluetooth devices are mapped to:
 
     ```console
     python3.11 bluetooth_2_usb.py -l
@@ -119,28 +125,28 @@ Follow these steps to install and configure the project:
     vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
     ```
 
-9.  Specify the correct input devices in `bluetooth_2_usb.service`:
+10. Specify the correct input devices in `bluetooth_2_usb.service`:
     
     ```console
     nano bluetooth_2_usb.service
     ```
 
-    And change `event3` and `event2` according to step **8.** 
+    ... and change `event3` and `event2` according to step **9.** 
 
     > [!NOTE]
     > `Ctrl + X` > `Y` > `Enter` to save and exit nano
 
-10. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`.
+11. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`. 
 
-11. Run the installation script as root: 
+12. Run the installation script as root: 
     
    ```console
    sudo bash install.sh
    ```
 
-12. Restart the Pi (prompt at the end of `install.sh`)
-   
-13. Verify that the service is running:
+13. Restart the Pi (prompt at the end of `install.sh`)
+     
+14. Verify that the service is running:
     
     ```console
     service bluetooth_2_usb status
