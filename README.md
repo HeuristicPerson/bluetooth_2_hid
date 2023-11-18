@@ -47,7 +47,7 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 ## 3. Requirements
 
-- ([Single-board](https://en.wikipedia.org/wiki/Single-board_computer)) computer with Bluetooth support, e.g. Raspberry Pi 4B or Raspberry Pi Zero **_W_**
+- ([Single-board](https://en.wikipedia.org/wiki/Single-board_computer)) computer with Bluetooth support, e.g. Raspberry Pi 4B (recommended) or Raspberry Pi Zero **_W_**
 - Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/) (recommended)
 - Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
 
@@ -66,10 +66,10 @@ Follow these steps to install and configure the project:
 > [!NOTE]
 > These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
    
-4. Connect to the Pi and make sure `git` and `python3.11` are installed:
+4. Connect to the Pi and make sure `git` is installed:
    
    ```console
-   sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3.11
+   sudo apt update && sudo apt upgrade -y && sudo apt install -y git
    ```
 
 5. Pair and trust any Bluetooth devices you wish to relay, either via GUI or via CLI:
@@ -86,8 +86,8 @@ Follow these steps to install and configure the project:
    trust A1:B2:C3:D4:E5:F6
    ```
 
-   > [!NOTE]
-   > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
+> [!NOTE]
+> Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
 
 ### 4.2. Setup 
 
@@ -102,23 +102,23 @@ Follow these steps to install and configure the project:
    ```console
    cd bluetooth_2_usb
    ```
-   
-8. Init the submodules:
-   
+
+8. Run the installation script as root: 
+    
    ```console
-   git submodule update --init --recursive
+   sudo bash install.sh
    ```
   
 9.  Check which Linux input devices your Bluetooth devices are mapped to:
 
     ```console
-    python3.11 bluetooth_2_usb.py -l
+    venv/bin/python3.11 bluetooth_2_usb.py -l
     ```
 
     ... and note the device paths of the devices you want to use:
 
     ```console
-    user@raspberrypi:~/bluetooth_2_usb $ python3.11 bluetooth_2_usb.py -l
+    user@raspberrypi:~/bluetooth_2_usb $ venv/bin/python3.11 bluetooth_2_usb.py -l
     AceRK Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event3  <---
     AceRK Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
     vc4-hdmi-1      vc4-hdmi-1/input0  /dev/input/event1
@@ -133,20 +133,18 @@ Follow these steps to install and configure the project:
 
     ... and change `event3` and `event2` according to step **9.** 
 
-    > [!NOTE]
-    > `Ctrl + X` > `Y` > `Enter` to save and exit nano
+> [!NOTE]
+> `Ctrl + X` > `Y` > `Enter` to save and exit nano
 
 11. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`. 
 
-12. Run the installation script as root: 
-    
-   ```console
-   sudo bash install.sh
-   ```
+12. Reboot:
+  
+    ```console
+    sudo reboot
+    ```
 
-13. Restart the Pi (prompt at the end of `install.sh`)
-     
-14. Verify that the service is running:
+13. Verify that the service is running:
     
     ```console
     service bluetooth_2_usb status
@@ -186,7 +184,7 @@ Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB 
 Currently you can provide the following CLI arguments:
 
 ```console
-user@raspberrypi:~/bluetooth_2_usb $ python3.11 bluetooth_2_usb.py -h
+user@raspberrypi:~/bluetooth_2_usb $ venv/bin/python3.11 bluetooth_2_usb.py -h
 usage: bluetooth_2_usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file] [--log_path LOG_PATH] [--version]
 
 Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.
@@ -355,13 +353,13 @@ Here's a few things you could try:
   and run the script manually, modifying arguments as required, e.g.:
 
   ```console
-  sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  sudo venv/bin/python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
   ```
 
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
   
   ```console
-  user@raspberrypi:~/bluetooth_2_usb $ sudo python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  user@raspberrypi:~/bluetooth_2_usb $ sudo venv/bin/python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
   23-10-20 09:50:27 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False)
   23-10-20 09:50:27 [DEBUG] Logging to stdout
   23-10-20 09:50:27 [INFO] Launching Bluetooth 2 USB v0.4.4

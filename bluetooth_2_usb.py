@@ -8,21 +8,9 @@ import asyncio
 from asyncio import TaskGroup, Task
 from datetime import datetime
 from logging import DEBUG
-from pathlib import Path
 import signal
 import sys
 from typing import Collection, NoReturn
-
-required_submodules = [
-    "Adafruit_Blinka/src",
-    "Adafruit_CircuitPython_HID",
-    "python-evdev",
-]
-
-working_dir = Path(sys.path[0])
-for module in required_submodules:
-    module_path = working_dir / "submodules" / module
-    sys.path.append(str(module_path))
 
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.keyboard import Keyboard

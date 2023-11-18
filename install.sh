@@ -43,60 +43,34 @@ append_if_not_exist() {
 }
 
 colored_output ${GREEN} "Installing bluetooth_2_usb prerequisites..."
-apt update && apt upgrade -y && apt install -y git python3.11
 
-colored_output ${GREEN} "Updating submodules..."
+apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv
+
+colored_output ${GREEN} "Initializing submodules..."
+
 git submodule update --init --recursive
+python3.11 -m venv venv
+venv/bin/pip3.11 install submodules/*
+
+colored_output ${GREEN} "Modifying system files..."
 
 append_if_not_exist "dtoverlay=dwc2" "/boot/config.txt"
 append_if_not_exist "dwc2" "/etc/modules"
 append_if_not_exist "libcomposite" "/etc/modules"
 
-# Check if python3.11 is installed and install if not
-if command -v python3.11 &> /dev/null; then
-  colored_output ${GREEN} "$(python3.11 --version) already installed"
-else
-  # Check for automation flag to bypass prompt
-  if [ "$AUTO" == "true" ]; then
-    REPLY="y"
-  else
-    colored_output ${YELLOW} "Python 3.11 not installed. Building and installing from source now. Depending on your hardware, this may take a while. Continue? (y/n) " -n
-    # Read single character input
-    read -n 1 -r
-  fi
-
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    bash install_python_3.11.sh
-  else
-    colored_output ${RED} "Python 3.11 required but not installed. Please install Python 3.11 before running Bluetooth 2 USB."
-  fi
-fi
+cp /boot/cmdline.txt /boot/cmdline.txt.bak
+sed -i 's/modules-load=[^[:space:]]* //g' /boot/cmdline.txt
+sed -i 's/rootwait/rootwait modules-load=dwc2/g' /boot/cmdline.txt
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
-
-mkdir /var/log/bluetooth_2_usb
-
 chmod 744 $currentScriptDirectory/bluetooth_2_usb.py
 ln -s $currentScriptDirectory/bluetooth_2_usb.py /usr/bin/
 ln -s $currentScriptDirectory/bluetooth_2_usb.service /etc/systemd/system/
+# The expression ${currentScriptDirectory//\//\\/} is used to replace all occurrences of slashes (/) in the variable currentScriptDirectory with escaped slashes (\/)
+sed -i "s/{python3.11-venv}/${currentScriptDirectory//\//\\/}\/venv\/bin\/python3.11/g" bluetooth_2_usb.service
 
+mkdir /var/log/bluetooth_2_usb
 systemctl enable bluetooth_2_usb.service
-
-# Check for automation flag to bypass prompt
-if [ "$AUTO" == "true" ]; then
-  REPLY="y"
-else
-  # Notify user about the reboot
-  colored_output ${YELLOW} "The system needs to reboot to complete the installation. Reboot now? (y/n) " -n
-  # Read single character input
-  read -n 1 -r
-fi
-
-echo
 
 # Re-enable history expansion
 set -H
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    reboot
-fi
