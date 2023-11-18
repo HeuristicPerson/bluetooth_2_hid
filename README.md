@@ -118,7 +118,7 @@ Follow these steps to install and configure the project:
     ... and note the device paths of the devices you want to use:
 
     ```console
-    user@raspberrypi:~/bluetooth_2_usb $ venv/bin/python3.11 bluetooth_2_usb.py -l
+    user@pi4b:~/bluetooth_2_usb $ venv/bin/python3.11 bluetooth_2_usb.py -l
     AceRK Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event3  <---
     AceRK Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
     vc4-hdmi-1      vc4-hdmi-1/input0  /dev/input/event1
@@ -153,20 +153,20 @@ Follow these steps to install and configure the project:
     It should look something like this:
 
     ```console
-    user@raspberrypi:~/bluetooth_2_usb $ service bluetooth_2_usb status
+    user@pi4b:~/bluetooth_2_usb $ service bluetooth_2_usb status 
     ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
-        Loaded: loaded (/home/user/bluetooth_2_usb/bluetooth_2_usb.service; enabled; vendor preset: enabled)
-        Active: active (running) since Wed 2023-10-11 18:00:58 BST; 11s ago
-      Main PID: 4256 (python3.11)
-          Tasks: 1 (limit: 8755)
-            CPU: 328ms
+        Loaded: loaded (/etc/systemd/system/bluetooth_2_usb.service; enabled; preset: enabled)
+        Active: active (running) since Sat 2023-11-18 19:00:19 CET; 1min 44s ago
+      Main PID: 1664 (python3.11)
+          Tasks: 1 (limit: 8741)
+            CPU: 261ms
         CGroup: /system.slice/bluetooth_2_usb.service
-                └─4256 python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
+                └─1664 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
-    Oct 11 18:00:58 raspberrypi systemd[1]: Started Bluetooth to USB HID proxy.
-    Oct 11 18:00:58 raspberrypi python3.11[4256]: 23-10-11 18:00:58 [INFO] Launching Bluetooth 2 USB v0.4.5
-    Oct 11 18:01:01 raspberrypi python3.11[4256]: 23-10-11 18:01:01 [INFO] Starting event loop for [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
-    Oct 11 18:01:01 raspberrypi python3.11[4256]: 23-10-11 18:01:01 [INFO] Starting event loop for [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
+    Nov 18 19:00:19 pi4b systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
+    Nov 18 19:00:19 pi4b python3.11[1664]: 23-11-18 19:00:19 [INFO] Launching Bluetooth 2 USB v0.4.5
+    Nov 18 19:00:22 pi4b python3.11[1664]: 23-11-18 19:00:22 [INFO] Starting event loop for [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
+    Nov 18 19:00:22 pi4b python3.11[1664]: 23-11-18 19:00:22 [INFO] Starting event loop for [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
 
 > [!NOTE]
@@ -255,7 +255,7 @@ This could be due to a number of reasons. Try these steps:
   It should look like this:
 
   ```console
-  user@raspberrypi:~/bluetooth_2_usb $ bluetoothctl
+  user@pi4b:~/bluetooth_2_usb $ bluetoothctl
   Agent registered
   [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
   [AceRK]# info A1:B2:C3:D4:E5:F6
