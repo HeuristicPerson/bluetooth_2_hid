@@ -44,7 +44,7 @@ append_if_not_exist() {
 
 colored_output ${GREEN} "Installing bluetooth_2_usb prerequisites..."
 
-apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv
+apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv python3.11-dev
 
 colored_output ${GREEN} "Initializing submodules..."
 

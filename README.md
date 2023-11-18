@@ -91,28 +91,28 @@ Follow these steps to install and configure the project:
 
 ### 4.2. Setup 
 
-6. On the Pi, clone the repository:  
+6. On the Pi, clone the repository: 
    
    ```console
-   git clone https://github.com/quaxalber/bluetooth_2_usb.git
-   ```
-   
-7. Navigate to the project folder:
-   
-   ```console
-   cd bluetooth_2_usb
+   git clone https://github.com/quaxalber/bluetooth_2_usb.git && cd bluetooth_2_usb
    ```
 
-8. Run the installation script as root: 
+7. Run the installation script as root: 
     
    ```console
    sudo bash install.sh
    ```
+
+8.  Reboot:
   
+    ```console
+    sudo reboot
+    ```  
+
 9.  Check which Linux input devices your Bluetooth devices are mapped to:
 
     ```console
-    venv/bin/python3.11 bluetooth_2_usb.py -l
+    cd bluetooth_2_usb && venv/bin/python3.11 bluetooth_2_usb.py -l
     ```
 
     ... and note the device paths of the devices you want to use:
@@ -131,19 +131,19 @@ Follow these steps to install and configure the project:
     nano bluetooth_2_usb.service
     ```
 
-    ... and change `event3` and `event2` according to step **9.** 
+    ... and change `event2` and `event3` according to step **9.** 
 
 > [!NOTE]
 > `Ctrl + X` > `Y` > `Enter` to save and exit nano
 
 11. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`. 
 
-12. Reboot:
+12. Reload and restart service:
   
     ```console
-    sudo reboot
+    sudo systemctl daemon-reload
+    sudo service bluetooth_2_usb restart
     ```
-
 13. Verify that the service is running:
     
     ```console
