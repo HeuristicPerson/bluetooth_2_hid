@@ -51,34 +51,35 @@ append_if_not_exist() {
 }
 
 colored_output ${GREEN} "Installing bluetooth_2_usb prerequisites..."
-
-apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv python3.11-dev || abort_install "Failed installing prerequisites."
+apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv python3.11-dev && apt autoremove || abort_install "Failed installing prerequisites."
 
 colored_output ${GREEN} "Initializing submodules..."
-
 git submodule update --init --recursive || abort_install "Failed initializing submodules."
+
+colored_output ${GREEN} "Creating virtual Python environment..."
 python3.11 -m venv venv || abort_install "Failed creating virtual Python environment."
+
+colored_output ${GREEN} "Installing submodules in virtual Python environment..."
 venv/bin/pip3.11 install submodules/* || abort_install "Failed installing submodules."
 
 colored_output ${GREEN} "Modifying system files..."
-
 append_if_not_exist "dtoverlay=dwc2" "/boot/config.txt"
 append_if_not_exist "dwc2" "/etc/modules"
 append_if_not_exist "libcomposite" "/etc/modules"
 
-cp /boot/cmdline.txt /boot/cmdline.txt.bak || abort_install "Failed creating backup of /boot/cmdline.txt."
-
+cp /boot/cmdline.txt /boot/cmdline.txt.bak || colored_output ${RED} "Failed creating backup of /boot/cmdline.txt."
 sed -i 's/modules-load=[^[:space:]]* //g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
 sed -i 's/rootwait/rootwait modules-load=dwc2/g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
 
 currentScriptDirectory=$(dirname $(readlink -f $0))
 chmod 744 $currentScriptDirectory/bluetooth_2_usb.py || abort_install "Failed making script executable."
-ln -s $currentScriptDirectory/bluetooth_2_usb.py /usr/bin/ || abort_install "Failed creating symlink."
-ln -s $currentScriptDirectory/bluetooth_2_usb.service /etc/systemd/system/ || abort_install "Failed creating symlink."
+ln -s $currentScriptDirectory/bluetooth_2_usb.py /usr/bin/ || colored_output ${RED} "Failed creating symlink."
+ln -s $currentScriptDirectory/bluetooth_2_usb.service /etc/systemd/system/ || colored_output ${RED} "Failed creating symlink."
+
 # The expression ${currentScriptDirectory//\//\\/} is used to replace all occurrences of slashes (/) in the variable currentScriptDirectory with escaped slashes (\/)
 sed -i "s/{python3.11-venv}/${currentScriptDirectory//\//\\/}\/venv\/bin\/python3.11/g" bluetooth_2_usb.service || abort_install "Failed writing to bluetooth_2_usb.service."
 
-mkdir /var/log/bluetooth_2_usb || abort_install "Failed creating log dir."
+mkdir /var/log/bluetooth_2_usb || colored_output ${RED} "Failed creating log dir."
 systemctl enable bluetooth_2_usb.service || abort_install "Failed enabling service."
 
 colored_output ${GREEN} "Installation successful."
