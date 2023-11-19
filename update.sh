@@ -43,7 +43,7 @@ USER_LANG=$LANG
 export LANG=C
 
 # Check if there are changes to pull
-if git fetch origin --dry-run || abort_update "Failed fetching changes." | grep 'up to date'; then
+if { git fetch origin --dry-run 2>&1 || abort_update "Failed fetching changes."; } | tee /dev/tty | grep 'up to date'; then
   colored_output ${GREEN} "No changes to pull."
   exit 0
 else
