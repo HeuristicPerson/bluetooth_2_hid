@@ -38,23 +38,22 @@ fi
 
 colored_output ${GREEN} "Fetching updates from GitHub..."
 
-# Force Git to use English for its messages, regardless of the user's language settings.
-USER_LANG=$LANG
-export LANG=C
+remote_name="origin"
+current_branch=$(git symbolic-ref --short HEAD  || abort_update "Failed retrieving currently checked out branch.")
+# Fetch the latest changes from the remote
+git fetch $remote_name
 
-# Check if there are changes to pull
-if { git fetch origin --dry-run 2>&1 || abort_update "Failed fetching changes."; } | tee /dev/tty | grep 'up to date'; then
+# Compare the local branch with the remote branch
+if [ $(git rev-parse HEAD) != $(git rev-parse $remote_name/$current_branch) ]; then
+  colored_output ${GREEN} "Changes are available to pull."
+else
   colored_output ${GREEN} "No changes to pull."
   exit 0
-else
-  colored_output ${GREEN} "Changes are available to pull."
 fi
 
-export LANG=$USER_LANG
-
 git stash || abort_update "Failed stashing local changes."
-git pull origin || abort_update "Failed pulling changes."
-git stash pop || abort_update "Failed applying local changes from stash."
+git pull $remote_name || abort_update "Failed pulling changes."
+git stash pop --index || abort_update "Failed applying local changes from stash."
 
 colored_output ${GREEN} "Updating submodules..."
 
