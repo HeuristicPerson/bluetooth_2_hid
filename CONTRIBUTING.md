@@ -15,7 +15,6 @@ Thank you for considering contributing to Bluetooth 2 USB! We value your effort 
   - [3.2. Code Formatting with Black](#32-code-formatting-with-black)
 - [4. Pull Requests](#4-pull-requests)
 - [5. Reporting Issues](#5-reporting-issues)
-- [6. Additional Resources](#6-additional-resources)
 
 ## 1. Code of Conduct
 
@@ -23,9 +22,43 @@ By participating in this project, you are expected to uphold our [Code of Conduc
 
 ## 2. Getting Started
 
-- Fork the repository on GitHub
-- Clone the forked repository to your machine
+- [Fork the repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo) on GitHub
+  
+- Install required packages to your Linux machine:
+  
+  ```console 
+  sudo apt update && sudo apt install -y git python3.11 python3.11-venv python3.11-dev
+  ```
+
+- Clone the forked repository:
+  
+  ```console
+  git clone https://github.com/YOUR-ACCOUNT/bluetooth_2_usb.git
+  ```
+
+- Initialize submodules:
+  
+  ```console 
+  cd bluetooth_2_usb && git submodule update --init --recursive
+  ```
+
+- Create a virtual Python environment:
+  
+  ```console 
+  python3.11 -m venv venv 
+  ```
+  
+- Install submodules in virtual Python environment:
+  
+  ```console 
+  venv/bin/pip3.11 install submodules/* 
+  ```  
+
 - Open the repo in your favorite IDE
+  
+- Make sure that your IDE is using python3.11 from `bluetooth_2_usb/venv/bin/`, e.g. in VS Code:
+  
+  `CTRL + SHIFT + P` > type `Python Select Interpreter` > `Enter interpreter path` 
 
 ## 3. Coding Style
 
@@ -80,16 +113,11 @@ This will automatically reformat your code to conform to the project's coding st
 - Create a new branch for each feature or bugfix you are working on.
 - Commit your changes following the [coding style](#3-coding-style) guidelines. Add concise commit messages. 
 - Push your changes to your fork.
-- Create a new Pull Request targeting the main branch of the official repository. A short description helps the maintainers reviewing the changes. 
+- [Create a new Pull Request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests) targeting the main branch of the official repository. A short description helps the maintainers reviewing the changes. 
 
 ## 5. Reporting Issues
 
 Please use the GitHub [issue tracker](https://github.com/quaxalber/bluetooth_2_usb/issues) to report any bugs or to request new features. Make sure to check for existing issues that are related to yours before creating a new one.
-
-## 6. Additional Resources
-
-- [GitHub Pull Request documentation](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
-- [GitHub Forking a repo documentation](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
 
 ---
 
