@@ -53,7 +53,7 @@ append_if_not_exist() {
 }
 
 colored_output ${GREEN} "Installing bluetooth_2_usb prerequisites..."
-apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv python3.11-dev && apt autoremove || abort_install "Failed installing prerequisites."
+{ apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv python3.11-dev && apt autoremove ; } || abort_install "Failed installing prerequisites."
 
 # Determine the current script's directory and the parent directory
 currentScriptDirectory=$(dirname $(readlink -f "$0"))

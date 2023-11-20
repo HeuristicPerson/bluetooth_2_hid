@@ -62,7 +62,7 @@ venv/bin/pip3.11 install submodules/* || abort_update "Failed installing submodu
 
 colored_output ${GREEN} "Restarting service..."
 
-systemctl daemon-reload && systemctl restart bluetooth_2_usb.service || abort_update "Failed restarting service."
+{ systemctl daemon-reload && systemctl restart bluetooth_2_usb.service ; } || abort_update "Failed restarting service."
 
 colored_output ${GREEN} "Update successful. Now running $(venv/bin/python3.11 bluetooth_2_usb.py -v)"
 
