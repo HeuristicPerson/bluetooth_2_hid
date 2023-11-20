@@ -17,6 +17,7 @@ colored_output() {
 # Determine the current script's directory and the parent directory
 currentScriptDirectory=$(dirname $(readlink -f "$0"))
 parentDirectory=$(dirname "$currentScriptDirectory")
+cd "$parentDirectory"
 
 # Check for superuser privileges
 if [[ $EUID -ne 0 ]]; then

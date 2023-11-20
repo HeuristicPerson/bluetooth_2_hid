@@ -36,6 +36,11 @@ if [[ $EUID -ne 0 ]]; then
   exec sudo bash "$0" "$@"
 fi
 
+# Determine the current script's directory and the parent directory
+currentScriptDirectory=$(dirname $(readlink -f "$0"))
+parentDirectory=$(dirname "$currentScriptDirectory")
+cd "$parentDirectory"
+
 colored_output ${GREEN} "Fetching updates from GitHub..."
 
 remote_name="origin"
