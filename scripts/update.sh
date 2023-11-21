@@ -57,13 +57,26 @@ else
 fi
 
 git stash || abort_update "Failed stashing local changes."
-git pull $remote_name || abort_update "Failed pulling changes."
+
+# Force Git to use English for its messages, regardless of the user's language settings.
+USER_LANG=$LANG
+export LANG=C
+
+pull_output=$( { git pull $remote_name || abort_update "Failed pulling changes from $remote_name." ; } | tee /dev/tty )
+
+export LANG=$USER_LANG
+
 git stash pop --index || abort_update "Failed applying local changes from stash."
 
-colored_output ${GREEN} "Updating submodules..."
+# Check if there are changes in any submodule 
+if echo "$pull_output" | grep -q "Fetching submodule"; then
 
-git submodule update --init --recursive || abort_update "Failed updating submodules."
-venv/bin/pip3.11 install submodules/* || abort_update "Failed installing submodules."
+  colored_output ${GREEN} "Updating submodules..."
+
+  git submodule update --init --recursive || abort_update "Failed updating submodules."
+  venv/bin/pip3.11 install submodules/* || abort_update "Failed installing submodules."
+
+fi
 
 colored_output ${GREEN} "Restarting service..."
 
