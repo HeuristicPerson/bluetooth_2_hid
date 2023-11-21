@@ -15,16 +15,18 @@
 - [5. Usage](#5-usage)
   - [5.1. Command-line arguments](#51-command-line-arguments)
   - [5.2. Consuming the API from your Python code](#52-consuming-the-api-from-your-python-code)
-- [6. Troubleshooting](#6-troubleshooting)
-  - [6.1. The Pi keeps rebooting or crashes randomly](#61-the-pi-keeps-rebooting-or-crashes-randomly)
-  - [6.2. The installation was successful, but I don't see any output on the target device](#62-the-installation-was-successful-but-i-dont-see-any-output-on-the-target-device)
-  - [6.3. In bluetoothctl, my device is constantly switching on/off](#63-in-bluetoothctl-my-device-is-constantly-switching-onoff)
-  - [6.4. I have a different issue](#64-i-have-a-different-issue)
-  - [6.5. Everything is working, but can it help me with Bitcoin mining?](#65-everything-is-working-but-can-it-help-me-with-bitcoin-mining)
-- [7. Bonus points](#7-bonus-points)
-- [8. Contributing](#8-contributing)
-- [9. License](#9-license)
-- [10. Acknowledgments](#10-acknowledgments)
+- [6. Updating](#6-updating)
+- [7. Uninstallation](#7-uninstallation)
+- [8. Troubleshooting](#8-troubleshooting)
+  - [8.1. The Pi keeps rebooting or crashes randomly](#81-the-pi-keeps-rebooting-or-crashes-randomly)
+  - [8.2. The installation was successful, but I don't see any output on the target device](#82-the-installation-was-successful-but-i-dont-see-any-output-on-the-target-device)
+  - [8.3. In bluetoothctl, my device is constantly switching on/off](#83-in-bluetoothctl-my-device-is-constantly-switching-onoff)
+  - [8.4. I have a different issue](#84-i-have-a-different-issue)
+  - [8.5. Everything is working, but can it help me with Bitcoin mining?](#85-everything-is-working-but-can-it-help-me-with-bitcoin-mining)
+- [9. Bonus points](#9-bonus-points)
+- [10. Contributing](#10-contributing)
+- [11. License](#11-license)
+- [12. Acknowledgments](#12-acknowledgments)
 
 ## 1. Introduction
 
@@ -100,7 +102,7 @@ Follow these steps to install and configure the project:
 7. Run the installation script as root: 
     
    ```console
-   sudo bash install.sh
+   sudo scripts/install.sh
    ```
 
 8.  Reboot:
@@ -164,13 +166,13 @@ Follow these steps to install and configure the project:
                 └─1664 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
 
     Nov 18 19:00:19 pi4b systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
-    Nov 18 19:00:19 pi4b python3.11[1664]: 23-11-18 19:00:19 [INFO] Launching Bluetooth 2 USB v0.4.5
+    Nov 18 19:00:19 pi4b python3.11[1664]: 23-11-18 19:00:19 [INFO] Launching Bluetooth 2 USB v0.4.6
     Nov 18 19:00:22 pi4b python3.11[1664]: 23-11-18 19:00:22 [INFO] Starting event loop for [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
     Nov 18 19:00:22 pi4b python3.11[1664]: 23-11-18 19:00:22 [INFO] Starting event loop for [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
     ```
 
 > [!NOTE]
-> Something seems off? Try yourself in [Troubleshooting](#6-troubleshooting)! 
+> Something seems off? Try yourself in [Troubleshooting](#8-troubleshooting)! 
     
 ## 5. Usage
 
@@ -211,9 +213,25 @@ options:
 
 The API is designed such that it may be consumed both via CLI and from within external Python code. More details on this [coming soon](https://github.com/quaxalber/bluetooth_2_usb/issues/16)! 
 
-## 6. Troubleshooting
+## 6. Updating 
 
-### 6.1. The Pi keeps rebooting or crashes randomly
+You may update to the latest stable release by running:
+
+```console
+sudo scripts/update.sh
+```
+
+## 7. Uninstallation 
+
+You may uninstall Bluetooth 2 USB by running:
+
+```console
+sudo scripts/uninstall.sh
+```
+
+## 8. Troubleshooting
+
+### 8.1. The Pi keeps rebooting or crashes randomly
 
 This is likely due to the limited power the Pi gets from the host's USB port. Try these steps:
 
@@ -233,7 +251,7 @@ This is likely due to the limited power the Pi gets from the host's USB port. Tr
 > [!NOTE]
 > The Pi 4B requires 3A/15W for stable operation!
 
-### 6.2. The installation was successful, but I don't see any output on the target device 
+### 8.2. The installation was successful, but I don't see any output on the target device 
 
 This could be due to a number of reasons. Try these steps:
 
@@ -297,7 +315,7 @@ This could be due to a number of reasons. Try these steps:
   
 - Try connecting to a different host 
 
-### 6.3. In bluetoothctl, my device is constantly switching on/off
+### 8.3. In bluetoothctl, my device is constantly switching on/off
 
 This is a common issue, especially when the device gets paired with multiple hosts. One simple fix/workaround is to re-pair the device:
 
@@ -324,7 +342,7 @@ exit
 > [!NOTE]
 > Replace `0A:1B:2C:3D:4E:5F` by your Pi's Bluetooth controller's MAC and `A1:B2:C3:D4:E5:F6` by your input device's MAC
 
-### 6.4. I have a different issue 
+### 8.4. I have a different issue 
 
 Here's a few things you could try:
 
@@ -366,7 +384,7 @@ Here's a few things you could try:
   user@pi4b:~/bluetooth_2_usb $ sudo venv/bin/python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
   23-11-18 14:38:04 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
   23-11-18 14:38:04 [DEBUG] Logging to stdout
-  23-11-18 14:38:04 [INFO] Launching Bluetooth 2 USB v0.4.5
+  23-11-18 14:38:04 [INFO] Launching Bluetooth 2 USB v0.4.6
   23-11-18 14:38:04 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
   23-11-18 14:38:07 [DEBUG] Sandbox mode disabled. All output devices activated.
   23-11-18 14:38:07 [DEBUG] Registered device link: [AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]
@@ -389,19 +407,19 @@ Here's a few things you could try:
   
 - For more help, open an [issue](https://github.com/quaxalber/bluetooth_2_usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth_2_usb)
 
-### 6.5. Everything is working, but can it help me with Bitcoin mining? 
+### 8.5. Everything is working, but can it help me with Bitcoin mining? 
 
 Absolutely! [Here's how](https://bit.ly/42BTC). 
 
-## 7. Bonus points 
+## 9. Bonus points 
 
 After successfully setting up your Pi as a HID proxy for your Bluetooth devices, you may consider making [Raspberry OS read-only](https://learn.adafruit.com/read-only-raspberry-pi/overview). That helps preventing the SD card from wearing out and the file system from getting corrupted when powering off the Raspberry forcefully.
 
-## 8. Contributing
+## 10. Contributing
 
 Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines.
 
-## 9. License
+## 11. License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
@@ -409,7 +427,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ![License image.](https://i.creativecommons.org/l/by-nc/4.0/88x31.png)
 
-## 10. Acknowledgments
+## 12. Acknowledgments
 
 * [Mike Redrobe](https://github.com/mikerr/pihidproxy) for the idea and the basic code logic and [HeuristicPerson's bluetooth_2_hid](https://github.com/HeuristicPerson/bluetooth_2_hid) based off this.
 * [Georgi Valkov](https://github.com/gvalkov) for [python-evdev](https://github.com/gvalkov/python-evdev) making reading input devices a walk in the park. 
