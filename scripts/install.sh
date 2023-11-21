@@ -56,9 +56,9 @@ colored_output ${GREEN} "Installing bluetooth_2_usb prerequisites..."
 { apt update && apt upgrade -y && apt install -y git python3.11 python3.11-venv python3.11-dev && apt autoremove ; } || abort_install "Failed installing prerequisites."
 
 # Determine the current script's directory and the parent directory
-currentScriptDirectory=$(dirname $(readlink -f "$0"))
-parentDirectory=$(dirname "$currentScriptDirectory")
-cd "$parentDirectory"
+scriptsDirectory=$(dirname $(readlink -f "$0"))
+baseDirectory=$(dirname "$scriptsDirectory")
+cd "$baseDirectory"
 
 colored_output ${GREEN} "Initializing submodules..."
 git submodule update --init --recursive || abort_install "Failed initializing submodules."
@@ -78,12 +78,12 @@ cp /boot/cmdline.txt /boot/cmdline.txt.bak || colored_output ${RED} "Failed crea
 sed -i 's/modules-load=[^[:space:]]* //g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
 sed -i 's/rootwait/rootwait modules-load=dwc2/g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
 
-chmod 744 "$parentDirectory/bluetooth_2_usb.py" || abort_install "Failed making script executable."
-ln -s "$parentDirectory/bluetooth_2_usb.py /usr/bin/" || colored_output ${RED} "Failed creating symlink."
-ln -s "$parentDirectory/bluetooth_2_usb.service" /etc/systemd/system/ || colored_output ${RED} "Failed creating symlink."
+chmod 744 "$baseDirectory/bluetooth_2_usb.py" || abort_install "Failed making script executable."
+ln -s "$baseDirectory/bluetooth_2_usb.py /usr/bin/" || colored_output ${RED} "Failed creating symlink."
+ln -s "$baseDirectory/bluetooth_2_usb.service" /etc/systemd/system/ || colored_output ${RED} "Failed creating symlink."
 
-# The expression ${parentDirectory//\//\\/} is used to replace all occurrences of slashes (/) in the variable parentDirectory with escaped slashes (\/)
-sed -i "s/{python3.11-venv}/${parentDirectory//\//\\/}\/venv\/bin\/python3.11/g" "$parentDirectory/bluetooth_2_usb.service" || abort_install "Failed writing to bluetooth_2_usb.service."
+# The expression ${baseDirectory//\//\\/} is used to replace all occurrences of slashes (/) in the variable baseDirectory with escaped slashes (\/)
+sed -i "s/{python3.11-venv}/${baseDirectory//\//\\/}\/venv\/bin\/python3.11/g" "$baseDirectory/bluetooth_2_usb.service" || abort_install "Failed writing to bluetooth_2_usb.service."
 
 mkdir /var/log/bluetooth_2_usb || colored_output ${RED} "Failed creating log dir."
 systemctl enable bluetooth_2_usb.service || abort_install "Failed enabling service."

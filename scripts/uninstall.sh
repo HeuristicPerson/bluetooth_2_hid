@@ -15,9 +15,9 @@ colored_output() {
 }
 
 # Determine the current script's directory and the parent directory
-currentScriptDirectory=$(dirname $(readlink -f "$0"))
-parentDirectory=$(dirname "$currentScriptDirectory")
-cd "$parentDirectory"
+scriptsDirectory=$(dirname $(readlink -f "$0"))
+baseDirectory=$(dirname "$scriptsDirectory")
+cd "$baseDirectory"
 
 # Check for superuser privileges
 if [[ $EUID -ne 0 ]]; then
@@ -38,7 +38,7 @@ mv /etc/modules.bak /etc/modules
 mv /boot/cmdline.txt.bak /boot/cmdline.txt
 
 colored_output ${YELLOW} "Removing the virtual environment and log directory..."
-rm -rf "$parentDirectory/venv"
+rm -rf "$baseDirectory/venv"
 rm -rf /var/log/bluetooth_2_usb
 
 # Optionally, remove installed packages (if they were not previously installed)

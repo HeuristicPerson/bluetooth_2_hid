@@ -37,9 +37,9 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Determine the current script's directory and the parent directory
-currentScriptDirectory=$(dirname $(readlink -f "$0"))
-parentDirectory=$(dirname "$currentScriptDirectory")
-cd "$parentDirectory"
+scriptsDirectory=$(dirname $(readlink -f "$0"))
+baseDirectory=$(dirname "$scriptsDirectory")
+cd "$baseDirectory"
 
 colored_output ${GREEN} "Fetching updates from GitHub..."
 
