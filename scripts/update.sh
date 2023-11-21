@@ -45,8 +45,15 @@ colored_output ${GREEN} "Fetching updates from GitHub..."
 
 remote_name="origin"
 current_branch=$(git symbolic-ref --short HEAD  || abort_update "Failed retrieving currently checked out branch.")
+
+# Force Git to use English for its messages, regardless of the user's language settings.
+user_lang=$LANG
+export LANG=C
+
 # Fetch the latest changes from the remote
-git fetch $remote_name
+fetch_output=$( { git fetch $remote_name || colored_output ${RED} "Failed fetching changes from $remote_name." ; } | tee /dev/tty )
+
+export LANG=$user_lang
 
 # Compare the local branch with the remote branch
 if [ $(git rev-parse HEAD) != $(git rev-parse $remote_name/$current_branch) ]; then
@@ -57,19 +64,11 @@ else
 fi
 
 git stash || abort_update "Failed stashing local changes."
-
-# Force Git to use English for its messages, regardless of the user's language settings.
-USER_LANG=$LANG
-export LANG=C
-
-pull_output=$( { git pull $remote_name || abort_update "Failed pulling changes from $remote_name." ; } | tee /dev/tty )
-
-export LANG=$USER_LANG
-
+git merge || abort_update "Failed merging changes from $remote_name."
 git stash pop --index || abort_update "Failed applying local changes from stash."
 
 # Check if there are changes in any submodule 
-if echo "$pull_output" | grep -q "Fetching submodule"; then
+if echo "$fetch_output" | grep -q "Fetching submodule"; then
 
   colored_output ${GREEN} "Updating submodules..."
 
