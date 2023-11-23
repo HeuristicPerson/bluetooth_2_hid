@@ -56,12 +56,11 @@ Sounds familiar? Congratulations! **You just found the solution!**
   - **Raspberry Pi 4 Model B**: Offers Bluetooth 5.0 and USB-C OTG support for device mode, providing the best performance (until the Pi 5 is available).
   - **Raspberry Pi Zero W/WH**: Includes Bluetooth 4.1 and supports USB OTG with a lower price tag.
   - **Raspberry Pi Zero 2 W**: Similar to the Raspberry Pi Zero W, it has Bluetooth 4.1 and USB OTG support while providing additional processing power.
+- Linux OS with systemd support (e.g., [Raspberry Pi OS](https://www.raspberrypi.com/software/), recommended).
+- Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups).
 
 > [!NOTE]
 > Raspberry Pi 3 Models feature Bluetooth 4.2 but no native USB gadget mode support. Earlier models like Raspberry Pi 1 and 2 do not support Bluetooth natively and have no USB gadget mode support.
-
-- Linux OS with systemd support (e.g., [Raspberry Pi OS](https://www.raspberrypi.com/software/), recommended).
-- Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups).
 
 > [!NOTE]
 > The latest version of Raspberry Pi OS, based on Debian Bookworm, supports Python 3.11 through the official package repositories. For older versions, you may [build it from source](https://github.com/quaxalber/bluetooth_2_usb/blob/main/scripts/build_python_3.11.sh). 
@@ -254,23 +253,23 @@ sudo scripts/uninstall.sh
 
 ### 8.1. The Pi keeps rebooting or crashes randomly
 
-If you are using a Pi 4B, this is likely due to the limited power the Pi gets from the host's USB port. Try these steps:
+This is likely due to the limited power the Pi can draw from the host's USB port. Try these steps:
 
 - If available, connect your Pi to a USB 3 port on the host / target device (usually blue) or preferably USB-C. 
   
 > [!IMPORTANT]
 > *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.** 
 > 
-> *Do use* the small USB-C power port. 
+> *Do use* the small USB-C power port (in case of Pi 4B). For Pi Zero, use the data port to connect to the host and attach the power port to a dedicated power supply. 
 
 - Try to [connect to the Pi via SSH](#41-prerequisites) instead of attaching a display directly and remove any unnecessary peripherals.
   
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
   
-- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) and draw current from a sufficiently powerful adaptor. This should ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
+- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) and draw power from a dedicated power supply. This should ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
   
 > [!NOTE]
-> The Pi 4B requires 3 Amps for stable operation, while hosts may typically only deliver 0.5 to 0.9 Amps through USB-A 2.0/3.0 ports. 
+> The Pi Zero requires 1.2 A for stable operation, the Pi Zero 2 needs 2.0 A and the Pi 4B even 3.0 A, while hosts may typically only supply 0.5 to 0.9 A through USB-A 2.0/3.0 ports. However, this may be sufficient depending on the soft- and hardware configuration. For more information see the [Raspberry Pi documentation](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply). 
 
 ### 8.2. The installation was successful, but I don't see any output on the target device 
 
