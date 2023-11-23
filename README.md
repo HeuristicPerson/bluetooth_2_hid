@@ -13,8 +13,11 @@
   - [4.1. Prerequisites](#41-prerequisites)
   - [4.2. Setup](#42-setup)
 - [5. Usage](#5-usage)
-  - [5.1. Command-line arguments](#51-command-line-arguments)
-  - [5.2. Consuming the API from your Python code](#52-consuming-the-api-from-your-python-code)
+  - [5.1. Connection to target device / host](#51-connection-to-target-device--host)
+    - [5.1.1. Raspberry Pi 4 Model B](#511-raspberry-pi-4-model-b)
+    - [5.1.2. Raspberry Pi Zero (2) W(H)](#512-raspberry-pi-zero-2-wh)
+  - [5.2. Command-line arguments](#52-command-line-arguments)
+  - [5.3. Consuming the API from your Python code](#53-consuming-the-api-from-your-python-code)
 - [6. Updating](#6-updating)
 - [7. Uninstallation](#7-uninstallation)
 - [8. Troubleshooting](#8-troubleshooting)
@@ -49,9 +52,19 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 ## 3. Requirements
 
-- ([Single-board](https://en.wikipedia.org/wiki/Single-board_computer)) computer with Bluetooth support, e.g. Raspberry Pi 4B (recommended) or Raspberry Pi Zero **_W_**
-- Linux OS with systemd support, e.g. [Raspberry Pi OS](https://www.raspberrypi.com/software/) (recommended)
-- Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups)
+- A Raspberry Pi with Bluetooth and [USB OTG support](https://en.wikipedia.org/wiki/USB_On-The-Go) required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html) in so-called device mode. Recommended models include:
+  - **Raspberry Pi 4 Model B**: Offers Bluetooth 5.0 and USB-C OTG support for device mode, providing the best performance (until the Pi 5 is available).
+  - **Raspberry Pi Zero W/WH**: Includes Bluetooth 4.1 and supports USB OTG with a lower price tag.
+  - **Raspberry Pi Zero 2 W**: Similar to the Raspberry Pi Zero W, it has Bluetooth 4.1 and USB OTG support while providing additional processing power.
+
+> [!NOTE]
+> Raspberry Pi 3 Models feature Bluetooth 4.2 but no native USB gadget mode support. Earlier models like Raspberry Pi 1 and 2 do not support Bluetooth natively and have no USB gadget mode support.
+
+- Linux OS with systemd support (e.g., [Raspberry Pi OS](https://www.raspberrypi.com/software/), recommended).
+- Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups).
+
+> [!NOTE]
+> The latest version of Raspberry Pi OS, based on Debian Bookworm, supports Python 3.11 through the official package repositories. For older versions, you may [build it from source](https://github.com/quaxalber/bluetooth_2_usb/blob/main/scripts/build_python_3.11.sh). 
 
 ## 4. Installation
 
@@ -176,12 +189,20 @@ Follow these steps to install and configure the project:
     
 ## 5. Usage
 
-Connect the power USB port of your Pi (Micro-USB or USB-C) via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. 
+### 5.1. Connection to target device / host
+
+#### 5.1.1. Raspberry Pi 4 Model B
+
+Connect the _USB-C power port_ of your Pi via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. 
 
 > [!IMPORTANT]
 > It's essential to use the small power port instead of the bigger USB-A ports, since only the power port has the [OTG](https://en.wikipedia.org/wiki/USB_On-The-Go) feature required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html). 
 
-### 5.1. Command-line arguments
+#### 5.1.2. Raspberry Pi Zero (2) W(H)
+
+For the Pi0's, the situation is quite the opposite: Do _not_ use the power port to connect to the target device, _use_ the other port instead (typically labeled "DATA" or "USB"). The power port is solely used for power supply. 
+
+### 5.2. Command-line arguments
 
 Currently you can provide the following CLI arguments:
 
@@ -209,7 +230,7 @@ options:
   --list_devices, -l    List all available input devices and exit.
 ```
 
-### 5.2. Consuming the API from your Python code
+### 5.3. Consuming the API from your Python code
 
 The API is designed such that it may be consumed both via CLI and from within external Python code. More details on this [coming soon](https://github.com/quaxalber/bluetooth_2_usb/issues/16)! 
 
@@ -233,23 +254,23 @@ sudo scripts/uninstall.sh
 
 ### 8.1. The Pi keeps rebooting or crashes randomly
 
-This is likely due to the limited power the Pi gets from the host's USB port. Try these steps:
+If you are using a Pi 4B, this is likely due to the limited power the Pi gets from the host's USB port. Try these steps:
 
-- If available, connect your Pi to a USB 3 port on the host  / target device (usually blue). 
+- If available, connect your Pi to a USB 3 port on the host / target device (usually blue) or preferably USB-C. 
   
 > [!IMPORTANT]
 > *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.** 
 > 
-> *Do use* the small USB power port. 
+> *Do use* the small USB-C power port. 
 
 - Try to [connect to the Pi via SSH](#41-prerequisites) instead of attaching a display directly and remove any unnecessary peripherals.
   
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
   
-- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) (or [Micro-USB](https://thepihut.com/products/micro-usb-data-power-splitter) respectively) and draw power from a sufficiently powerful power adaptor. This will ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
+- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) and draw current from a sufficiently powerful adaptor. This should ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
   
 > [!NOTE]
-> The Pi 4B requires 3A/15W for stable operation!
+> The Pi 4B requires 3 Amps for stable operation, while hosts may typically only deliver 0.5 to 0.9 Amps through USB-A 2.0/3.0 ports. 
 
 ### 8.2. The installation was successful, but I don't see any output on the target device 
 
@@ -413,7 +434,7 @@ Absolutely! [Here's how](https://bit.ly/42BTC).
 
 ## 9. Bonus points 
 
-After successfully setting up your Pi as a HID proxy for your Bluetooth devices, you may consider making [Raspberry OS read-only](https://learn.adafruit.com/read-only-raspberry-pi/overview). That helps preventing the SD card from wearing out and the file system from getting corrupted when powering off the Raspberry forcefully.
+After successfully setting up your Pi as a HID proxy for your Bluetooth devices, you may consider making [Raspberry Pi OS read-only](https://learn.adafruit.com/read-only-raspberry-pi/overview). That helps preventing the SD card from wearing out and the file system from getting corrupted when powering off the Raspberry forcefully.
 
 ## 10. Contributing
 
