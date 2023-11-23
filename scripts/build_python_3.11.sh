@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Build Python 3.11 from source and install as Debian package. 
 
 # Temporarily disable history expansion
 set +H
@@ -25,6 +26,8 @@ colored_output() {
 abort_install() {
   local message="$1"
   colored_output ${RED} "Aborting installation. ${message}"
+  # Re-enable history expansion
+  set -H
   exit 1
 }
 
