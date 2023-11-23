@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install script for bluetooth_2_usb
+# Install the latest stable GitHub version of Bluetooth 2 USB. Handles installing submodules, too. 
 
 # Temporarily disable history expansion
 set +H

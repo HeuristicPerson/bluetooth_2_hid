@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Update Bluetooth 2 USB to the latest stable GitHub version. Handles updating submodules, if required. 
+
 # Temporarily disable history expansion
 set +H
 

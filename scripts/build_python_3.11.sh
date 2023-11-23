@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Build Python 3.11 from source and install as Debian package. 
 
 # Temporarily disable history expansion
 set +H
