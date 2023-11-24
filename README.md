@@ -52,10 +52,10 @@ Sounds familiar? Congratulations! **You just found the solution!**
 
 ## 3. Requirements
 
-- A Raspberry Pi with Bluetooth and [USB OTG support](https://en.wikipedia.org/wiki/USB_On-The-Go) required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html) in so-called device mode. Recommended models include:
-  - **Raspberry Pi 4 Model B**: Offers Bluetooth 5.0 and USB-C OTG support for device mode, providing the best performance (until the Pi 5 is available).
-  - **Raspberry Pi Zero W/WH**: Includes Bluetooth 4.1 and supports USB OTG with a lower price tag.
+- A Raspberry Pi with Bluetooth and [USB OTG support](https://en.wikipedia.org/wiki/USB_On-The-Go) required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html) in so-called device mode. Supported models include:
+  - **Raspberry Pi Zero W(H)**: Includes Bluetooth 4.1 and supports USB OTG with the lowest price tag.
   - **Raspberry Pi Zero 2 W**: Similar to the Raspberry Pi Zero W, it has Bluetooth 4.1 and USB OTG support while providing additional processing power.
+  - **Raspberry Pi 4 Model B**: Offers Bluetooth 5.0 and USB-C OTG support for device mode, providing the best performance (that is until the Pi 5 is available).
 - Linux OS with systemd support (e.g., [Raspberry Pi OS](https://www.raspberrypi.com/software/), recommended).
 - Python 3.11 for using [TaskGroups](https://docs.python.org/3/library/asyncio-task.html#task-groups).
 
@@ -142,7 +142,7 @@ Follow these steps to install and configure the project:
 10. Specify the correct input devices in `bluetooth_2_usb.service`:
     
     ```console
-    nano bluetooth_2_usb.service
+    sudo nano bluetooth_2_usb.service
     ```
 
     ... and change `event2` and `event3` according to step **9.** 
@@ -155,8 +155,7 @@ Follow these steps to install and configure the project:
 12. Reload and restart service:
   
     ```console
-    sudo systemctl daemon-reload
-    sudo service bluetooth_2_usb restart
+    sudo systemctl daemon-reload && sudo service bluetooth_2_usb restart
     ```
 13. Verify that the service is running:
     
@@ -319,8 +318,7 @@ This could be due to a number of reasons. Try these steps:
 - Reload and restart service:
   
   ```console
-  sudo systemctl daemon-reload
-  sudo service bluetooth_2_usb restart
+  sudo systemctl daemon-reload && sudo service bluetooth_2_usb restart
   ```
 
 - Reboot Pi
