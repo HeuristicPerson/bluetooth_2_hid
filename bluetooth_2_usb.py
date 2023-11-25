@@ -68,7 +68,6 @@ class ComboDeviceHidProxy:
             self._create_and_register_links(keyboard_paths, mouse_paths)
             self.enable_sandbox(is_sandbox)
             self._log_registered_links()
-
         except Exception:
             _logger.exception(f"Failed to initialize devices.")
             raise
@@ -77,7 +76,6 @@ class ComboDeviceHidProxy:
         try:
             self._check_enable_gadgets(gadgets_enabled)
             self._log_gadgets()
-
         except Exception:
             action = "enable" if gadgets_enabled else "disable"
             _logger.exception(f"Failed to {action} gadget devices.")
@@ -190,23 +188,19 @@ class ComboDeviceHidProxy:
         try:
             async with TaskGroup() as self._task_group:
                 self._connect_device_links(self._registered_links)
-
             _logger.critical("Event loop closed.")
-
         except* Exception as ex:
             _logger.error(f"Error(s) in TaskGroup: [{ex.exceptions}]")
 
     def _connect_device_links(self, device_links: Collection[DeviceLink]) -> None:
         for link in device_links:
             self._connect_single_link(link)
-
         _logger.debug(f"Current tasks: {asyncio.all_tasks()}")
 
     def _connect_single_link(self, device_link: DeviceLink) -> None:
         self._task_group.create_task(
             self._async_relay_input_events(device_link), name=str(device_link)
         )
-
         _logger.debug(f"Connected device link: {device_link}")
 
     async def _async_relay_input_events(self, device_link: DeviceLink) -> None:
@@ -216,22 +210,18 @@ class ComboDeviceHidProxy:
 
         try:
             await self._async_relay_input_events_loop(device_link)
-
         except OSError as ex:
             _logger.critical(
                 f"{input_device.name} disconnected. Reconnecting... [{repr(ex)}]"
             )
             reconnected = await self._async_wait_for_device(input_device)
             self._log_reconnection_outcome(input_device, reconnected)
-
         except asyncio.exceptions.CancelledError:
             _logger.critical(f"{input_device.name} received a cancellation request.")
             should_reconnect = False
-
         except Exception:
             _logger.exception(f"{input_device.name} failed! Restarting task...")
             await asyncio.sleep(5)
-
         finally:
             await self._async_disconnect_device_link(device_link, should_reconnect)
 
@@ -241,7 +231,6 @@ class ComboDeviceHidProxy:
         async for event in input_device.async_read_loop():
             if not event:
                 continue
-
             await self._async_relay_single_event(event, device_link)
 
     async def _async_relay_single_event(
@@ -266,7 +255,6 @@ class ComboDeviceHidProxy:
                 device_out.release(hid_key)
             elif evdev_adapter.is_key_down(event):
                 device_out.press(hid_key)
-
         except Exception:
             _logger.exception(f"Error sending [{categorize(event)}] to {device_out}")
 
@@ -315,7 +303,6 @@ class ComboDeviceHidProxy:
         task = _get_task(str(device_link))
         if task:
             task.cancel()
-
         if reconnect:
             await device_link.async_reset_input_device()
             self._connect_single_link(device_link)
@@ -353,15 +340,12 @@ async def _main() -> NoReturn:
 
     if args.version:
         _print_version()
-
     if args.list_devices:
         _list_devices()
-
     if args.debug:
         _logger.setLevel(DEBUG)
 
     log_handlers_message = "Logging to stdout"
-
     if args.log_to_file:
         lib.logger.add_file_handler(args.log_path)
         log_handlers_message += f" and to {args.log_path}"
@@ -378,7 +362,6 @@ def _list_devices():
     devices = [InputDevice(path) for path in list_devices()]
     for device in devices:
         print(f"{device.name}\t{device.phys}\t{device.path}")
-
     _exit_safely()
 
 
@@ -398,6 +381,5 @@ if __name__ == "__main__":
     """
     try:
         asyncio.run(_main())
-
     except Exception:
         _logger.exception("Houston, we have an unhandled problem. Abort mission.")
