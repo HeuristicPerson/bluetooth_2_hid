@@ -17,13 +17,13 @@ class ProxyLoop:
     This class serves as a HID proxy to handle both keyboard and mouse events and relay them to USB.
     """
 
-    def __init__(self, proxy_paths: list[str] = None) -> None:
-        self._bluetooth_proxies = [BluetoothUsbProxy(path) for path in proxy_paths]
-        _logger.debug(f"Registered input proxys: {self._bluetooth_proxies}")
+    def __init__(self, device_paths: list[str] = None) -> None:
         # We have to use BOOT_MOUSE since somehow MOUSE freezes on any input.
         # This should be fine though. Also it's important to enable mouse first.
         usb_hid.enable([Device.BOOT_MOUSE, Device.KEYBOARD, Device.CONSUMER_CONTROL])
-        _logger.debug(f"Available output proxys: {usb_hid.proxys}")
+        _logger.debug(f"Available output devices: {usb_hid.devices}")
+        self._bluetooth_proxies = [BluetoothUsbProxy(path) for path in device_paths]
+        _logger.debug(f"Registered input devices: {self._bluetooth_proxies}")
         self._task_group: TaskGroup
 
     async def async_relay_bluetooth_to_usb(self) -> NoReturn:
