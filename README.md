@@ -126,38 +126,36 @@ Follow these steps to install and configure the project:
 9.  Check which Linux input devices your Bluetooth devices are mapped to:
 
     ```console
-    cd bluetooth_2_usb && venv/bin/python3.11 bluetooth_2_usb.py -l
+    bluetooth_2_usb -l
     ```
 
     ... and note the device paths of the devices you want to use:
 
     ```console
-    user@pi4b:~/bluetooth_2_usb $ venv/bin/python3.11 bluetooth_2_usb.py -l
-    AceRK Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event3  <---
-    AceRK Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
-    vc4-hdmi-1      vc4-hdmi-1/input0  /dev/input/event1
+    user@pi4b:~ $ bluetooth_2_usb.py -l
+    AceRK Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
+    AceRK Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event1  <---
     vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
     ```
 
 10. Specify the correct input devices in `bluetooth_2_usb.service`:
     
     ```console
-    sudo nano bluetooth_2_usb.service
+    sudo nano bluetooth_2_usb/bluetooth_2_usb.service
     ```
 
-    ... and change `event2` and `event3` according to step **9.** 
+    ... and change `event1` and `event2` according to step **9.** 
 
 > [!NOTE]
-> `Ctrl + X` > `Y` > `Enter` to save and exit nano
+> `Ctrl + S` > `Ctrl + X` to save and exit nano
 
-11. (*optional*) If you wish to test first, without actually sending anything to the target devices, append `-s` to the `ExecStart=` command to enable sandbox mode. To increase log verbosity add `-d`. 
 
-12. Reload and restart service:
+1.  Reload and restart service:
   
     ```console
     sudo systemctl daemon-reload && sudo service bluetooth_2_usb restart
     ```
-13. Verify that the service is running:
+2.  Verify that the service is running:
     
     ```console
     service bluetooth_2_usb status
@@ -166,20 +164,22 @@ Follow these steps to install and configure the project:
     It should look something like this:
 
     ```console
-    user@pi4b:~/bluetooth_2_usb $ service bluetooth_2_usb status 
+    user@pi0w:~ $ service bluetooth_2_usb status
     ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
         Loaded: loaded (/etc/systemd/system/bluetooth_2_usb.service; enabled; preset: enabled)
-        Active: active (running) since Sat 2023-11-18 19:00:19 CET; 1min 44s ago
-      Main PID: 1664 (python3.11)
-          Tasks: 1 (limit: 8741)
-            CPU: 261ms
+        Active: active (running) since Tue 2023-11-28 18:13:58 CET; 6min ago
+      Main PID: 444 (bluetooth_2_usb)
+          Tasks: 1 (limit: 389)
+            CPU: 2.308s
         CGroup: /system.slice/bluetooth_2_usb.service
-                └─1664 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
+                └─444 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
 
-    Nov 18 19:00:19 pi4b systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
-    Nov 18 19:00:19 pi4b python3.11[1664]: 23-11-18 19:00:19 [INFO] Launching Bluetooth 2 USB v0.4.6
-    Nov 18 19:00:22 pi4b python3.11[1664]: 23-11-18 19:00:22 [INFO] Starting event loop for [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
-    Nov 18 19:00:22 pi4b python3.11[1664]: 23-11-18 19:00:22 [INFO] Starting event loop for [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
+    Nov 28 18:13:58 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
+    Nov 28 18:14:03 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:03 [INFO] Launching Bluetooth 2 USB v0.4.6
+    Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event1
+    Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event2
+    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "b8:27:eb:be:dc:81".
+    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "b8:27:eb:be:dc:81".
     ```
 
 > [!NOTE]
@@ -205,27 +205,20 @@ For the Pi0's, the situation is quite the opposite: Do _not_ use the power port 
 Currently you can provide the following CLI arguments:
 
 ```console
-user@pi4b:~/bluetooth_2_usb $ venv/bin/python3.11 bluetooth_2_usb.py -h
-usage: bluetooth_2_usb.py [-h] [--keyboards KEYBOARDS] [--mice MICE] [--sandbox] [--debug] [--log_to_file]
-                          [--log_path LOG_PATH] [--version] [--list_devices]
+user@pi0w:~ $ bluetooth_2_usb -h
+usage: bluetooth_2_usb [-h] [--input_devices INPUT_DEVICES] [--debug] [--log_to_file] [--log_path LOG_PATH] [--version] [--list_devices]
 
-Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events (e.g., Bluetooth) and forwards them to USB using
-Linux's gadget mode.
+Bluetooth to USB HID proxy. Reads incoming Bluetooth mouse and keyboard events and forwards them to USB using Linux's gadget mode.
 
 options:
   -h, --help            show this help message and exit
-  --keyboards KEYBOARDS, -k KEYBOARDS
-                        Comma-separated list of input device paths for keyboards to be registered and connected. Default is
-                        None. Example: --keyboards /dev/input/event2,/dev/input/event4
-  --mice MICE, -m MICE  Comma-separated list of input device paths for mice to be registered and connected. Default is None.
-                        Example: --mice /dev/input/event3,/dev/input/event5
-  --sandbox, -s         Only read input events but do not forward them to the output devices.
+  --input_devices INPUT_DEVICES, -i INPUT_DEVICES
+                        Comma-separated list of input device paths to be registered and connected. Default is None. Example: --input_devices /dev/input/event2,/dev/input/event3
   --debug, -d           Enable debug mode. Increases log verbosity
   --log_to_file, -f     Add a handler that logs to file additionally to stdout.
   --log_path LOG_PATH, -p LOG_PATH
                         The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.
   --version, -v         Display the version number of this software and exit.
-  --list_devices, -l    List all available input devices and exit.
 ```
 
 ### 5.3. Consuming the API from your Python code
@@ -292,7 +285,7 @@ This could be due to a number of reasons. Try these steps:
   It should look like this:
 
   ```console
-  user@pi4b:~/bluetooth_2_usb $ bluetoothctl
+  user@pi0w:~ $ bluetoothctl
   Agent registered
   [CHG] Controller 0A:1B:2C:3D:4E:5F Pairable: yes
   [AceRK]# info A1:B2:C3:D4:E5:F6
@@ -372,7 +365,7 @@ Here's a few things you could try:
 - You may also query the journal to inspect the service logs in real-time:
   
   ```console
-  journalctl -u bluetooth_2_usb.service -n 20 -f
+  journalctl -u bluetooth_2_usb.service -n 30 -f
   ```
 
 - Increase log verbosity by appending `-d` to the command in the line starting with `ExecStart=` in `bluetooth_2_usb.service`. 
@@ -380,45 +373,52 @@ Here's a few things you could try:
 - Reload and restart service:
   
   ```console
-  sudo systemctl daemon-reload
-  sudo service bluetooth_2_usb restart
+  sudo systemctl daemon-reload && sudo service bluetooth_2_usb restart
   ```
 
-- For easier degguging, you may also stop the service 
-  
-  ```console
-  sudo service bluetooth_2_usb stop
-  ```
-
-  and run the script manually, modifying arguments as required, e.g.:
+- For easier degguging, you may temporarily stop the service and run the script manually, modifying arguments as required, e.g.:
 
   ```console
-  sudo venv/bin/python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
+  sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event1,/dev/input/event2 -d ; sudo service bluetooth_2_usb start
   ```
 
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
   
   ```console
-  user@pi4b:~/bluetooth_2_usb $ sudo venv/bin/python3.11 bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3 -d
-  23-11-18 14:38:04 [DEBUG] CLI args: Namespace(keyboards=['/dev/input/event2'], mice=['/dev/input/event3'], sandbox=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
-  23-11-18 14:38:04 [DEBUG] Logging to stdout
-  23-11-18 14:38:04 [INFO] Launching Bluetooth 2 USB v0.4.6
-  23-11-18 14:38:04 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
-  23-11-18 14:38:07 [DEBUG] Sandbox mode disabled. All output devices activated.
-  23-11-18 14:38:07 [DEBUG] Registered device link: [AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]
-  23-11-18 14:38:07 [DEBUG] Registered device link: [AceRK Mouse]>>[/dev/hidg0]
-  23-11-18 14:38:07 [DEBUG] Connected device link: [AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]
-  23-11-18 14:38:07 [DEBUG] Connected device link: [AceRK Mouse]>>[/dev/hidg0]
-  23-11-18 14:38:07 [DEBUG] Current tasks: {<Task pending name='[AceRK Keyboard]>>[/dev/hidg1+/dev/hidg2]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:212> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:374> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>, <Task pending name='[AceRK Mouse]>>[/dev/hidg0]' coro=<ComboDeviceHidProxy._async_relay_input_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb.py:212> cb=[TaskGroup._on_task_done()]>}
-  23-11-18 14:38:07 [INFO] Starting event loop for [device /dev/input/event2, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f"] >> [Keyboard gadget (/dev/hidg1) + Consumer control gadget (/dev/hidg2)]
-  23-11-18 14:38:07 [INFO] Starting event loop for [device /dev/input/event3, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f"] >> [Boot mouse gadget (/dev/hidg0)]
-  23-11-18 14:39:44 [DEBUG] Received event: [event at 1700314784.609595, code 04, type 04, val 458756]
-  23-11-18 14:39:44 [DEBUG] Received event: [key event at 1700314784.609595, 30 (KEY_A), down]
-  23-11-18 14:39:44 [DEBUG] Converted evdev ecode 0x1E (KEY_A) to HID UsageID 0x04 (A)
-  23-11-18 14:39:44 [DEBUG] Received event: [synchronization event at 1700314784.609595, SYN_REPORT]
-  23-11-18 14:40:34 [DEBUG] Received event: [relative axis event at 1700314834.191975, REL_X]
-  23-11-18 14:40:34 [DEBUG] Moving mouse /dev/hidg0: (x, y, mwheel) = (125, 0, 0)
-  23-11-18 14:40:34 [DEBUG] Received event: [synchronization event at 1700314834.191975, SYN_REPORT]
+  user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event1,/dev/input/event2 -d ; sudo service bluetooth_2_usb start
+  23-11-28 18:23:29 [DEBUG] CLI args: Namespace(input_devices=['/dev/input/event1', '/dev/input/event2'], debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
+  23-11-28 18:23:29 [DEBUG] Logging to stdout
+  23-11-28 18:23:29 [INFO] Launching Bluetooth 2 USB v0.4.6
+  23-11-28 18:23:29 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
+  23-11-28 18:23:35 [DEBUG] Current tasks: {<Task pending name='/dev/input/event2' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='/dev/input/event1' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb:60> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>}
+  23-11-28 18:23:35 [INFO] Starting proxy loop for /dev/input/event1
+  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "b8:27:eb:be:dc:81".
+  23-11-28 18:23:35 [INFO] Starting proxy loop for /dev/input/event2
+  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "b8:27:eb:be:dc:81".
+  23-11-28 18:23:50 [DEBUG] Received event: [event at 1701192230.741609, code 04, type 04, val 458756]
+  23-11-28 18:23:50 [DEBUG] Received event: [key event at 1701192230.741609, 30 (KEY_A), down]
+  23-11-28 18:23:50 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-11-28 18:23:50 [DEBUG] Pressing A (0x04) on /dev/hidg1
+  23-11-28 18:23:50 [DEBUG] Received event: [synchronization event at 1701192230.741609, SYN_REPORT]
+  23-11-28 18:23:50 [DEBUG] Received event: [event at 1701192230.748780, code 04, type 04, val 458756]
+  23-11-28 18:23:50 [DEBUG] Received event: [key event at 1701192230.748780, 30 (KEY_A), up]
+  23-11-28 18:23:50 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-11-28 18:23:50 [DEBUG] Releasing A (0x04) on /dev/hidg1
+  23-11-28 18:23:50 [DEBUG] Received event: [synchronization event at 1701192230.748780, SYN_REPORT]
+  23-11-28 18:24:00 [DEBUG] Received event: [event at 1701192240.589019, code 04, type 04, val 786666]
+  23-11-28 18:24:00 [DEBUG] Received event: [key event at 1701192240.589019, 114 (KEY_VOLUMEDOWN), down]
+  23-11-28 18:24:00 [DEBUG] Converted evdev scancode 0x72 (KEY_VOLUMEDOWN) to HID UsageID 0xEA (VOLUME_DECREMENT)
+  23-11-28 18:24:00 [DEBUG] Pressing VOLUME_DECREMENT (0xEA) on /dev/hidg2
+  23-11-28 18:24:00 [DEBUG] Received event: [synchronization event at 1701192240.589019, SYN_REPORT]
+  23-11-28 18:24:00 [DEBUG] Received event: [event at 1701192240.598955, code 04, type 04, val 786666]
+  23-11-28 18:24:00 [DEBUG] Received event: [key event at 1701192240.598955, 114 (KEY_VOLUMEDOWN), up]
+  23-11-28 18:24:00 [DEBUG] Converted evdev scancode 0x72 (KEY_VOLUMEDOWN) to HID UsageID 0xEA (VOLUME_DECREMENT)
+  23-11-28 18:24:00 [DEBUG] Releasing VOLUME_DECREMENT (0xEA) on /dev/hidg2
+  23-11-28 18:24:00 [DEBUG] Received event: [synchronization event at 1701192240.598955, SYN_REPORT]
+  23-11-28 18:24:02 [DEBUG] Received event: [relative axis event at 1701192242.490280, REL_X]
+  23-11-28 18:24:02 [DEBUG] Moving mouse /dev/hidg0 (x=-125, y=0, mwheel=0)
+  23-11-28 18:24:02 [DEBUG] Received event: [synchronization event at 1701192242.490280, SYN_REPORT]
+
   ``` 
 
 - Still not resolved? Double-check the [installation instructions](#4-installation)
