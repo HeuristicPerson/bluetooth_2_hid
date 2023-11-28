@@ -12,34 +12,17 @@ class CustomArgumentParser(argparse.ArgumentParser):
 
 def parse_args() -> Namespace:
     parser = CustomArgumentParser(
-        description="Bluetooth to USB HID proxy. Reads incoming mouse and keyboard events \
-        (e.g., Bluetooth) and forwards them to USB using Linux's gadget mode.",
+        description="Bluetooth to USB HID proxy. Reads incoming Bluetooth mouse and keyboard events and forwards them to USB using Linux's gadget mode.",
     )
 
     parser.add_argument(
-        "--keyboards",
-        "-k",
+        "--input_devices",
+        "-i",
         type=lambda input: [item.strip() for item in input.split(",")],
         default=None,
-        help="Comma-separated list of input device paths for keyboards to be registered and connected.\n \
+        help="Comma-separated list of input device paths to be registered and connected.\n \
           Default is None.\n \
-          Example: --keyboards /dev/input/event2,/dev/input/event4",
-    )
-    parser.add_argument(
-        "--mice",
-        "-m",
-        type=lambda input: [item.strip() for item in input.split(",")],
-        default=None,
-        help="Comma-separated list of input device paths for mice to be registered and connected.\n \
-          Default is None.\n \
-          Example: --mice /dev/input/event3,/dev/input/event5",
-    )
-    parser.add_argument(
-        "--sandbox",
-        "-s",
-        action="store_true",
-        default=False,
-        help="Only read input events but do not forward them to the output devices.",
+          Example: --input_devices /dev/input/event2,/dev/input/event3",
     )
     parser.add_argument(
         "--debug",

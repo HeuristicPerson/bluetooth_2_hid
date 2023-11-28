@@ -1,7 +1,7 @@
 <!-- omit in toc -->
 # Bluetooth to USB
 
-![Connection overview](images/diagram.png)
+![Connection overview](assets/overview.png)
 
 <!-- omit in toc -->
 ## Table of Contents
