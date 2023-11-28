@@ -31,14 +31,14 @@ systemctl stop bluetooth_2_usb.service
 systemctl disable bluetooth_2_usb.service
 
 colored_output "${YELLOW}" "Removing symlinks and restoring backup files..."
-rm /usr/bin/bluetooth_2_usb.py
+rm /usr/bin/bluetooth_2_usb
 rm /etc/systemd/system/bluetooth_2_usb.service
 mv /boot/config.txt.bak /boot/config.txt
 mv /etc/modules.bak /etc/modules
 mv /boot/cmdline.txt.bak /boot/cmdline.txt
 
 colored_output "${YELLOW}" "Removing the virtual environment and log directory..."
-rm -rf "${base_directory}/venv"
+rm -rf venv
 rm -rf /var/log/bluetooth_2_usb
 
 # Optionally, remove installed packages (if they were not previously installed)
