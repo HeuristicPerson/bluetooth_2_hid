@@ -22,7 +22,7 @@ class ProxyLoop:
         # This should be fine though. Also it's important to enable mouse first.
         usb_hid.enable(
             [
-                Device.BOOT_MOUSE,
+                Device.MOUSE,
                 Device.BOOT_KEYBOARD,
                 Device.CONSUMER_CONTROL,
             ]
