@@ -1,5 +1,6 @@
 from argparse import Namespace
 import argparse
+import sys
 
 from usb_hid import unregister_disable
 
@@ -14,6 +15,11 @@ def parse_args() -> Namespace:
     parser = CustomArgumentParser(
         description="Bluetooth to USB HID proxy. Reads incoming Bluetooth mouse and keyboard events and forwards them to USB using Linux's gadget mode.",
     )
+
+    # Check if no arguments were provided
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
 
     parser.add_argument(
         "--input_devices",
