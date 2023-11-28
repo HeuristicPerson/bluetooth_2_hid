@@ -175,7 +175,7 @@ Follow these steps to install and configure the project:
                 └─444 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
 
     Nov 28 18:13:58 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
-    Nov 28 18:14:03 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:03 [INFO] Launching Bluetooth 2 USB v0.4.6
+    Nov 28 18:14:03 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:03 [INFO] Launching Bluetooth 2 USB v0.5.0
     Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event1
     Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event2
     Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "b8:27:eb:be:dc:81".
@@ -388,7 +388,7 @@ Here's a few things you could try:
   user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event1,/dev/input/event2 -d ; sudo service bluetooth_2_usb start
   23-11-28 18:23:29 [DEBUG] CLI args: Namespace(input_devices=['/dev/input/event1', '/dev/input/event2'], debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
   23-11-28 18:23:29 [DEBUG] Logging to stdout
-  23-11-28 18:23:29 [INFO] Launching Bluetooth 2 USB v0.4.6
+  23-11-28 18:23:29 [INFO] Launching Bluetooth 2 USB v0.5.0
   23-11-28 18:23:29 [DEBUG] Available output devices: [Boot mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
   23-11-28 18:23:35 [DEBUG] Current tasks: {<Task pending name='/dev/input/event2' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='/dev/input/event1' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb:60> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>}
   23-11-28 18:23:35 [INFO] Starting proxy loop for /dev/input/event1

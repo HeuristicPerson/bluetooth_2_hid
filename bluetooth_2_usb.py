@@ -19,7 +19,7 @@ from bluetooth_2_usb.logging import add_file_handler, get_logger
 
 
 _logger = get_logger()
-_VERSION = "0.4.6"
+_VERSION = "0.5.0"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
 
 
