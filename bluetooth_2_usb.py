@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!venv/bin/python3.11
 """
 Reads incoming Bluetooth mouse and keyboard events and forwards them to USB
 using Linux's gadget mode.

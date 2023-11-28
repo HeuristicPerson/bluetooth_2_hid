@@ -1,5 +1,3 @@
-#!venv/bin/python3.11
-
 import asyncio
 from datetime import datetime
 
