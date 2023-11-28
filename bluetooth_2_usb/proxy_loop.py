@@ -40,10 +40,9 @@ class ProxyLoop:
         self._task_group.create_task(
             self._async_relay_events(proxy), name=proxy.input_path
         )
-        _logger.debug(f"Connected proxy: {proxy}")
 
     async def _async_relay_events(self, proxy: BluetoothUsbProxy) -> None:
-        _logger.info(f"Starting event loop for {repr(proxy)}")
+        _logger.info(f"Starting proxy loop for {proxy}")
         restart_on_error = True
         try:
             await proxy.async_wait_connect()
