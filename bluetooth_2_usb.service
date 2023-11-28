@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 User=root
-ExecStart={python3.11-venv} /usr/bin/bluetooth_2_usb.py -k /dev/input/event2 -m /dev/input/event3
+ExecStart=/usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 

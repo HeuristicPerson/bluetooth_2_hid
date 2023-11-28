@@ -1,18 +1,14 @@
 from functools import lru_cache
 
-from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.consumer_control_code import ConsumerControlCode
-from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode, MouseButton
-from adafruit_hid.mouse import Mouse
-from evdev import InputEvent, KeyEvent
+from evdev import InputEvent, KeyEvent, RelEvent
 
-from lib.device_link import DeviceLink, DummyGadget
-from lib.ecodes import ecodes
-import lib.logger
+from bluetooth_2_usb.ecodes import ecodes
+from bluetooth_2_usb.logging import get_logger
 
 
-_logger = lib.logger.get_logger()
+_logger = get_logger()
 
 
 _EVDEV_TO_HID: dict[int, int] = {
@@ -445,7 +441,7 @@ _CONSUMER_KEYS = set(
         ecodes.KEY_SCALE,
     )
 )
-"""evdev ecodes that are mapped to HID UsageIDs from consumer page (0x0C)"""
+"""evdev scancodes that are mapped to USB HUT (HID Uage Table) UsageIDs from consumer page (0x0C)"""
 
 
 _MOUSE_BUTTONS = set(
@@ -458,42 +454,35 @@ _MOUSE_BUTTONS = set(
 """Mouse button ecodes"""
 
 
-def to_hid_usage_id(event: InputEvent) -> int | None:
-    ecode: int = event.code
-    hid_usage_id = _EVDEV_TO_HID.get(ecode, None)
-
+def evdev_to_hid(event: KeyEvent) -> int | None:
+    scancode: int = event.scancode
+    hid_usage_id = _EVDEV_TO_HID.get(scancode, None)
     key_name = find_key_name(event)
     hid_usage_name = find_usage_name(event, hid_usage_id)
-
     if hid_usage_id is None:
-        _logger.debug(f"Unsupported key pressed: 0x{ecode:02X} ({key_name})")
+        _logger.debug(f"Unsupported key pressed: 0x{scancode:02X}")
     else:
         _logger.debug(
-            f"Converted evdev ecode 0x{ecode:02X} ({key_name}) to HID UsageID 0x{hid_usage_id:02X} ({hid_usage_name})"
+            f"Converted evdev scancode 0x{scancode:02X} ({key_name}) to HID UsageID 0x{hid_usage_id:02X} ({hid_usage_name})"
         )
+    return hid_usage_id, hid_usage_name
 
-    return hid_usage_id
 
-
-def find_key_name(event: InputEvent) -> str | None:
-    ecode: int = event.code
-
+def find_key_name(event: KeyEvent) -> str | None:
+    scancode: int = event.scancode
     for attribute in _cached_dir(ecodes):
-        if _cached_getattr(ecodes, attribute) == ecode and attribute.startswith(
+        if _cached_getattr(ecodes, attribute) == scancode and attribute.startswith(
             ("KEY_", "BTN_")
         ):
             return attribute
-
     return None
 
 
-def find_usage_name(event: InputEvent, hid_usage_id: int) -> str | None:
+def find_usage_name(event: KeyEvent, hid_usage_id: int) -> str | None:
     code_type = get_hid_code_type(event)
-
     for attribute in _cached_dir(code_type):
         if _cached_getattr(code_type, attribute) == hid_usage_id:
             return attribute
-
     return None
 
 
@@ -510,66 +499,30 @@ def _cached_dir(
 
 
 def get_hid_code_type(
-    event: InputEvent,
+    event: KeyEvent,
 ) -> type[ConsumerControlCode] | type[Keycode] | type[MouseButton]:
     if is_consumer_key(event):
         return ConsumerControlCode
     elif is_mouse_button(event):
         return MouseButton
-    else:
-        return Keycode
+    return Keycode
 
 
-def get_output_device(
-    event: InputEvent, device_link: DeviceLink
-) -> ConsumerControl | Keyboard | Mouse | DummyGadget | None:
-    output_device = None
-
-    if is_consumer_key(event):
-        output_device = device_link.consumer_gadget
-    elif is_mouse_button(event):
-        output_device = device_link.mouse_gadget
-    else:
-        output_device = device_link.keyboard_gadget
-
-    if output_device is None:
-        _logger.debug("Output device not available!")
-
-    return output_device
+def is_mouse_button(event: KeyEvent) -> bool:
+    return event.scancode in _MOUSE_BUTTONS
 
 
-def is_mouse_button(event: InputEvent) -> bool:
-    return event.code in _MOUSE_BUTTONS
+def is_consumer_key(event: KeyEvent) -> bool:
+    return event.scancode in _CONSUMER_KEYS
 
 
-def is_consumer_key(event: InputEvent) -> bool:
-    return event.code in _CONSUMER_KEYS
-
-
-def is_key_event(event: InputEvent) -> bool:
-    return event.type == ecodes.EV_KEY
-
-
-def is_key_up(event: InputEvent) -> bool:
-    return is_key_event(event) and event.value == KeyEvent.key_up
-
-
-def is_key_down(event: InputEvent) -> bool:
-    return is_key_event(event) and event.value == KeyEvent.key_down
-
-
-def is_mouse_movement(event: InputEvent) -> bool:
-    return event.type == ecodes.EV_REL
-
-
-def get_mouse_movement(event: InputEvent) -> tuple[int, int, int]:
+def get_mouse_movement(event: RelEvent) -> tuple[int, int, int]:
+    input_event: InputEvent = event.event
     x, y, mwheel = 0, 0, 0
-
-    if event.code == ecodes.REL_X:
-        x = event.value
-    elif event.code == ecodes.REL_Y:
-        y = event.value
-    elif event.code == ecodes.REL_WHEEL:
-        mwheel = event.value
-
+    if input_event.code == ecodes.REL_X:
+        x = input_event.value
+    elif input_event.code == ecodes.REL_Y:
+        y = input_event.value
+    elif input_event.code == ecodes.REL_WHEEL:
+        mwheel = input_event.value
     return x, y, mwheel
