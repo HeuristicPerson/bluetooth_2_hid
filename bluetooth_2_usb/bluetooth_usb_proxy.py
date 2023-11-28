@@ -58,7 +58,7 @@ class BluetoothUsbProxy:
         self._disconnect_input_device()
         await self._async_wait_for_device(delay_seconds)
         await self._async_init_device(delay_seconds)
-        _logger.info(f"Successfully connected to {self}.")
+        _logger.info(f"Successfully connected to {repr(self)}.")
 
     async def _async_wait_for_device(self, delay_seconds: float = 1) -> None:
         last_log_time = datetime.now()
