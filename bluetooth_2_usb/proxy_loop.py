@@ -18,12 +18,10 @@ class ProxyLoop:
     """
 
     def __init__(self, device_paths: list[str] = None) -> None:
-        # We have to use BOOT_MOUSE since somehow MOUSE freezes on any input.
-        # This should be fine though. Also it's important to enable mouse first.
         usb_hid.enable(
             [
                 Device.MOUSE,
-                Device.BOOT_KEYBOARD,
+                Device.KEYBOARD,
                 Device.CONSUMER_CONTROL,
             ]
         )
