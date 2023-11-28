@@ -22,8 +22,8 @@ _logger = get_logger()
 class BluetoothUsbProxy:
     def __init__(self, input_device_path: str):
         self._input_device = None
-        self._input_device_name = None
-        self._input_device_path = input_device_path
+        self._input_name = None
+        self._input_path = input_device_path
         self._disconnect_input_device()
         self._keyboard_gadget = Keyboard(usb_hid.devices)
         self._mouse_gadget = Mouse(usb_hid.devices)
@@ -34,25 +34,25 @@ class BluetoothUsbProxy:
         return self._input_device
 
     @property
-    def name(self) -> str:
-        return self._input_device_name
+    def input_name(self) -> str:
+        return self._input_name if self._input_name else self._input_path
 
     @property
-    def input_device_path(self) -> str:
-        return self._input_device_path
+    def input_path(self) -> str:
+        return self._input_path
 
     def __str__(self):
-        return self.name
+        return self.input_name
 
     def __repr__(self):
         return str(self.input_device)
 
     def _disconnect_input_device(self):
         self._input_device = None
-        self._input_device_name = f"{self.input_device_path} (disconnected)"
+        self._input_name = None
 
     def is_ready(self) -> bool:
-        return self.input_device_path in list_devices()
+        return self.input_path in list_devices()
 
     async def async_wait_connect(self, delay_seconds: float = 1) -> None:
         self._disconnect_input_device()
@@ -71,8 +71,8 @@ class BluetoothUsbProxy:
     async def _async_init_device(self, delay_seconds: float = 1) -> None:
         while True:
             try:
-                self._input_device = InputDevice(self.input_device_path)
-                self._input_device_name = self.input_device.name
+                self._input_device = InputDevice(self.input_path)
+                self._input_name = self.input_device.name
                 break
             except Exception:
                 _logger.exception(f"Error initializing input device {self}")
@@ -85,9 +85,9 @@ class BluetoothUsbProxy:
     async def _async_relay_single_event(self, event: InputEvent) -> None:
         categorized_event = categorize(event)
         _logger.debug(f"Received event: [{categorized_event}]")
-        if categorized_event is KeyEvent:
+        if isinstance(categorized_event, KeyEvent):
             await self._async_send_key(categorized_event)
-        elif categorized_event is RelEvent:
+        elif isinstance(categorized_event, RelEvent):
             await self._async_move_mouse(categorized_event)
 
     async def _async_send_key(self, event: KeyEvent) -> None:

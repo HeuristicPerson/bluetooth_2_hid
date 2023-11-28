@@ -38,7 +38,7 @@ class ProxyLoop:
 
     async def _async_create_task(self, proxy: BluetoothUsbProxy) -> None:
         self._task_group.create_task(
-            self._async_relay_events(proxy), name=proxy.input_device_path
+            self._async_relay_events(proxy), name=proxy.input_path
         )
         _logger.debug(f"Connected proxy: {proxy}")
 
@@ -63,7 +63,7 @@ class ProxyLoop:
     async def _async_cancel_task(
         self, proxy: BluetoothUsbProxy, reconnect: bool = False
     ) -> None:
-        task = _get_task(proxy.input_device_path)
+        task = _get_task(proxy.input_path)
         if task:
             task.cancel()
         if reconnect:
