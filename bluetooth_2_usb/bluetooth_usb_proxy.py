@@ -11,7 +11,7 @@ from bluetooth_2_usb.evdev_adapter import (
     get_mouse_movement,
     is_consumer_key,
     is_mouse_button,
-    to_hid_usage_id,
+    evdev_to_hid,
 )
 from bluetooth_2_usb.logging import get_logger
 
@@ -91,18 +91,20 @@ class BluetoothUsbProxy:
             await self._async_move_mouse(categorized_event)
 
     async def _async_send_key(self, event: KeyEvent) -> None:
-        hid_key = to_hid_usage_id(event)
-        if hid_key is None:
+        key_id, key_name = evdev_to_hid(event)
+        if key_id is None:
             return
         device_out = self._get_output_device(event)
         try:
-            _logger.debug(f"Sending key 0x{hid_key:02X} to {device_out}")
-            if event.keystate == KeyEvent.key_up:
-                device_out.release(hid_key)
-            elif event.keystate == KeyEvent.key_down:
-                device_out.press(hid_key)
+            if event.keystate == KeyEvent.key_down:
+                _logger.debug(f"Pressing {key_name} (0x{key_id:02X}) on {device_out}")
+                device_out.press(key_id)
+            elif event.keystate == KeyEvent.key_up:
+                _logger.debug(f"Releasing {key_name} (0x{key_id:02X}) on {device_out}")
+                device_out.release(key_id)
+
         except Exception:
-            _logger.exception(f"Failed sending 0x{hid_key:02X} to {device_out}")
+            _logger.exception(f"Failed sending 0x{key_id:02X} to {device_out}")
 
     def _get_output_device(self, event: KeyEvent) -> ConsumerControl | Keyboard | Mouse:
         if is_consumer_key(event):

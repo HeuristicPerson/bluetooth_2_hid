@@ -441,7 +441,7 @@ _CONSUMER_KEYS = set(
         ecodes.KEY_SCALE,
     )
 )
-"""evdev ecodes that are mapped to HID UsageIDs from consumer page (0x0C)"""
+"""evdev scancodes that are mapped to USB HUT (HID Uage Table) UsageIDs from consumer page (0x0C)"""
 
 
 _MOUSE_BUTTONS = set(
@@ -454,18 +454,18 @@ _MOUSE_BUTTONS = set(
 """Mouse button ecodes"""
 
 
-def to_hid_usage_id(event: KeyEvent) -> int | None:
+def evdev_to_hid(event: KeyEvent) -> int | None:
     scancode: int = event.scancode
     hid_usage_id = _EVDEV_TO_HID.get(scancode, None)
     key_name = find_key_name(event)
     hid_usage_name = find_usage_name(event, hid_usage_id)
     if hid_usage_id is None:
-        _logger.debug(f"Unsupported key pressed: 0x{scancode:02X} ({key_name})")
+        _logger.debug(f"Unsupported key pressed: 0x{scancode:02X}")
     else:
         _logger.debug(
-            f"Converted evdev ecode 0x{scancode:02X} ({key_name}) to HID UsageID 0x{hid_usage_id:02X} ({hid_usage_name})"
+            f"Converted evdev scancode 0x{scancode:02X} ({key_name}) to HID UsageID 0x{hid_usage_id:02X} ({hid_usage_name})"
         )
-    return hid_usage_id
+    return hid_usage_id, hid_usage_name
 
 
 def find_key_name(event: KeyEvent) -> str | None:
