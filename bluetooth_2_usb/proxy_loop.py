@@ -23,7 +23,6 @@ class ProxyLoop:
         usb_hid.enable([Device.BOOT_MOUSE, Device.KEYBOARD, Device.CONSUMER_CONTROL])
         _logger.debug(f"Available output devices: {usb_hid.devices}")
         self._bluetooth_proxies = [BluetoothUsbProxy(path) for path in device_paths]
-        _logger.debug(f"Registered input devices: {self._bluetooth_proxies}")
         self._task_group: TaskGroup
 
     async def async_relay_bluetooth_to_usb(self) -> NoReturn:
