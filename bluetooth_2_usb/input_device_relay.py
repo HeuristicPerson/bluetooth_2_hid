@@ -61,7 +61,7 @@ class InputDeviceRelay:
         _logger.info(f"Successfully connected to {repr(self)}")
 
     async def async_wait_for_device(
-        self, log_interval_seconds: float, delay_seconds: float
+        self, log_interval_seconds: float = 60, delay_seconds: float = 1
     ) -> None:
         self._reset_input_device()
         last_log_time = datetime.now() - timedelta(seconds=log_interval_seconds)
