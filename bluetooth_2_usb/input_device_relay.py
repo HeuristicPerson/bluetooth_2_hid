@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.keyboard import Keyboard
@@ -19,12 +19,11 @@ from bluetooth_2_usb.logging import get_logger
 _logger = get_logger()
 
 
-class BluetoothUsbProxy:
+class InputDeviceRelay:
     def __init__(self, input_device_path: str):
         self._input_device = None
         self._input_name = None
         self._input_path = input_device_path
-        self._disconnect_input_device()
         self._keyboard_gadget = Keyboard(usb_hid.devices)
         self._mouse_gadget = Mouse(usb_hid.devices)
         self._consumer_gadget = ConsumerControl(usb_hid.devices)
@@ -54,28 +53,37 @@ class BluetoothUsbProxy:
     def is_ready(self) -> bool:
         return self.input_path in list_devices()
 
-    async def async_wait_connect(self, delay_seconds: float = 1) -> None:
+    async def async_wait_connect(
+        self, log_interval_seconds: float = 60, delay_seconds: float = 1
+    ) -> None:
         self._disconnect_input_device()
-        await self._async_wait_for_device(delay_seconds)
+        await self._async_wait_for_device(log_interval_seconds, delay_seconds)
         await self._async_init_device(delay_seconds)
-        _logger.info(f"Successfully connected to {repr(self)}.")
+        _logger.info(f"Successfully connected to {repr(self)}")
 
-    async def _async_wait_for_device(self, delay_seconds: float = 1) -> None:
-        last_log_time = datetime.now()
+    async def _async_wait_for_device(
+        self, log_interval_seconds: float, delay_seconds: float
+    ) -> None:
+        last_log_time = datetime.now() - timedelta(seconds=log_interval_seconds)
         while not self.is_ready():
-            if _elapsed_seconds_since(last_log_time) >= 10:
+            if _elapsed_seconds_since(last_log_time) >= log_interval_seconds:
                 _logger.debug(f"Waiting for input device {self}...")
                 last_log_time = datetime.now()
             await asyncio.sleep(delay_seconds)
 
-    async def _async_init_device(self, delay_seconds: float = 1) -> None:
+    async def _async_init_device(
+        self, delay_seconds: float, max_tries: int = 3
+    ) -> None:
+        tries = 0
         while True:
             try:
                 self._input_device = InputDevice(self.input_path)
                 self._input_name = self.input_device.name
                 break
             except Exception:
-                _logger.exception(f"Error initializing input device {self}")
+                tries += 1
+                if tries >= max_tries:
+                    raise
                 await asyncio.sleep(delay_seconds)
 
     async def async_relay_events_loop(self):

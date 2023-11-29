@@ -14,8 +14,8 @@ from evdev import InputDevice, list_devices
 from usb_hid import unregister_disable
 
 from bluetooth_2_usb.args import parse_args
-from bluetooth_2_usb.proxy_loop import ProxyLoop
 from bluetooth_2_usb.logging import add_file_handler, get_logger
+from bluetooth_2_usb.relay_controller import RelayController
 
 
 _logger = get_logger()
@@ -56,14 +56,16 @@ async def _main() -> NoReturn:
     _logger.debug(log_handlers_message)
     _logger.info(f"Launching {_VERSIONED_NAME}")
 
-    proxy = ProxyLoop(args.input_devices)
-    await proxy.async_relay_bluetooth_to_usb()
+    relay_controller = RelayController(args.input_devices)
+    await relay_controller.async_relay_all_devices()
 
 
 def _list_devices():
     devices = [InputDevice(path) for path in list_devices()]
     for device in devices:
-        print(f"{device.name}\t{device.phys}\t{device.path}")
+        print(
+            f"{device.name}\t{device.uniq if device.uniq else device.phys}\t{device.path}"
+        )
     _exit_safely()
 
 
