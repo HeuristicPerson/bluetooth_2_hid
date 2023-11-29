@@ -33,11 +33,16 @@
 
 ## 1. Introduction
 
-Convert a Raspberry Pi into a HID proxy that relays Bluetooth keyboard and mouse input to USB. Minimal configuration. Zero hassle.
+Convert a Raspberry Pi into a HID relay that translates Bluetooth keyboard and mouse input to USB. Minimal configuration. Zero hassle.
 
-The issue with Bluetooth devices is that you usually can't use them to wake up sleeping devices, access the BIOS or OS select menu (GRUB). Some devices don't even have a (working) Bluetooth interface.  
+The issue with Bluetooth devices is that you usually can't use them to:
+- wake up sleeping devices, 
+- access the BIOS or OS select menu (e.g., GRUB),
+- access devices without Bluetooth interface (e.g., devices in a restricted environment or most KVM switches).
 
 Sounds familiar? Congratulations! **You just found the solution!**
+
+Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Device). Essentially, for the host it appears like a regular USB keyboard or mouse. 
 
 ## 2. Features
 
@@ -78,7 +83,7 @@ Follow these steps to install and configure the project:
 3. (*optional*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
 
 > [!NOTE]
-> These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
+> These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options) (recommended), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
    
 4. Connect to the Pi and make sure `git` is installed:
    
@@ -150,7 +155,7 @@ Follow these steps to install and configure the project:
 > `Ctrl + S` > `Ctrl + X` to save and exit nano
 
 
-11.  Reload and restart service:
+11. Reload and restart service:
   
     ```console
     sudo systemctl daemon-reload && sudo service bluetooth_2_usb restart
