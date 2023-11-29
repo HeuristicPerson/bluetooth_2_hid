@@ -48,7 +48,9 @@ user_lang=$LANG
 export LANG=C
 
 # Fetch the latest changes from the remote
-fetch_output=$( { git fetch ${remote_name} || colored_output "${RED}" "Failed fetching changes from ${remote_name}." ; } | tee /dev/tty )
+{ git fetch ${remote_name} || colored_output "${RED}" "Failed fetching changes from ${remote_name}." ; } | tee .tmpfile
+fetch_output=$(<.tmpfile)
+rm .tmpfile
 
 export LANG=${user_lang}
 
@@ -66,12 +68,9 @@ git stash pop --index || abort_update "Failed applying local changes from stash.
 
 # Check if there are changes in any submodule 
 if echo "${fetch_output}" | grep -q "Fetching submodule"; then
-
   colored_output "${GREEN}" "Updating submodules..."
-
   git submodule update --init --recursive || abort_update "Failed updating submodules."
   venv/bin/pip3.11 install submodules/* || abort_update "Failed installing submodules."
-
 fi
 
 colored_output "${GREEN}" "Restarting service..."
