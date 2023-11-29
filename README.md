@@ -173,19 +173,19 @@ Follow these steps to install and configure the project:
     user@pi0w:~ $ service bluetooth_2_usb status
     ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
         Loaded: loaded (/etc/systemd/system/bluetooth_2_usb.service; enabled; preset: enabled)
-        Active: active (running) since Tue 2023-11-28 18:13:58 CET; 6min ago
-      Main PID: 444 (bluetooth_2_usb)
+        Active: active (running) since Wed 2023-11-29 20:19:21 CET; 20s ago
+      Main PID: 944 (bluetooth_2_usb)
           Tasks: 1 (limit: 389)
-            CPU: 2.308s
+            CPU: 1.835s
         CGroup: /system.slice/bluetooth_2_usb.service
-                └─444 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
+                └─944 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
 
-    Nov 28 18:13:58 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
-    Nov 28 18:14:03 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:03 [INFO] Launching Bluetooth 2 USB v0.5.0
-    Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event1
-    Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event2
-    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6".
-    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6".
+    Nov 29 20:19:21 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
+    Nov 29 20:19:22 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:22 [INFO] Launching Bluetooth 2 USB v0.5.1
+    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Relaying device /dev/input/event1
+    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
+    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Relaying device /dev/input/event2
+    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
     ```
 
 > [!NOTE]
@@ -384,39 +384,31 @@ Here's a few things you could try:
   
   ```console
   user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event1,/dev/input/event2 -d ; sudo service bluetooth_2_usb start
-  23-11-28 18:23:29 [DEBUG] CLI args: Namespace(input_devices=['/dev/input/event1', '/dev/input/event2'], debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
-  23-11-28 18:23:29 [DEBUG] Logging to stdout
-  23-11-28 18:23:29 [INFO] Launching Bluetooth 2 USB v0.5.0
-  23-11-28 18:23:29 [DEBUG] Available output devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
-  23-11-28 18:23:35 [DEBUG] Current tasks: {<Task pending name='/dev/input/event2' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='/dev/input/event1' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb:60> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>}
-  23-11-28 18:23:35 [INFO] Starting proxy loop for /dev/input/event1
-  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6".
-  23-11-28 18:23:35 [INFO] Starting proxy loop for /dev/input/event2
-  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6".
-  23-11-28 18:23:50 [DEBUG] Received event: [event at 1701192230.741609, code 04, type 04, val 458756]
-  23-11-28 18:23:50 [DEBUG] Received event: [key event at 1701192230.741609, 30 (KEY_A), down]
-  23-11-28 18:23:50 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
-  23-11-28 18:23:50 [DEBUG] Pressing A (0x04) on /dev/hidg1
-  23-11-28 18:23:50 [DEBUG] Received event: [synchronization event at 1701192230.741609, SYN_REPORT]
-  23-11-28 18:23:50 [DEBUG] Received event: [event at 1701192230.748780, code 04, type 04, val 458756]
-  23-11-28 18:23:50 [DEBUG] Received event: [key event at 1701192230.748780, 30 (KEY_A), up]
-  23-11-28 18:23:50 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
-  23-11-28 18:23:50 [DEBUG] Releasing A (0x04) on /dev/hidg1
-  23-11-28 18:23:50 [DEBUG] Received event: [synchronization event at 1701192230.748780, SYN_REPORT]
-  23-11-28 18:24:00 [DEBUG] Received event: [event at 1701192240.589019, code 04, type 04, val 786666]
-  23-11-28 18:24:00 [DEBUG] Received event: [key event at 1701192240.589019, 114 (KEY_VOLUMEDOWN), down]
-  23-11-28 18:24:00 [DEBUG] Converted evdev scancode 0x72 (KEY_VOLUMEDOWN) to HID UsageID 0xEA (VOLUME_DECREMENT)
-  23-11-28 18:24:00 [DEBUG] Pressing VOLUME_DECREMENT (0xEA) on /dev/hidg2
-  23-11-28 18:24:00 [DEBUG] Received event: [synchronization event at 1701192240.589019, SYN_REPORT]
-  23-11-28 18:24:00 [DEBUG] Received event: [event at 1701192240.598955, code 04, type 04, val 786666]
-  23-11-28 18:24:00 [DEBUG] Received event: [key event at 1701192240.598955, 114 (KEY_VOLUMEDOWN), up]
-  23-11-28 18:24:00 [DEBUG] Converted evdev scancode 0x72 (KEY_VOLUMEDOWN) to HID UsageID 0xEA (VOLUME_DECREMENT)
-  23-11-28 18:24:00 [DEBUG] Releasing VOLUME_DECREMENT (0xEA) on /dev/hidg2
-  23-11-28 18:24:00 [DEBUG] Received event: [synchronization event at 1701192240.598955, SYN_REPORT]
-  23-11-28 18:24:02 [DEBUG] Received event: [relative axis event at 1701192242.490280, REL_X]
-  23-11-28 18:24:02 [DEBUG] Moving mouse /dev/hidg0 (x=-125, y=0, mwheel=0)
-  23-11-28 18:24:02 [DEBUG] Received event: [synchronization event at 1701192242.490280, SYN_REPORT]
-
+  23-11-29 21:21:09 [DEBUG] CLI args: Namespace(input_devices=['/dev/input/event1', '/dev/input/event2'], debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
+  23-11-29 21:21:09 [DEBUG] Logging to stdout
+  23-11-29 21:21:09 [INFO] Launching Bluetooth 2 USB v0.5.1
+  23-11-29 21:21:09 [DEBUG] Available output devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
+  23-11-29 21:21:15 [DEBUG] Current tasks: {<Task pending name='/dev/input/event2' coro=<RelayController._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/relay_controller.py:47> cb=[TaskGroup._on_task_done()]>, <Task pending name='/dev/input/event1' coro=<RelayController._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/relay_controller.py:47> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb:60> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>}
+  23-11-29 21:21:15 [INFO] Relaying device /dev/input/event1
+  23-11-29 21:21:15 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
+  23-11-29 21:21:15 [INFO] Relaying device /dev/input/event2
+  23-11-29 21:21:15 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
+  23-11-29 21:21:32 [DEBUG] Received event: [event at 1701289292.963659, code 04, type 04, val 458756]
+  23-11-29 21:21:32 [DEBUG] Received event: [key event at 1701289292.963659, 30 (KEY_A), down]
+  23-11-29 21:21:32 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-11-29 21:21:32 [DEBUG] Pressing A (0x04) on /dev/hidg1
+  23-11-29 21:21:32 [DEBUG] Received event: [synchronization event at 1701289292.963659, SYN_REPORT]
+  23-11-29 21:21:33 [DEBUG] Received event: [event at 1701289293.012191, code 04, type 04, val 458756]a
+  23-11-29 21:21:33 [DEBUG] Received event: [key event at 1701289293.012191, 30 (KEY_A), up]
+  23-11-29 21:21:33 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-11-29 21:21:33 [DEBUG] Releasing A (0x04) on /dev/hidg1
+  23-11-29 21:21:33 [DEBUG] Received event: [synchronization event at 1701289293.012191, SYN_REPORT]
+  23-11-29 21:21:52 [DEBUG] Received event: [relative axis event at 1701289312.560711, REL_X]
+  23-11-29 21:21:52 [DEBUG] Moving mouse /dev/hidg0 (x=125, y=0, mwheel=0)
+  23-11-29 21:21:52 [DEBUG] Received event: [synchronization event at 1701289312.560711, SYN_REPORT]
+  23-11-29 21:22:18 [INFO] Exiting gracefully. Received signal: 2, frame: <frame at 0xb5f40df8, file '/usr/lib/python3.11/selectors.py', line 468, code select>
+  23-11-29 21:22:18 [CRITICAL] AceRK Mouse received a cancellation request.
+  23-11-29 21:22:18 [CRITICAL] AceRK Keyboard received a cancellation request.
   ``` 
 
 - Still not resolved? Double-check the [installation instructions](#4-installation)
