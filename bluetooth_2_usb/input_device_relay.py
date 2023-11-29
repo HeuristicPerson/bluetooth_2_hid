@@ -46,7 +46,7 @@ class InputDeviceRelay:
     def __repr__(self):
         return str(self.input_device)
 
-    def _disconnect_input_device(self):
+    def _reset_input_device(self):
         self._input_device = None
         self._input_name = None
 
@@ -56,14 +56,14 @@ class InputDeviceRelay:
     async def async_wait_connect(
         self, log_interval_seconds: float = 60, delay_seconds: float = 1
     ) -> None:
-        self._disconnect_input_device()
-        await self._async_wait_for_device(log_interval_seconds, delay_seconds)
+        await self.async_wait_for_device(log_interval_seconds, delay_seconds)
         await self._async_init_device(delay_seconds)
         _logger.info(f"Successfully connected to {repr(self)}")
 
-    async def _async_wait_for_device(
-        self, log_interval_seconds: float, delay_seconds: float
+    async def async_wait_for_device(
+        self, log_interval_seconds: float = 60, delay_seconds: float = 1
     ) -> None:
+        self._reset_input_device()
         last_log_time = datetime.now() - timedelta(seconds=log_interval_seconds)
         while not self.is_ready():
             if _elapsed_seconds_since(last_log_time) >= log_interval_seconds:
