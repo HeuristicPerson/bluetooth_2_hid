@@ -133,8 +133,8 @@ Follow these steps to install and configure the project:
 
     ```console
     user@pi0w:~ $ bluetooth_2_usb -l
-    AceRK Mouse     0a:1b:2c:3d:4e:5f  /dev/input/event2  <---
-    AceRK Keyboard  0a:1b:2c:3d:4e:5f  /dev/input/event1  <---
+    AceRK Mouse     a1:b2:c3:d4:e5:f6  /dev/input/event2  <---
+    AceRK Keyboard  a1:b2:c3:d4:e5:f6  /dev/input/event1  <---
     vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
     ```
 
@@ -179,8 +179,8 @@ Follow these steps to install and configure the project:
     Nov 28 18:14:03 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:03 [INFO] Launching Bluetooth 2 USB v0.5.0
     Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event1
     Nov 28 18:14:09 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:09 [INFO] Starting proxy loop for /dev/input/event2
-    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f".
-    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f".
+    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6".
+    Nov 28 18:14:25 pi0w bluetooth_2_usb[444]: 23-11-28 18:14:25 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6".
     ```
 
 > [!NOTE]
@@ -385,9 +385,9 @@ Here's a few things you could try:
   23-11-28 18:23:29 [DEBUG] Available output devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
   23-11-28 18:23:35 [DEBUG] Current tasks: {<Task pending name='/dev/input/event2' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='/dev/input/event1' coro=<ProxyLoop._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/proxy_loop.py:43> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb:60> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>}
   23-11-28 18:23:35 [INFO] Starting proxy loop for /dev/input/event1
-  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "0a:1b:2c:3d:4e:5f".
+  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6".
   23-11-28 18:23:35 [INFO] Starting proxy loop for /dev/input/event2
-  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "0a:1b:2c:3d:4e:5f".
+  23-11-28 18:23:35 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6".
   23-11-28 18:23:50 [DEBUG] Received event: [event at 1701192230.741609, code 04, type 04, val 458756]
   23-11-28 18:23:50 [DEBUG] Received event: [key event at 1701192230.741609, 30 (KEY_A), down]
   23-11-28 18:23:50 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
