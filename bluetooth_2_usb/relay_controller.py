@@ -51,8 +51,8 @@ class RelayController:
             await relay.async_wait_connect()
             await relay.async_relay_events_loop()
         except (OSError, FileNotFoundError) as ex:
-            _logger.critical(f"Reconnecting to {relay}... [{repr(ex)}]")
-            await relay.async_wait_connect()
+            _logger.critical(f"Connection to {relay} lost... [{repr(ex)}]")
+            await relay.async_wait_for_device()
         except CancelledError:
             _logger.critical(f"{relay} received a cancellation request.")
             restart_on_error = False
