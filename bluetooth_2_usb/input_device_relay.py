@@ -110,7 +110,6 @@ class InputDeviceRelay:
             elif event.keystate == KeyEvent.key_up:
                 _logger.debug(f"Releasing {key_name} (0x{key_id:02X}) on {device_out}")
                 device_out.release(key_id)
-
         except Exception:
             _logger.exception(f"Failed sending 0x{key_id:02X} to {device_out}")
 
@@ -124,8 +123,8 @@ class InputDeviceRelay:
     async def _async_move_mouse(self, event: RelEvent) -> None:
         x, y, mwheel = get_mouse_movement(event)
         coordinates = f"(x={x}, y={y}, mwheel={mwheel})"
-        _logger.debug(f"Moving mouse {self._mouse_gadget} {coordinates}")
         try:
+            _logger.debug(f"Moving mouse {self._mouse_gadget} {coordinates}")
             self._mouse_gadget.move(x, y, mwheel)
         except Exception:
             _logger.exception(f"Failed moving mouse {self._mouse_gadget} {coordinates}")

@@ -33,21 +33,21 @@ class RelayController:
         try:
             async with TaskGroup() as self._task_group:
                 for relay in self._device_relays:
-                    await self._async_create_task(relay)
+                    self._create_task(relay)
                 _logger.debug(f"Current tasks: {asyncio.all_tasks()}")
             _logger.critical("Event loop closed.")
         except* Exception as ex:
             _logger.error(f"Error(s) in TaskGroup: [{ex.exceptions}]")
 
-    async def _async_create_task(self, relay: InputDeviceRelay) -> None:
+    def _create_task(self, relay: InputDeviceRelay) -> None:
         self._task_group.create_task(
             self._async_relay_events(relay), name=relay.input_path
         )
 
     async def _async_relay_events(self, relay: InputDeviceRelay) -> None:
-        _logger.info(f"Relaying device {relay}")
         restart_on_error = True
         try:
+            _logger.info(f"Relaying device {relay}")
             await relay.async_wait_connect()
             await relay.async_relay_events_loop()
         except (OSError, FileNotFoundError) as ex:
@@ -60,16 +60,16 @@ class RelayController:
             _logger.exception(f"{relay} failed! Restarting task...")
             await asyncio.sleep(5)
         finally:
-            await self._async_cancel_task(relay, restart_on_error)
+            self._cancel_task(relay, restart_on_error)
 
-    async def _async_cancel_task(
+    async def _cancel_task(
         self, relay: InputDeviceRelay, restart: bool = False
     ) -> None:
         task = _get_task(relay.input_path)
         if task:
             task.cancel()
         if restart:
-            await self._async_create_task(relay)
+            self._create_task(relay)
 
 
 def _get_task(task_name: str) -> Task | None:
