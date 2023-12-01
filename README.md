@@ -42,13 +42,13 @@ The issue with Bluetooth devices is that you usually can't use them to:
 
 Sounds familiar? Congratulations! **You just found the solution!**
 
-Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Device). Essentially, for the host it appears like a regular USB keyboard or mouse. 
+Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Device). Therefore, from the host's perspective, it appears like a regular USB keyboard or mouse. 
 
 ## 2. Features
 
 - Simple installation and highly automated setup 
 - Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
-- Supports [146 multimedia keys](https://github.com/quaxalber/bluetooth_2_usb/blob/8b1c5f8097bbdedfe4cef46e07686a1059ea2979/lib/evdev_adapter.py#L142) (e.g. mute, volume up/down, launch browser, etc.)
+- Supports [146 multimedia keys](https://github.com/quaxalber/bluetooth_2_usb/blob/8b1c5f8097bbdedfe4cef46e07686a1059ea2979/lib/evdev_adapter.py#L142) (e.g., mute, volume up/down, launch browser, etc.)
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
 - Installation as a systemd service
@@ -68,7 +68,7 @@ Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Dev
 > Raspberry Pi 3 Models feature Bluetooth 4.2 but no native USB gadget mode support. Earlier models like Raspberry Pi 1 and 2 do not support Bluetooth natively and have no USB gadget mode support.
 
 > [!NOTE]
-> The latest version of Raspberry Pi OS, based on Debian Bookworm, supports Python 3.11 through the official package repositories. For older versions, you may [build it from source](https://github.com/quaxalber/bluetooth_2_usb/blob/main/scripts/build_python_3.11.sh). 
+> The latest version of Raspberry Pi OS, based on Debian Bookworm, supports Python 3.11 through the official package repositories. For older versions, you may [build it from source](https://github.com/quaxalber/bluetooth_2_usb/blob/main/scripts/build_python_3.11.sh). Note that building may take anything between a few minutes (Pi 4B) and more than an hour (Pi 0W).
 
 ## 4. Installation
 
@@ -76,11 +76,11 @@ Follow these steps to install and configure the project:
 
 ### 4.1. Prerequisites 
 
-1. Install an OS on your Raspberry Pi (e.g. using [Pi Imager](https://youtu.be/ntaXWS8Lk34))
+1. Install an OS on your Raspberry Pi (e.g., using [Pi Imager](https://youtu.be/ntaXWS8Lk34))
    
 2. Connect to a network via Ethernet cable or [Wi-Fi](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). Make sure this network has Internet access.
    
-3. (*optional*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
+3. (*optional, recommended*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
 
 > [!NOTE]
 > These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options) (recommended), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
@@ -101,8 +101,9 @@ Follow these steps to install and configure the project:
    ... wait for your devices to show up and note their MAC addresses (you may also type the first characters and hit `TAB` for auto-completion in the following commands) ...
 
    ```console
-   pair A1:B2:C3:D4:E5:F6
    trust A1:B2:C3:D4:E5:F6
+   pair A1:B2:C3:D4:E5:F6
+   connect A1:B2:C3:D4:E5:F6
    ```
 
 > [!NOTE]
@@ -204,7 +205,7 @@ Connect the _USB-C power port_ of your Pi via cable with a USB port on your targ
 
 #### 5.1.2. Raspberry Pi Zero (2) W(H)
 
-For the Pi0's, the situation is quite the opposite: Do _not_ use the power port to connect to the target device, _use_ the other port instead (typically labeled "DATA" or "USB"). The power port is solely used for power supply. 
+For the Pi Zero, the situation is quite the opposite: Do _not_ use the power port to connect to the target device, _use_ the other port instead (typically labeled "DATA" or "USB"). You may connect the power port to a stable power supply. 
 
 ### 5.2. Command-line arguments
 
@@ -264,7 +265,7 @@ This is likely due to the limited power the Pi can draw from the host's USB port
   
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
   
-- Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) and draw power from a dedicated power supply. This should ultimately resolve any power-related issues, and your Pi will no longer be dependent on the host's power supply. 
+- For Pi 4B: Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) and draw power from a dedicated power supply. This should ultimately resolve any power-related issues, and your Pi 4B will no longer be dependent on the host's power supply. 
   
 > [!NOTE]
 > The Pi Zero is recommended to have a 1.2 A power supply for stable operation, the Pi Zero 2 requires 2.0 A and the Pi 4B even 3.0 A, while hosts may typically only supply up to 0.5/0.9 A through USB-A 2.0/3.0 ports. However, this may be sufficient depending on your specific soft- and hardware configuration. For more information see the [Raspberry Pi documentation](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply). 
@@ -343,8 +344,9 @@ power on
 block A1:B2:C3:D4:E5:F6
 remove A1:B2:C3:D4:E5:F6
 scan on
-pair A1:B2:C3:D4:E5:F6
 trust A1:B2:C3:D4:E5:F6
+pair A1:B2:C3:D4:E5:F6
+connect A1:B2:C3:D4:E5:F6
 ```
 
 If the issue persists, it's worth trying to delete the cache:
@@ -371,7 +373,7 @@ Here's a few things you could try:
 - You may also query the journal to inspect the service logs in real-time:
   
   ```console
-  journalctl -u bluetooth_2_usb.service -n 30 -f
+  journalctl -u bluetooth_2_usb.service -n 50 -f
   ```
 
 - For easier degguging, you may temporarily stop the service and run the script manually, modifying arguments as required, e.g., increase log verbosity by appending `-d`:
