@@ -19,7 +19,7 @@ from bluetooth_2_usb.relay_controller import RelayController
 
 
 _logger = get_logger()
-_VERSION = "0.5.1"
+_VERSION = "0.5.2"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
 
 
@@ -39,19 +39,17 @@ async def _main() -> NoReturn:
     gadget device.
     """
     args = parse_args()
-
+    if args.debug:
+        _logger.setLevel(DEBUG)
     if args.version:
         _print_version()
     if args.list_devices:
         _list_devices()
-    if args.debug:
-        _logger.setLevel(DEBUG)
 
     log_handlers_message = "Logging to stdout"
     if args.log_to_file:
         add_file_handler(args.log_path)
         log_handlers_message += f" and to {args.log_path}"
-
     _logger.debug(f"CLI args: {args}")
     _logger.debug(log_handlers_message)
     _logger.info(f"Launching {_VERSIONED_NAME}")
@@ -62,10 +60,8 @@ async def _main() -> NoReturn:
 
 def _list_devices():
     devices = [InputDevice(path) for path in list_devices()]
-    for device in devices:
-        print(
-            f"{device.name}\t{device.uniq if device.uniq else device.phys}\t{device.path}"
-        )
+    for dev in devices:
+        print(f"{dev.name}\t{dev.uniq if dev.uniq else dev.phys}\t{dev.path}")
     _exit_safely()
 
 
