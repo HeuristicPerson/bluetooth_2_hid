@@ -198,7 +198,7 @@ class RelayController:
         return self._is_auto_discoverable(device) or self._matches_identifier(device)
 
     def _is_auto_discoverable(self, device: InputDevice) -> bool:
-        return self._auto_discover and not "vc4-hdmi-" in device.name
+        return self._auto_discover and not "vc4-hdmi" in device.name
 
     def _matches_identifier(self, device: InputDevice) -> bool:
         return any(id.matches(device) for id in self._device_identifiers)
@@ -220,10 +220,10 @@ class RelayController:
         except CancelledError:
             _logger.critical(f"{device} received a cancellation request.")
         except (OSError, FileNotFoundError) as ex:
-            _logger.critical(f"Connection to {device} lost... [{repr(ex)}]")
+            _logger.critical(f"Connection lost to {device}... [{repr(ex)}]")
         except Exception:
             _logger.exception(f"{device} failed!")
-            await asyncio.sleep(5)
+            await asyncio.sleep(2)
         finally:
             self._cancel_device_task(device)
 
