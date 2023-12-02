@@ -129,40 +129,7 @@ Follow these steps to install and configure the project:
     sudo reboot
     ```  
 
-9.  Check which Linux input devices your Bluetooth devices are mapped to:
-
-    ```console
-    bluetooth_2_usb -l
-    ```
-
-    ... and note the device paths of the devices you want to use:
-
-    ```console
-    user@pi0w:~ $ bluetooth_2_usb -l
-    AceRK Mouse     a1:b2:c3:d4:e5:f6  /dev/input/event2  <---
-    AceRK Keyboard  a1:b2:c3:d4:e5:f6  /dev/input/event1  <---
-    vc4-hdmi-0      vc4-hdmi-0/input0  /dev/input/event0
-    ```
-
-10. Specify the desired input devices in `bluetooth_2_usb.service`:
-    
-    ```console
-    sudo nano ~/bluetooth_2_usb/bluetooth_2_usb.service
-    ```
-
-    ... and change `event1` and `event2` according to step **9.** 
-
-> [!NOTE]
-> `Ctrl + S` > `Ctrl + X` to save and exit nano
-
-
-11. Reload and restart service:
-  
-    ```console
-    sudo systemctl daemon-reload && sudo service bluetooth_2_usb restart
-    ```
-
-12. Verify that the service is running:
+9.  Verify that the service is running:
     
     ```console
     service bluetooth_2_usb status
@@ -172,21 +139,21 @@ Follow these steps to install and configure the project:
 
     ```console
     user@pi0w:~ $ service bluetooth_2_usb status
-    ● bluetooth_2_usb.service - Bluetooth to USB HID proxy
+    ● bluetooth_2_usb.service - Bluetooth to USB HID relay
         Loaded: loaded (/etc/systemd/system/bluetooth_2_usb.service; enabled; preset: enabled)
-        Active: active (running) since Wed 2023-11-29 20:19:21 CET; 20s ago
-      Main PID: 944 (bluetooth_2_usb)
+        Active: active (running) since Sat 2023-12-02 23:16:37 CET; 15s ago
+      Main PID: 9424 (bluetooth_2_usb)
           Tasks: 1 (limit: 389)
-            CPU: 1.835s
+            CPU: 1.891s
         CGroup: /system.slice/bluetooth_2_usb.service
-                └─944 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
+                └─9424 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --auto_discover
 
-    Nov 29 20:19:21 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
-    Nov 29 20:19:22 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:22 [INFO] Launching Bluetooth 2 USB v0.6.0
-    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Relaying device /dev/input/event1
-    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
-    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Relaying device /dev/input/event2
-    Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
+    Dec 02 23:16:37 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID relay.
+    Dec 02 23:16:39 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:39 [INFO] Launching Bluetooth 2 USB v0.6.0
+    Dec 02 23:16:39 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:39 [INFO] Discovering input devices...
+    Dec 02 23:16:42 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:42 [INFO] Relaying device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
+    Dec 02 23:16:45 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:45 [INFO] Relaying device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
+    Dec 02 23:16:48 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:48 [INFO] Relaying device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0"
     ```
 
 > [!NOTE]
@@ -213,19 +180,21 @@ Currently you can provide the following CLI arguments:
 
 ```console
 user@pi0w:~ $ bluetooth_2_usb -h
-usage: bluetooth_2_usb [-h] [--input_devices INPUT_DEVICES] [--debug] [--log_to_file] [--log_path LOG_PATH] [--version] [--list_devices]
+usage: bluetooth_2_usb [-h] [--device_ids DEVICE_IDS] [--auto_discover] [--debug] [--log_to_file] [--log_path LOG_PATH] [--version] [--list_devices]
 
-Bluetooth to USB HID proxy. Reads incoming Bluetooth mouse and keyboard events and forwards them to USB using Linux's gadget mode.
+Bluetooth to USB HID relay. Handles Bluetooth keyboard and mouse events from multiple input devices and translates them to USB using Linux's gadget mode.
 
 options:
   -h, --help            show this help message and exit
-  --input_devices INPUT_DEVICES, -i INPUT_DEVICES
-                        Comma-separated list of input device paths to be registered and connected. Default is None. Example: --input_devices /dev/input/event2,/dev/input/event3
+  --device_ids DEVICE_IDS, -i DEVICE_IDS
+                        Comma-separated list of identifiers for input devices to be relayed. An identifier is either the input device path, the MAC address or any case-insensitive substring of the device name. Default is None. Example: --device_ids '/dev/input/event2,a1:b2:c3:d4:e5:f6,0A-1B-2C-3D-4E-5F,logi'
+  --auto_discover, -a   Enable auto-discovery mode. All readable input devices will be relayed automatically.
   --debug, -d           Enable debug mode. Increases log verbosity
   --log_to_file, -f     Add a handler that logs to file additionally to stdout.
   --log_path LOG_PATH, -p LOG_PATH
                         The path of the log file. Default is /var/log/bluetooth_2_usb/bluetooth_2_usb.log.
   --version, -v         Display the version number of this software and exit.
+  --list_devices, -l    List all available input devices and exit.
 ```
 
 ### 5.3. Consuming the API from your Python code
@@ -379,38 +348,38 @@ Here's a few things you could try:
 - For easier degguging, you may temporarily stop the service and run the script manually, modifying arguments as required, e.g., increase log verbosity by appending `-d`:
 
   ```console
-  sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event1,/dev/input/event2 -d ; sudo service bluetooth_2_usb start
+  sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -ad ; sudo service bluetooth_2_usb start
   ```
 
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
   
   ```console
-  user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event1,/dev/input/event2 -d ; sudo service bluetooth_2_usb start
-  23-11-29 21:21:09 [DEBUG] CLI args: Namespace(input_devices=['/dev/input/event1', '/dev/input/event2'], debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
-  23-11-29 21:21:09 [DEBUG] Logging to stdout
-  23-11-29 21:21:09 [INFO] Launching Bluetooth 2 USB v0.6.0
-  23-11-29 21:21:09 [DEBUG] Available output devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
-  23-11-29 21:21:15 [DEBUG] Current tasks: {<Task pending name='/dev/input/event2' coro=<RelayController._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/relay_controller.py:47> cb=[TaskGroup._on_task_done()]>, <Task pending name='/dev/input/event1' coro=<RelayController._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/relay_controller.py:47> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb:60> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>}
-  23-11-29 21:21:15 [INFO] Relaying device /dev/input/event1
-  23-11-29 21:21:15 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
-  23-11-29 21:21:15 [INFO] Relaying device /dev/input/event2
-  23-11-29 21:21:15 [INFO] Successfully connected to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
-  23-11-29 21:21:32 [DEBUG] Received event: [event at 1701289292.963659, code 04, type 04, val 458756]
-  23-11-29 21:21:32 [DEBUG] Received event: [key event at 1701289292.963659, 30 (KEY_A), down]
-  23-11-29 21:21:32 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
-  23-11-29 21:21:32 [DEBUG] Pressing A (0x04) on /dev/hidg1
-  23-11-29 21:21:32 [DEBUG] Received event: [synchronization event at 1701289292.963659, SYN_REPORT]
-  23-11-29 21:21:33 [DEBUG] Received event: [event at 1701289293.012191, code 04, type 04, val 458756]a
-  23-11-29 21:21:33 [DEBUG] Received event: [key event at 1701289293.012191, 30 (KEY_A), up]
-  23-11-29 21:21:33 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
-  23-11-29 21:21:33 [DEBUG] Releasing A (0x04) on /dev/hidg1
-  23-11-29 21:21:33 [DEBUG] Received event: [synchronization event at 1701289293.012191, SYN_REPORT]
-  23-11-29 21:21:52 [DEBUG] Received event: [relative axis event at 1701289312.560711, REL_X]
-  23-11-29 21:21:52 [DEBUG] Moving mouse /dev/hidg0 (x=125, y=0, mwheel=0)
-  23-11-29 21:21:52 [DEBUG] Received event: [synchronization event at 1701289312.560711, SYN_REPORT]
-  23-11-29 21:22:18 [INFO] Exiting gracefully. Received signal: 2, frame: <frame at 0xb5f40df8, file '/usr/lib/python3.11/selectors.py', line 468, code select>
-  23-11-29 21:22:18 [CRITICAL] AceRK Mouse received a cancellation request.
-  23-11-29 21:22:18 [CRITICAL] AceRK Keyboard received a cancellation request.
+  user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -ad ; sudo service bluetooth_2_usb start
+  23-12-02 23:30:55 [DEBUG] CLI args: Namespace(device_ids=None, auto_discover=True, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
+  23-12-02 23:30:55 [DEBUG] Logging to stdout
+  23-12-02 23:30:55 [INFO] Launching Bluetooth 2 USB v0.6.0
+  23-12-02 23:30:55 [DEBUG] Available USB devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
+  23-12-02 23:30:55 [INFO] Discovering input devices...
+  23-12-02 23:30:58 [INFO] Relaying device /dev/input/event2, name "AceRK Mouse", phys "d0:f4:c6:3e:6b:cf"
+  23-12-02 23:31:01 [INFO] Relaying device /dev/input/event1, name "AceRK Keyboard", phys "d0:f4:c6:3e:6b:cf"
+  23-12-02 23:31:04 [INFO] Relaying device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0"
+  23-12-02 23:31:09 [DEBUG] Received event: [event at 1701556269.698429, code 04, type 04, val 458756]
+  23-12-02 23:31:09 [DEBUG] Received event: [key event at 1701556269.698429, 30 (KEY_A), down]
+  23-12-02 23:31:09 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-12-02 23:31:09 [DEBUG] Pressing A (0x04) on /dev/hidg1
+  23-12-02 23:31:09 [DEBUG] Received event: [synchronization event at 1701556269.698429, SYN_REPORT]
+  23-12-02 23:31:09 [DEBUG] Received event: [event at 1701556269.747164, code 04, type 04, val 458756]
+  23-12-02 23:31:09 [DEBUG] Received event: [key event at 1701556269.747164, 30 (KEY_A), up]
+  23-12-02 23:31:09 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-12-02 23:31:09 [DEBUG] Releasing A (0x04) on /dev/hidg1
+  23-12-02 23:31:09 [DEBUG] Received event: [synchronization event at 1701556269.747164, SYN_REPORT]
+  23-12-02 23:31:29 [DEBUG] Received event: [relative axis event at 1701556289.393427, REL_X]
+  23-12-02 23:31:29 [DEBUG] Moving mouse /dev/hidg0 (x=125, y=0, mwheel=0)
+  23-12-02 23:31:29 [DEBUG] Received event: [synchronization event at 1701556289.393427, SYN_REPORT]
+  ^C23-12-02 23:31:53 [INFO] Exiting gracefully. Received signal: 2, frame: <frame at 0xb5ee60b0, file '/usr/lib/python3.11/selectors.py', line 468, code select>
+  23-12-02 23:31:53 [CRITICAL] device /dev/input/event2, name "AceRK Mouse", phys "d0:f4:c6:3e:6b:cf" received a cancellation request.
+  23-12-02 23:31:53 [CRITICAL] device /dev/input/event1, name "AceRK Keyboard", phys "d0:f4:c6:3e:6b:cf" received a cancellation request.
+  23-12-02 23:31:53 [CRITICAL] device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0" received a cancellation request.
   ``` 
 
 - Still not resolved? Double-check the [installation instructions](#4-installation)

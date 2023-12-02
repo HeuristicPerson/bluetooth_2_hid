@@ -21,8 +21,9 @@ def parse_args() -> Namespace:
         "-i",
         type=lambda input: [item.strip() for item in input.split(",")],
         default=None,
-        help="Comma-separated list of identifiers for input devices to be relayed.\n \
-          Default is None.\n \
+        help="Comma-separated list of identifiers for input devices to be relayed.\n\n \
+          An identifier is either the input device path, the MAC address or any case-insensitive substring of the device name.\n\n \
+          Default is None.\n\n \
           Example: --device_ids '/dev/input/event2,a1:b2:c3:d4:e5:f6,0A-1B-2C-3D-4E-5F,logi'",
     )
     parser.add_argument(
