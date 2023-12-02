@@ -42,7 +42,7 @@ The issue with Bluetooth devices is that you usually can't use them to:
 
 Sounds familiar? Congratulations! **You just found the solution!**
 
-Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Device). Therefore, from the host's perspective, it appears like a regular USB keyboard or mouse. 
+Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Device). Therefore, from the host's perspective, it appears like a regular USB keyboard or mouse. You may think of your Pi as a multi-device Bluetooth dongle. 
 
 ## 2. Features
 
@@ -182,7 +182,7 @@ Follow these steps to install and configure the project:
                 └─944 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
 
     Nov 29 20:19:21 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID proxy.
-    Nov 29 20:19:22 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:22 [INFO] Launching Bluetooth 2 USB v0.5.2
+    Nov 29 20:19:22 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:22 [INFO] Launching Bluetooth 2 USB v0.6.0
     Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Relaying device /dev/input/event1
     Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Successfully connected to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
     Nov 29 20:19:29 pi0w bluetooth_2_usb[944]: 23-11-29 20:19:29 [INFO] Relaying device /dev/input/event2
@@ -388,7 +388,7 @@ Here's a few things you could try:
   user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event1,/dev/input/event2 -d ; sudo service bluetooth_2_usb start
   23-11-29 21:21:09 [DEBUG] CLI args: Namespace(input_devices=['/dev/input/event1', '/dev/input/event2'], debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
   23-11-29 21:21:09 [DEBUG] Logging to stdout
-  23-11-29 21:21:09 [INFO] Launching Bluetooth 2 USB v0.5.2
+  23-11-29 21:21:09 [INFO] Launching Bluetooth 2 USB v0.6.0
   23-11-29 21:21:09 [DEBUG] Available output devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
   23-11-29 21:21:15 [DEBUG] Current tasks: {<Task pending name='/dev/input/event2' coro=<RelayController._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/relay_controller.py:47> cb=[TaskGroup._on_task_done()]>, <Task pending name='/dev/input/event1' coro=<RelayController._async_relay_events() running at /home/user/bluetooth_2_usb/bluetooth_2_usb/relay_controller.py:47> cb=[TaskGroup._on_task_done()]>, <Task pending name='Task-1' coro=<_main() running at /usr/bin/bluetooth_2_usb:60> cb=[_run_until_complete_cb() at /usr/lib/python3.11/asyncio/base_events.py:180]>}
   23-11-29 21:21:15 [INFO] Relaying device /dev/input/event1

@@ -10,16 +10,15 @@ import signal
 import sys
 from typing import NoReturn
 
-from evdev import InputDevice, list_devices
 from usb_hid import unregister_disable
 
 from bluetooth_2_usb.args import parse_args
 from bluetooth_2_usb.logging import add_file_handler, get_logger
-from bluetooth_2_usb.relay_controller import RelayController
+from bluetooth_2_usb.relay import RelayController, list_readable_devices
 
 
 _logger = get_logger()
-_VERSION = "0.5.2"
+_VERSION = "0.6.0"
 _VERSIONED_NAME = f"Bluetooth 2 USB v{_VERSION}"
 
 
@@ -54,13 +53,12 @@ async def _main() -> NoReturn:
     _logger.debug(log_handlers_message)
     _logger.info(f"Launching {_VERSIONED_NAME}")
 
-    relay_controller = RelayController(args.input_devices)
-    await relay_controller.async_relay_all_devices()
+    controller = RelayController(args.device_ids, args.auto_discover)
+    await controller.async_relay_devices()
 
 
 def _list_devices():
-    devices = [InputDevice(path) for path in list_devices()]
-    for dev in devices:
+    for dev in list_readable_devices():
         print(f"{dev.name}\t{dev.uniq if dev.uniq else dev.phys}\t{dev.path}")
     _exit_safely()
 
