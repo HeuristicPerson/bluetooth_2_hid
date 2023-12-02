@@ -164,7 +164,7 @@ class RelayController:
         self._auto_discover = auto_discover
         self._task_group: TaskGroup = None
         self._discovery_task: Task = None
-        self._device_tasks: dict[InputDevice, Task] = {}
+        self._device_tasks: dict[str, Task] = {}
 
     async def async_relay_devices(self) -> NoReturn:
         try:
@@ -204,18 +204,18 @@ class RelayController:
         return any(id.matches(device) for id in self._device_identifiers)
 
     def _has_task(self, device: InputDevice) -> bool:
-        return device in self._device_tasks
+        return device.path in self._device_tasks
 
     def _create_device_task(self, device: InputDevice) -> None:
         task = self._task_group.create_task(
             self._async_relay_events(device), name=device.path
         )
-        self._device_tasks[device] = task
+        self._device_tasks[device.path] = task
 
     async def _async_relay_events(self, device: InputDevice) -> None:
         relay = InputDeviceRelay(device)
         try:
-            _logger.info(f"Relaying {repr(device)}")
+            _logger.info(f"Relaying {str(device)}")
             await relay.async_relay_events_loop()
         except CancelledError:
             _logger.critical(f"{device} received a cancellation request.")
@@ -229,7 +229,7 @@ class RelayController:
             self._cancel_device_task(device)
 
     def _cancel_device_task(self, device: InputDevice) -> None:
-        task = self._device_tasks.pop(device, None)
+        task = self._device_tasks.pop(device.path, None)
         if task:
             task.cancel()
 
