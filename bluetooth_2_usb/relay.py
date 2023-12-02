@@ -176,15 +176,15 @@ class RelayController:
 
     def _create_discovery_task(self) -> None:
         task = self._task_group.create_task(
-            self._discover_devices_loop(), name="Device discovery"
+            self._async_discover_devices_loop(), name="Device discovery"
         )
         self._discovery_task = task
 
-    def _discover_devices_loop(self) -> None:
+    async def _async_discover_devices_loop(self) -> None:
         _logger.debug(f"Discovering input devices...")
         while True:
             self._discover_devices()
-            time.sleep(1)
+            await asyncio.sleep(1)
 
     def _discover_devices(self) -> None:
         for device in list_readable_devices():
