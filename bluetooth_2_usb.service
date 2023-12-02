@@ -1,10 +1,10 @@
 [Unit]
-Description=Bluetooth to USB HID proxy
+Description=Bluetooth to USB HID relay
 After=multi-user.target
 
 [Service]
 User=root
-ExecStart=/usr/bin/bluetooth_2_usb --input_devices /dev/input/event1,/dev/input/event2
+ExecStart=/usr/bin/bluetooth_2_usb --auto_discover
 Environment=PYTHONUNBUFFERED=1
 Restart=on-failure
 

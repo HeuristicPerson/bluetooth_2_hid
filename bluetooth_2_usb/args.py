@@ -13,17 +13,25 @@ class CustomArgumentParser(argparse.ArgumentParser):
 
 def parse_args() -> Namespace:
     parser = CustomArgumentParser(
-        description="Bluetooth to USB HID proxy. Reads incoming Bluetooth mouse and keyboard events and forwards them to USB using Linux's gadget mode.",
+        description="Bluetooth to USB HID relay. Handles Bluetooth keyboard and mouse events from multiple input devices and translates them to USB using Linux's gadget mode.",
     )
 
     parser.add_argument(
-        "--input_devices",
+        "--device_ids",
         "-i",
         type=lambda input: [item.strip() for item in input.split(",")],
         default=None,
-        help="Comma-separated list of input device paths to be registered and connected.\n \
-          Default is None.\n \
-          Example: --input_devices /dev/input/event2,/dev/input/event3",
+        help="Comma-separated list of identifiers for input devices to be relayed.\n\n \
+          An identifier is either the input device path, the MAC address or any case-insensitive substring of the device name.\n\n \
+          Default is None.\n\n \
+          Example: --device_ids '/dev/input/event2,a1:b2:c3:d4:e5:f6,0A-1B-2C-3D-4E-5F,logi'",
+    )
+    parser.add_argument(
+        "--auto_discover",
+        "-a",
+        action="store_true",
+        default=False,
+        help="Enable auto-discovery mode. All readable input devices will be relayed automatically.",
     )
     parser.add_argument(
         "--debug",
@@ -62,7 +70,7 @@ def parse_args() -> Namespace:
     )
 
     args = parser.parse_args()
-    
+
     # Check if no arguments were provided
     if len(sys.argv) == 1:
         parser.print_help()
