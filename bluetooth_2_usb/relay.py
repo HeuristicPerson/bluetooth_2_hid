@@ -180,7 +180,7 @@ class RelayController:
         self._discovery_task = task
 
     async def _async_discover_devices_loop(self) -> None:
-        _logger.debug(f"Discovering input devices...")
+        _logger.info(f"Discovering input devices...")
         while True:
             self._discover_devices()
             await asyncio.sleep(1)
