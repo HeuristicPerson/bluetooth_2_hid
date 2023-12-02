@@ -1,7 +1,6 @@
 import asyncio
 from asyncio import CancelledError, TaskGroup, Task
 import re
-import time
 from typing import NoReturn
 
 from adafruit_hid.consumer_control import ConsumerControl
@@ -164,7 +163,7 @@ class RelayController:
         self._auto_discover = auto_discover
         self._task_group: TaskGroup = None
         self._discovery_task: Task = None
-        self._device_tasks: dict[str, Task] = {}
+        self._relay_tasks: dict[str, Task] = {}
 
     async def async_relay_devices(self) -> NoReturn:
         try:
@@ -189,7 +188,7 @@ class RelayController:
     def _discover_devices(self) -> None:
         for device in list_readable_devices():
             if self._should_relay(device):
-                self._create_device_task(device)
+                self._create_relay_task(device)
 
     def _should_relay(self, device: InputDevice) -> bool:
         return not self._has_task(device) and self._matches_discovery_criteria(device)
@@ -201,13 +200,13 @@ class RelayController:
         return any(id.matches(device) for id in self._device_identifiers)
 
     def _has_task(self, device: InputDevice) -> bool:
-        return device.path in self._device_tasks
+        return device.path in self._relay_tasks
 
-    def _create_device_task(self, device: InputDevice) -> None:
+    def _create_relay_task(self, device: InputDevice) -> None:
         task = self._task_group.create_task(
             self._async_relay_events(device), name=device.path
         )
-        self._device_tasks[device.path] = task
+        self._relay_tasks[device.path] = task
 
     async def _async_relay_events(self, device: InputDevice) -> None:
         relay = InputDeviceRelay(device)
@@ -225,7 +224,7 @@ class RelayController:
             self._cancel_device_task(device)
 
     def _cancel_device_task(self, device: InputDevice) -> None:
-        task = self._device_tasks.pop(device.path, None)
+        task = self._relay_tasks.pop(device.path, None)
         if task:
             task.cancel()
 
