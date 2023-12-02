@@ -189,6 +189,7 @@ class RelayController:
     def _discover_devices(self) -> None:
         for device in list_readable_devices():
             if self._should_relay(device):
+                _logger.debug(f"{device} should be relayed.")
                 self._create_device_task(device)
 
     def _should_relay(self, device: InputDevice) -> bool:
@@ -201,13 +202,7 @@ class RelayController:
         return self._auto_discover and not "vc4-hdmi-" in device.name
 
     def _matches_identifier(self, device: InputDevice) -> bool:
-        # return any(id.matches(device) for id in self._device_identifiers)
-        any_match: bool = False
-        for id in self._device_identifiers:
-            is_match = id.matches(device)
-            any_match = any_match or is_match
-            _logger.debug(f"{device} matches {id}: {is_match}")
-        return any_match
+        return any(id.matches(device) for id in self._device_identifiers)
 
     def _has_task(self, device: InputDevice) -> bool:
         return device.path in self._device_tasks
