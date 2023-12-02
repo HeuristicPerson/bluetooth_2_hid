@@ -171,8 +171,8 @@ class RelayController:
             async with TaskGroup() as self._task_group:
                 self._create_discovery_task()
             _logger.critical("Event loop closed.")
-        except* Exception as ex:
-            _logger.error(f"Error(s) in TaskGroup: [{ex.exceptions}]")
+        except* Exception:
+            _logger.exception("Error(s) in TaskGroup")
 
     def _create_discovery_task(self) -> None:
         task = self._task_group.create_task(
