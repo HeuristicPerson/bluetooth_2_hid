@@ -162,9 +162,9 @@ class RelayController:
             InputDeviceIdentifier(id) for id in device_identifiers
         ]
         self._auto_discover = auto_discover
-        self._task_group: TaskGroup
-        self._discovery_task: Task
-        self._device_tasks: dict[InputDevice, Task]
+        self._task_group: TaskGroup = None
+        self._discovery_task: Task = None
+        self._device_tasks: dict[InputDevice, Task] = {}
 
     async def async_relay_devices(self) -> NoReturn:
         try:
