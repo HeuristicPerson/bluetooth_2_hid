@@ -49,6 +49,7 @@ Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Dev
 - Simple installation and highly automated setup 
 - Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
 - Supports [146 multimedia keys](https://github.com/quaxalber/bluetooth_2_usb/blob/8b1c5f8097bbdedfe4cef46e07686a1059ea2979/lib/evdev_adapter.py#L142) (e.g., mute, volume up/down, launch browser, etc.)
+- Auto-discovery feature for input devices 
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
 - Installation as a systemd service
