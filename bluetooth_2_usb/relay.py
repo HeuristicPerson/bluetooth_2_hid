@@ -195,10 +195,7 @@ class RelayController:
         return not self._has_task(device) and self._matches_discovery_criteria(device)
 
     def _matches_discovery_criteria(self, device: InputDevice) -> bool:
-        return self._is_auto_discoverable(device) or self._matches_identifier(device)
-
-    def _is_auto_discoverable(self, device: InputDevice) -> bool:
-        return self._auto_discover and not "vc4-hdmi" in device.name
+        return self._auto_discover or self._matches_identifier(device)
 
     def _matches_identifier(self, device: InputDevice) -> bool:
         return any(id.matches(device) for id in self._device_identifiers)
