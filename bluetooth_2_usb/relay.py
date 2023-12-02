@@ -207,22 +207,18 @@ class RelayController:
         return device.path in self._device_tasks
 
     def _create_device_task(self, device: InputDevice) -> None:
-        _logger.debug(f"Creating task for {device}")
         task = self._task_group.create_task(
             self._async_relay_events(device), name=device.path
         )
-        _logger.debug(f"{asyncio.all_tasks()}")
         self._device_tasks[device.path] = task
 
     async def _async_relay_events(self, device: InputDevice) -> None:
-        _logger.info(f"Relaying {str(device)}")
         relay = InputDeviceRelay(device)
         try:
             _logger.info(f"Relaying {str(device)}")
             await relay.async_relay_events_loop()
         except CancelledError:
             _logger.critical(f"{device} received a cancellation request.")
-            self._discovery_task.cancel()
         except (OSError, FileNotFoundError) as ex:
             _logger.critical(f"Connection to {device} lost... [{repr(ex)}]")
         except Exception:
