@@ -181,7 +181,7 @@ class RelayController:
         self._discovery_task = task
 
     def _discover_devices_loop(self) -> None:
-        _logger.debug(f"Discovering devices...")
+        _logger.debug(f"Discovering input devices...")
         while True:
             self._discover_devices()
             time.sleep(1)
@@ -201,7 +201,13 @@ class RelayController:
         return self._auto_discover and not "vc4-hdmi-" in device.name
 
     def _matches_identifier(self, device: InputDevice) -> bool:
-        return any(id.matches(device) for id in self._device_identifiers)
+        # return any(id.matches(device) for id in self._device_identifiers)
+        any_match: bool = False
+        for id in self._device_identifiers:
+            is_match = id.matches(device)
+            any_match = any_match or is_match
+            _logger.debug(f"{device} matches {id}: {is_match}")
+        return any_match
 
     def _has_task(self, device: InputDevice) -> bool:
         return device.path in self._device_tasks
