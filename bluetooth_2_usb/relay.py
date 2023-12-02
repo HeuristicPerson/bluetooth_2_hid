@@ -189,7 +189,6 @@ class RelayController:
     def _discover_devices(self) -> None:
         for device in list_readable_devices():
             if self._should_relay(device):
-                _logger.debug(f"{device} should be relayed.")
                 self._create_device_task(device)
 
     def _should_relay(self, device: InputDevice) -> bool:
@@ -208,12 +207,15 @@ class RelayController:
         return device.path in self._device_tasks
 
     def _create_device_task(self, device: InputDevice) -> None:
+        _logger.debug(f"Creating task for {device}")
         task = self._task_group.create_task(
             self._async_relay_events(device), name=device.path
         )
+        _logger.debug(f"{asyncio.all_tasks()}")
         self._device_tasks[device.path] = task
 
     async def _async_relay_events(self, device: InputDevice) -> None:
+        _logger.info(f"Relaying {str(device)}")
         relay = InputDeviceRelay(device)
         try:
             _logger.info(f"Relaying {str(device)}")
