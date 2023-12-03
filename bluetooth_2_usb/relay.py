@@ -57,7 +57,7 @@ class DeviceIdentifier:
         return self.value
 
     def __repr__(self):
-        return f"identifier {self.value} (type: {self.type})"
+        return f'ID "{self.value}" (type: {self.type})'
 
     def _determine_identifier_type(self) -> str:
         mac_regex = r"^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"

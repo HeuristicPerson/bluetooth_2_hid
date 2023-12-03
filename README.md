@@ -36,20 +36,20 @@
 Convert a Raspberry Pi into a HID relay that translates Bluetooth keyboard and mouse input to USB. Minimal configuration. Zero hassle.
 
 The issue with Bluetooth devices is that you usually can't use them to:
-- wake up sleeping devices, 
+- wake up sleeping devices,
 - access the BIOS or OS select menu (e.g., GRUB),
 - access devices without Bluetooth interface (e.g., devices in a restricted environment or most KVM switches).
 
 Sounds familiar? Congratulations! **You just found the solution!**
 
-Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Device). Therefore, from the host's perspective, it appears like a regular USB keyboard or mouse. You may think of your Pi as a multi-device Bluetooth dongle. 
+Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Device). Therefore, from the host's perspective, it appears like a regular USB keyboard or mouse. You may think of your Pi as a multi-device Bluetooth dongle.
 
 ## 2. Features
 
-- Simple installation and highly automated setup 
+- Simple installation and highly automated setup
 - Supports multiple input devices (currently keyboard and mouse - more than one of each kind simultaneously)
 - Supports [146 multimedia keys](https://github.com/quaxalber/bluetooth_2_usb/blob/8b1c5f8097bbdedfe4cef46e07686a1059ea2979/lib/evdev_adapter.py#L142) (e.g., mute, volume up/down, launch browser, etc.)
-- Auto-discovery feature for input devices 
+- Auto-discovery feature for input devices
 - Auto-reconnect feature for input devices (power off, energy saving mode, out of range, etc.)
 - Robust error handling and logging
 - Installation as a systemd service
@@ -75,25 +75,25 @@ Linux's gadget mode allows a Raspberry Pi to act as USB HID (Human Interface Dev
 
 Follow these steps to install and configure the project:
 
-### 4.1. Prerequisites 
+### 4.1. Prerequisites
 
 1. Install an OS on your Raspberry Pi (e.g., using [Pi Imager](https://youtu.be/ntaXWS8Lk34))
-   
+  
 2. Connect to a network via Ethernet cable or [Wi-Fi](https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking). Make sure this network has Internet access.
-   
+  
 3. (*optional, recommended*) Enable [SSH](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh), if you intend to access the Pi remotely.
 
 > [!NOTE]
-> These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options) (recommended), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html). 
-   
+> These settings above may be configured [during imaging](https://www.raspberrypi.com/documentation/computers/getting-started.html#advanced-options) (recommended), [on first boot](https://www.raspberrypi.com/documentation/computers/getting-started.html#configuration-on-first-boot) or [afterwards](https://www.raspberrypi.com/documentation/computers/configuration.html).
+  
 4. Connect to the Pi and make sure `git` is installed:
-   
+  
    ```console
    sudo apt update && sudo apt upgrade -y && sudo apt install -y git
    ```
 
 5. Pair and trust any Bluetooth devices you wish to relay, either via GUI or via CLI:
-   
+  
    ```console
    bluetoothctl
    scan on
@@ -110,28 +110,28 @@ Follow these steps to install and configure the project:
 > [!NOTE]
 > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
 
-### 4.2. Setup 
+### 4.2. Setup
 
-6. On the Pi, clone the repository to your home directory: 
-   
+6. On the Pi, clone the repository to your home directory:
+  
    ```console
    cd ~ && git clone https://github.com/quaxalber/bluetooth_2_usb.git
    ```
 
-7. Run the installation script as root: 
-    
+7. Run the installation script as root:
+   
    ```console
    sudo ~/bluetooth_2_usb/scripts/install.sh
    ```
 
 8.  Reboot:
-  
+ 
     ```console
     sudo reboot
-    ```  
+    ``` 
 
 9.  Verify that the service is running:
-    
+   
     ```console
     service bluetooth_2_usb status
     ```
@@ -158,22 +158,22 @@ Follow these steps to install and configure the project:
     ```
 
 > [!NOTE]
-> Something seems off? Try yourself in [Troubleshooting](#8-troubleshooting)! 
-    
+> Something seems off? Try yourself in [Troubleshooting](#8-troubleshooting)!
+   
 ## 5. Usage
 
 ### 5.1. Connection to target device / host
 
 #### 5.1.1. Raspberry Pi 4 Model B
 
-Connect the _USB-C power port_ of your Pi 4B via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. In case the Pi solely draws power from the host, it will take some time for the Pi to boot. 
+Connect the _USB-C power port_ of your Pi 4B via cable with a USB port on your target device. You should hear the USB connection sound (depending on the target device) and be able to access your target device wirelessly using your Bluetooth keyboard or mouse. In case the Pi solely draws power from the host, it will take some time for the Pi to boot.
 
 > [!IMPORTANT]
-> It's essential to use the small power port instead of the bigger USB-A ports, since only the power port has the [OTG](https://en.wikipedia.org/wiki/USB_On-The-Go) feature required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html). 
+> It's essential to use the small power port instead of the bigger USB-A ports, since only the power port has the [OTG](https://en.wikipedia.org/wiki/USB_On-The-Go) feature required for [USB gadgets](https://www.kernel.org/doc/html/latest/driver-api/usb/gadget.html).
 
 #### 5.1.2. Raspberry Pi Zero (2) W(H)
 
-For the Pi Zero, the situation is quite the opposite: Do _not_ use the power port to connect to the target device, _use_ the other port instead (typically labeled "DATA" or "USB"). You may connect the power port to a stable power supply. 
+For the Pi Zero, the situation is quite the opposite: Do _not_ use the power port to connect to the target device, _use_ the other port instead (typically labeled "DATA" or "USB"). You may connect the power port to a stable power supply.
 
 ### 5.2. Command-line arguments
 
@@ -200,9 +200,9 @@ options:
 
 ### 5.3. Consuming the API from your Python code
 
-The API is designed such that it may be consumed both via CLI and from within external Python code. More details on this [coming soon](https://github.com/quaxalber/bluetooth_2_usb/issues/16)! 
+The API is designed such that it may be consumed both via CLI and from within external Python code. More details on this [coming soon](https://github.com/quaxalber/bluetooth_2_usb/issues/16)!
 
-## 6. Updating 
+## 6. Updating
 
 You may update to the latest stable release by running:
 
@@ -210,7 +210,7 @@ You may update to the latest stable release by running:
 sudo ~/bluetooth_2_usb/scripts/update.sh
 ```
 
-## 7. Uninstallation 
+## 7. Uninstallation
 
 You may uninstall Bluetooth 2 USB by running:
 
@@ -224,41 +224,41 @@ sudo ~/bluetooth_2_usb/scripts/uninstall.sh
 
 This is likely due to the limited power the Pi can draw from the host's USB port. Try these steps:
 
-- If available, connect your Pi to a USB 3 port on the host / target device (usually blue) or preferably USB-C. 
-  
+- If available, connect your Pi to a USB 3 port on the host / target device (usually blue) or preferably USB-C.
+ 
 > [!IMPORTANT]
-> *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.** 
-> 
-> *Do use* the small USB-C power port (in case of Pi 4B). For Pi Zero, use the data port to connect to the host and attach the power port to a dedicated power supply. 
+> *Do not use* the blue (or black) USB-A ports *of your Pi* to connect. **This won't work.**
+>
+> *Do use* the small USB-C power port (in case of Pi 4B). For Pi Zero, use the data port to connect to the host and attach the power port to a dedicated power supply.
 
 - Try to [connect to the Pi via SSH](#41-prerequisites) instead of attaching a display directly and remove any unnecessary peripherals.
-  
+ 
 - Install a [lite version](https://downloads.raspberrypi.org/raspios_lite_arm64/images/) of your OS on the Pi (without GUI)
-  
-- For Pi 4B: Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) and draw power from a dedicated power supply. This should ultimately resolve any power-related issues, and your Pi 4B will no longer be dependent on the host's power supply. 
-  
+ 
+- For Pi 4B: Get a [USB-C Data/Power Splitter](https://thepihut.com/products/usb-c-data-power-splitter) and draw power from a dedicated power supply. This should ultimately resolve any power-related issues, and your Pi 4B will no longer be dependent on the host's power supply.
+ 
 > [!NOTE]
-> The Pi Zero is recommended to have a 1.2 A power supply for stable operation, the Pi Zero 2 requires 2.0 A and the Pi 4B even 3.0 A, while hosts may typically only supply up to 0.5/0.9 A through USB-A 2.0/3.0 ports. However, this may be sufficient depending on your specific soft- and hardware configuration. For more information see the [Raspberry Pi documentation](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply). 
+> The Pi Zero is recommended to have a 1.2 A power supply for stable operation, the Pi Zero 2 requires 2.0 A and the Pi 4B even 3.0 A, while hosts may typically only supply up to 0.5/0.9 A through USB-A 2.0/3.0 ports. However, this may be sufficient depending on your specific soft- and hardware configuration. For more information see the [Raspberry Pi documentation](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply).
 
-### 8.2. The installation was successful, but I don't see any output on the target device 
+### 8.2. The installation was successful, but I don't see any output on the target device
 
 This could be due to a number of reasons. Try these steps:
 
 - Verify that the service is running:
-  
+ 
   ```console
   service bluetooth_2_usb status
   ```
 
-- Verify that you specified the correct input devices in `bluetooth_2_usb.service` 
-  
+- Verify that you specified the correct input devices in `bluetooth_2_usb.service`
+ 
 - Verify that your Bluetooth devices are paired, trusted, connected and *not* blocked:
-  
+ 
   ```console
   bluetoothctl
   info A1:B2:C3:D4:E5:F6
   ```
-  
+ 
   It should look like this:
 
   ```console
@@ -281,27 +281,27 @@ This could be due to a number of reasons. Try these steps:
           UUID: Human Interface Device    (00001812-0000-1000-8000-00805f9b34fb)
           UUID: Nordic UART Service       (6e400001-b5a3-f393-e0a9-e50e24dcca9e)
   ```
-  
+ 
 > [!NOTE]
 > Replace `A1:B2:C3:D4:E5:F6` by your input device's Bluetooth MAC address
 
 - Reload and restart service:
-  
+ 
   ```console
   sudo systemctl daemon-reload && sudo service bluetooth_2_usb restart
   ```
 
 - Reboot Pi
-  
+ 
   ```console
-  sudo reboot 
+  sudo reboot
   ```
 
-- Re-connect the Pi to the host and check that the cable is capable of transmitting data, not power only 
-  
+- Re-connect the Pi to the host and check that the cable is capable of transmitting data, not power only
+ 
 - Try a different USB port on the host
-  
-- Try connecting to a different host 
+ 
+- Try connecting to a different host
 
 ### 8.3. In bluetoothctl, my device is constantly switching on/off
 
@@ -331,17 +331,17 @@ exit
 > [!NOTE]
 > Replace `0A:1B:2C:3D:4E:5F` by your Pi's Bluetooth controller's MAC and `A1:B2:C3:D4:E5:F6` by your input device's MAC
 
-### 8.4. I have a different issue 
+### 8.4. I have a different issue
 
 Here's a few things you could try:
 
 - Check the log files (default at `/var/log/bluetooth_2_usb/`) for errors
-  
+ 
 > [!NOTE]
 > Logging to file requires the `-f` flag
 
 - You may also query the journal to inspect the service logs in real-time:
-  
+ 
   ```console
   journalctl -u bluetooth_2_usb.service -n 50 -f
   ```
@@ -353,7 +353,7 @@ Here's a few things you could try:
   ```
 
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
-  
+ 
   ```console
   user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -ad ; sudo service bluetooth_2_usb start
   23-12-02 23:30:55 [DEBUG] CLI args: Namespace(device_ids=None, auto_discover=True, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
@@ -381,17 +381,17 @@ Here's a few things you could try:
   23-12-02 23:31:53 [CRITICAL] device /dev/input/event2, name "AceRK Mouse", phys "d0:f4:c6:3e:6b:cf" received a cancellation request.
   23-12-02 23:31:53 [CRITICAL] device /dev/input/event1, name "AceRK Keyboard", phys "d0:f4:c6:3e:6b:cf" received a cancellation request.
   23-12-02 23:31:53 [CRITICAL] device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0" received a cancellation request.
-  ``` 
+  ```
 
 - Still not resolved? Double-check the [installation instructions](#4-installation)
-  
+ 
 - For more help, open an [issue](https://github.com/quaxalber/bluetooth_2_usb/issues) in the [GitHub repository](https://github.com/quaxalber/bluetooth_2_usb)
 
-### 8.5. Everything is working, but can it help me with Bitcoin mining? 
+### 8.5. Everything is working, but can it help me with Bitcoin mining?
 
-Absolutely! [Here's how](https://bit.ly/42BTC). 
+Absolutely! [Here's how](https://bit.ly/42BTC).
 
-## 9. Bonus points 
+## 9. Bonus points
 
 After successfully setting up your Pi as a HID proxy for your Bluetooth devices, you may consider making [Raspberry Pi OS read-only](https://learn.adafruit.com/read-only-raspberry-pi/overview). That helps preventing the SD card from wearing out and the file system from getting corrupted when powering off the Raspberry forcefully.
 
@@ -410,6 +410,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## 12. Acknowledgments
 
 * [Mike Redrobe](https://github.com/mikerr/pihidproxy) for the idea and the basic code logic and [HeuristicPerson's bluetooth_2_hid](https://github.com/HeuristicPerson/bluetooth_2_hid) based off this.
-* [Georgi Valkov](https://github.com/gvalkov) for [python-evdev](https://github.com/gvalkov/python-evdev) making reading input devices a walk in the park. 
-* The folks at [Adafruit](https://www.adafruit.com/) for [CircuitPython HID](https://github.com/adafruit/Adafruit_CircuitPython_HID) and [Blinka](https://github.com/quaxalber/Adafruit_Blinka/blob/main/src/usb_hid.py) providing super smooth access to USB gadgets. 
+* [Georgi Valkov](https://github.com/gvalkov) for [python-evdev](https://github.com/gvalkov/python-evdev) making reading input devices a walk in the park.
+* The folks at [Adafruit](https://www.adafruit.com/) for [CircuitPython HID](https://github.com/adafruit/Adafruit_CircuitPython_HID) and [Blinka](https://github.com/quaxalber/Adafruit_Blinka/blob/main/src/usb_hid.py) providing super smooth access to USB gadgets.
 * Special thanks to the open-source community for various other libraries and tools.
