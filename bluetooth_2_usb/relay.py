@@ -164,7 +164,7 @@ class RelayController:
     async def async_relay_devices(self) -> NoReturn:
         try:
             async with TaskGroup() as task_group:
-                self._async_discover_devices(task_group)
+                await self._async_discover_devices(task_group)
             _logger.critical("Event loop closed.")
         except* Exception:
             _logger.exception("Error(s) in TaskGroup")
@@ -179,7 +179,9 @@ class RelayController:
         if self._auto_discover:
             _logger.debug("Auto-discovery enabled. Relaying all input devices.")
         else:
-            _logger.debug(f"Relaying devices that match any of: {self._device_ids}")
+            _logger.debug(
+                f"Relaying devices that match any of: {repr(self._device_ids)}"
+            )
         while True:
             for device in list_readable_devices():
                 if self._should_relay(device):
