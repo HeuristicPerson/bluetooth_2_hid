@@ -86,8 +86,8 @@ chmod 744 "${base_directory}/bluetooth_2_usb.py" || abort_install "Failed making
 ln -s "${base_directory}/bluetooth_2_usb.py" /usr/bin/bluetooth_2_usb || colored_output "${RED}" "Failed creating symlink."
 ln -s "${base_directory}/bluetooth_2_usb.service" /etc/systemd/system/ || colored_output "${RED}" "Failed creating symlink."
 
-# Replace placeholder with actual path to venv. The expression ${base_directory//\//\\/} is used to replace all occurrences of slashes (/) in the variable base_directory with escaped slashes (\/)
-sed -i "s/{python3.11-venv}/${base_directory//\//\\/}\/venv\/bin\/python3.11/g" "${base_directory}/bluetooth_2_usb.py" || abort_install "Failed writing to bluetooth_2_usb.py."
+# Replace placeholder with actual path to venv.
+sed -i "s|{python3.11-venv}|${base_directory}/venv/bin/python3.11|g" "${base_directory}/bluetooth_2_usb.py" || abort_install "Failed writing to bluetooth_2_usb.py."
 
 # Create log dir and enable service. 
 mkdir /var/log/bluetooth_2_usb || colored_output "${RED}" "Failed creating log dir."
