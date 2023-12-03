@@ -210,6 +210,9 @@ You may update to the latest stable release by running:
 sudo ~/bluetooth_2_usb/scripts/update.sh
 ```
 
+> [!NOTE]
+> The update script doesn't cover all possible edge cases. In case you experience odd behavior after running the update script, it is recommended to delete the repo folder, clone again and run the install script.
+
 ## 7. Uninstallation
 
 You may uninstall Bluetooth 2 USB by running:
@@ -355,32 +358,48 @@ Here's a few things you could try:
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
  
   ```console
-  user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -ad ; sudo service bluetooth_2_usb start
-  23-12-02 23:30:55 [DEBUG] CLI args: Namespace(device_ids=None, auto_discover=True, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
-  23-12-02 23:30:55 [DEBUG] Logging to stdout
-  23-12-02 23:30:55 [INFO] Launching Bluetooth 2 USB v0.6.0
-  23-12-02 23:30:55 [DEBUG] Available USB devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
-  23-12-02 23:30:55 [INFO] Discovering input devices...
-  23-12-02 23:30:58 [INFO] Relaying device /dev/input/event2, name "AceRK Mouse", phys "d0:f4:c6:3e:6b:cf"
-  23-12-02 23:31:01 [INFO] Relaying device /dev/input/event1, name "AceRK Keyboard", phys "d0:f4:c6:3e:6b:cf"
-  23-12-02 23:31:04 [INFO] Relaying device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0"
-  23-12-02 23:31:09 [DEBUG] Received event: [event at 1701556269.698429, code 04, type 04, val 458756]
-  23-12-02 23:31:09 [DEBUG] Received event: [key event at 1701556269.698429, 30 (KEY_A), down]
-  23-12-02 23:31:09 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
-  23-12-02 23:31:09 [DEBUG] Pressing A (0x04) on /dev/hidg1
-  23-12-02 23:31:09 [DEBUG] Received event: [synchronization event at 1701556269.698429, SYN_REPORT]
-  23-12-02 23:31:09 [DEBUG] Received event: [event at 1701556269.747164, code 04, type 04, val 458756]
-  23-12-02 23:31:09 [DEBUG] Received event: [key event at 1701556269.747164, 30 (KEY_A), up]
-  23-12-02 23:31:09 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
-  23-12-02 23:31:09 [DEBUG] Releasing A (0x04) on /dev/hidg1
-  23-12-02 23:31:09 [DEBUG] Received event: [synchronization event at 1701556269.747164, SYN_REPORT]
-  23-12-02 23:31:29 [DEBUG] Received event: [relative axis event at 1701556289.393427, REL_X]
-  23-12-02 23:31:29 [DEBUG] Moving mouse /dev/hidg0 (x=125, y=0, mwheel=0)
-  23-12-02 23:31:29 [DEBUG] Received event: [synchronization event at 1701556289.393427, SYN_REPORT]
-  ^C23-12-02 23:31:53 [INFO] Exiting gracefully. Received signal: 2, frame: <frame at 0xb5ee60b0, file '/usr/lib/python3.11/selectors.py', line 468, code select>
-  23-12-02 23:31:53 [CRITICAL] device /dev/input/event2, name "AceRK Mouse", phys "d0:f4:c6:3e:6b:cf" received a cancellation request.
-  23-12-02 23:31:53 [CRITICAL] device /dev/input/event1, name "AceRK Keyboard", phys "d0:f4:c6:3e:6b:cf" received a cancellation request.
-  23-12-02 23:31:53 [CRITICAL] device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0" received a cancellation request.
+  user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i a1:b2:c3:d4:e5:f6 -d ; sudo service bluetooth_2_usb start
+  23-12-03 20:51:20 [DEBUG] CLI args: Namespace(device_ids=['a1:b2:c3:d4:e5:f6'], auto_discover=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
+  23-12-03 20:51:20 [DEBUG] Logging to stdout
+  23-12-03 20:51:20 [INFO] Launching Bluetooth 2 USB v0.6.0
+  23-12-03 20:51:20 [DEBUG] Available USB devices: [Mouse gadget (/dev/hidg0), Keyboard gadget (/dev/hidg1), Consumer control gadget (/dev/hidg2)]
+  23-12-03 20:51:20 [INFO] Discovering input devices...
+  23-12-03 20:51:20 [DEBUG] Relaying devices that match any of: [ID "a1:b2:c3:d4:e5:f6" (type: MAC)]
+  23-12-03 20:51:20 [INFO] Relaying device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
+  23-12-03 20:51:23 [INFO] Relaying device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
+  # Switched Bluetooth off
+  23-12-03 21:00:44 [CRITICAL] Connection lost to device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6" [OSError(19, 'No such device')]
+  23-12-03 21:00:44 [CRITICAL] Connection lost to device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6" [OSError(19, 'No such device')]
+  # Switched Bluetooth on
+  23-12-03 21:00:52 [INFO] Relaying device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
+  23-12-03 21:00:55 [INFO] Relaying device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
+  23-12-03 21:01:38 [DEBUG] Received event: [event at 1701633698.481604, code 02, type 17, val 01]
+  23-12-03 21:01:38 [DEBUG] Received event: [event at 1701633698.481604, code 04, type 04, val 458756]
+  23-12-03 21:01:38 [DEBUG] Received event: [key event at 1701633698.481604, 30 (KEY_A), down]
+  23-12-03 21:01:38 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-12-03 21:01:38 [DEBUG] Pressing A (0x04) on /dev/hidg1
+  23-12-03 21:01:38 [DEBUG] Received event: [synchronization event at 1701633698.481604, SYN_REPORT]
+  23-12-03 21:01:38 [DEBUG] Received event: [event at 1701633698.530338, code 04, type 04, val 458756]
+  23-12-03 21:01:38 [DEBUG] Received event: [key event at 1701633698.530338, 30 (KEY_A), up]
+  23-12-03 21:01:38 [DEBUG] Converted evdev scancode 0x1E (KEY_A) to HID UsageID 0x04 (A)
+  23-12-03 21:01:38 [DEBUG] Releasing A (0x04) on /dev/hidg1
+  23-12-03 21:01:38 [DEBUG] Received event: [synchronization event at 1701633698.530338, SYN_REPORT]
+  23-12-03 21:01:47 [DEBUG] Received event: [event at 1701633707.256705, code 04, type 04, val 786666]
+  23-12-03 21:01:47 [DEBUG] Received event: [key event at 1701633707.256705, 114 (KEY_VOLUMEDOWN), down]
+  23-12-03 21:01:47 [DEBUG] Converted evdev scancode 0x72 (KEY_VOLUMEDOWN) to HID UsageID 0xEA (VOLUME_DECREMENT)
+  23-12-03 21:01:47 [DEBUG] Pressing VOLUME_DECREMENT (0xEA) on /dev/hidg2
+  23-12-03 21:01:47 [DEBUG] Received event: [synchronization event at 1701633707.256705, SYN_REPORT]
+  23-12-03 21:01:47 [DEBUG] Received event: [event at 1701633707.257470, code 04, type 04, val 786666]
+  23-12-03 21:01:47 [DEBUG] Received event: [key event at 1701633707.257470, 114 (KEY_VOLUMEDOWN), up]
+  23-12-03 21:01:47 [DEBUG] Converted evdev scancode 0x72 (KEY_VOLUMEDOWN) to HID UsageID 0xEA (VOLUME_DECREMENT)
+  23-12-03 21:01:47 [DEBUG] Releasing VOLUME_DECREMENT (0xEA) on /dev/hidg2
+  23-12-03 21:01:47 [DEBUG] Received event: [synchronization event at 1701633707.257470, SYN_REPORT]
+  23-12-03 21:01:53 [DEBUG] Received event: [relative axis event at 1701633713.350315, REL_X]
+  23-12-03 21:01:53 [DEBUG] Moving mouse /dev/hidg0 (x=50, y=0, mwheel=0)
+  23-12-03 21:01:53 [DEBUG] Received event: [synchronization event at 1701633713.350315, SYN_REPORT]
+  ^C23-12-03 21:02:00 [INFO] Exiting gracefully. Received signal: 2, frame: <frame at 0xb5f45578, file '/usr/lib/python3.11/selectors.py', line 468, code select>
+  23-12-03 21:02:00 [CRITICAL] device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6" received a cancellation request
+  23-12-03 21:02:00 [CRITICAL] device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6" received a cancellation request
   ```
 
 - Still not resolved? Double-check the [installation instructions](#4-installation)
