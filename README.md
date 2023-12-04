@@ -356,12 +356,16 @@ Here's a few things you could try:
   ```
 
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
-
+- 
+  ```console
+  user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event3,a1:b2:c3:d4:e5:f6,Logi -d ; sudo service bluetooth_2_usb start
+  # Click [show debug output] for more
+  ```
+  
   <details><summary>[show debug output]</summary>
   <p> 
   
   ```console
-  user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event3,a1:b2:c3:d4:e5:f6,Logi -d ; sudo service bluetooth_2_usb start
   23-12-04 14:05:57 [DEBUG] CLI args: Namespace(device_ids=['/dev/input/event3', 'a1:b2:c3:d4:e5:f6', 'Logi'], auto_discover=False, debug=True, log_to_file=False, log_path='/var/log/bluetooth_2_usb/bluetooth_2_usb.log', version=False, list_devices=False)
   23-12-04 14:05:57 [DEBUG] Logging to stdout
   23-12-04 14:05:57 [INFO] Launching Bluetooth 2 USB v0.6.2
