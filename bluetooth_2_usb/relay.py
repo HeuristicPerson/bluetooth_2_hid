@@ -57,7 +57,7 @@ class DeviceIdentifier:
         return self.value
 
     def __repr__(self):
-        return f'"{self.value}" (type: {self.type})'
+        return f'{self.type} "{self.value}"'
 
     def _determine_identifier_type(self) -> str:
         mac_regex = r"^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"
@@ -181,9 +181,9 @@ class RelayController:
     async def _async_discover_devices_loop(self) -> AsyncGenerator[InputDevice, None]:
         _logger.info("Discovering input devices...")
         if self._auto_discover:
-            _logger.debug("Auto-discovery enabled. Relaying all input devices.")
+            _logger.debug("Auto-discovery enabled. Relay all input devices.")
         else:
-            _logger.debug(f"Relaying devices matching any of: {repr(self._device_ids)}")
+            _logger.debug(f"Relay devices with {' or '.join(repr(self._device_ids))}")
         while True:
             for device in list_readable_devices():
                 if self._should_relay(device):
