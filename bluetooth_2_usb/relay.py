@@ -106,15 +106,19 @@ class DeviceRelay:
         async for event in self.input_device.async_read_loop():
             await self._async_relay_event(event)
 
-    async def _async_relay_event(self, event: InputEvent) -> None:
-        categorized_event = categorize(event)
-        _logger.debug(f"Received event: [{categorized_event}]")
-        if isinstance(categorized_event, KeyEvent):
-            await self._async_send_key(categorized_event)
-        elif isinstance(categorized_event, RelEvent):
-            await self._async_move_mouse(categorized_event)
+    async def _async_relay_event(self, input_event: InputEvent) -> None:
+        event = categorize(input_event)
+        _logger.debug(f"Received event: [{event}]")
+        function = None
+        if isinstance(event, KeyEvent):
+            function = self._send_key
+        elif isinstance(event, RelEvent):
+            function = self._move_mouse
+        if function:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, function, event)
 
-    async def _async_send_key(self, event: KeyEvent) -> None:
+    def _send_key(self, event: KeyEvent) -> None:
         key_id, key_name = evdev_to_usb_hid(event)
         if key_id is None:
             return
@@ -136,7 +140,7 @@ class DeviceRelay:
             return self._mouse_gadget
         return self._keyboard_gadget
 
-    async def _async_move_mouse(self, event: RelEvent) -> None:
+    def _move_mouse(self, event: RelEvent) -> None:
         x, y, mwheel = get_mouse_movement(event)
         coordinates = f"(x={x}, y={y}, mwheel={mwheel})"
         try:
