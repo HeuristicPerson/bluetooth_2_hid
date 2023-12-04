@@ -97,10 +97,10 @@ class DeviceRelay:
         return self._input_device
 
     def __str__(self):
-        return self.input_device.name
+        return f"Relay for {self.input_device.name}"
 
     def __repr__(self):
-        return str(self.input_device)
+        return f"Relay for {str(self.input_device)}"
 
     async def async_relay_events_loop(self) -> NoReturn:
         async for event in self.input_device.async_read_loop():
@@ -108,7 +108,7 @@ class DeviceRelay:
 
     async def _async_relay_event(self, input_event: InputEvent) -> None:
         event = categorize(input_event)
-        _logger.debug(f"Received event: [{event}]")
+        _logger.debug(f"{self.input_device.name} sent {event}")
         function = None
         if isinstance(event, KeyEvent):
             function = self._send_key
@@ -207,16 +207,16 @@ class RelayController:
 
     async def _async_relay_events(self, device: InputDevice) -> NoReturn:
         try:
-            _logger.info(f"Relaying {device}")
             relay = DeviceRelay(device)
+            _logger.info(f"{repr(relay)} is active")
             await relay.async_relay_events_loop()
         except CancelledError:
             self._cancelled = True
-            _logger.critical(f"{device} received a cancellation request")
+            _logger.critical(f"{device.name} cancelled")
         except (OSError, FileNotFoundError) as ex:
-            _logger.critical(f"Connection lost to {device} [{repr(ex)}]")
+            _logger.critical(f"Connection lost to {device.name} [{repr(ex)}]")
         except Exception:
-            _logger.exception(f"{device} failed!")
+            _logger.exception(f"{device.name} failed!")
             await asyncio.sleep(2)
 
 
