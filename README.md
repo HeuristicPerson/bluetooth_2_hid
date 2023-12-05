@@ -356,10 +356,10 @@ Here's a few things you could try:
   ```
 
 - When you interact with your Bluetooth devices with `-d` set, you should see debug output in the logs such as:
-- 
+
   ```console
   user@pi0w:~ $ sudo service bluetooth_2_usb stop && sudo bluetooth_2_usb -i /dev/input/event3,a1:b2:c3:d4:e5:f6,Logi -d ; sudo service bluetooth_2_usb start
-  # Click [show debug output] for more
+  >>> Click [show debug output] for more <<<
   ```
   
   <details><summary>[show debug output]</summary>
