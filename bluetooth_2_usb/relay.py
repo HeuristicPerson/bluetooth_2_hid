@@ -80,7 +80,7 @@ class DeviceIdentifier:
         if self.type == IdentifierType.PATH:
             return self.value == device.path
         if self.type == IdentifierType.NAME:
-            return self.normalized_value in f"{device.name}".lower()
+            return self.normalized_value in str(device.name).lower()
         if self.type == IdentifierType.MAC:
             return self.normalized_value == device.uniq
 
@@ -97,10 +97,10 @@ class DeviceRelay:
         return self._input_device
 
     def __str__(self):
-        return f"Relay for {self.input_device.name}"
+        return f"relay for {self.input_device.name}"
 
     def __repr__(self):
-        return f"Relay for {str(self.input_device)}"
+        return f"relay for {self.input_device}"
 
     async def async_relay_events_loop(self) -> NoReturn:
         async for event in self.input_device.async_read_loop():
@@ -108,15 +108,15 @@ class DeviceRelay:
 
     async def _async_relay_event(self, input_event: InputEvent) -> None:
         event = categorize(input_event)
-        _logger.debug(f"{self.input_device.name} sent {event}")
-        function = None
-        if isinstance(event, KeyEvent):
-            function = self._send_key
-        elif isinstance(event, RelEvent):
-            function = self._move_mouse
-        if function:
+        _logger.debug(f"Received {event} from {self.input_device.name}")
+        method = None
+        if isinstance(event, RelEvent):
+            method = self._move_mouse
+        elif isinstance(event, KeyEvent):
+            method = self._send_key
+        if method:
             loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, function, event)
+            await loop.run_in_executor(None, method, event)
 
     def _send_key(self, event: KeyEvent) -> None:
         key_id, key_name = evdev_to_usb_hid(event)
@@ -209,13 +209,13 @@ class RelayController:
     async def _async_relay_events(self, device: InputDevice) -> NoReturn:
         try:
             relay = DeviceRelay(device)
-            _logger.info(f"{repr(relay)} is active")
+            _logger.info(f"Activated {repr(relay)}")
             await relay.async_relay_events_loop()
         except CancelledError:
             self._cancelled = True
-            _logger.critical(f"{device.name} cancelled")
+            _logger.critical(f"{device.name} was cancelled")
         except (OSError, FileNotFoundError) as ex:
-            _logger.critical(f"Connection lost to {device.name} [{repr(ex)}]")
+            _logger.critical(f"Connection to {device.name} lost [{repr(ex)}]")
         except Exception:
             _logger.exception(f"{device.name} failed!")
             await asyncio.sleep(2)
