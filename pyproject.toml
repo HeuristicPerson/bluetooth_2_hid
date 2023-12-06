@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools >= 61.0", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -27,3 +27,5 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/quaxalber/bluetooth_2_usb"
 Issues = "https://github.com/quaxalber/bluetooth_2_usb/issues"
+
+[tool.setuptools_scm]
