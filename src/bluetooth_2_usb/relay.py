@@ -17,13 +17,13 @@ from evdev import (
 import usb_hid
 from usb_hid import Device
 
-from bluetooth_2_usb.evdev import (
+from .evdev import (
     get_mouse_movement,
     is_consumer_key,
     is_mouse_button,
     evdev_to_usb_hid,
 )
-from bluetooth_2_usb.logging import get_logger
+from .logging import get_logger
 
 
 _logger = get_logger()
