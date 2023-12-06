@@ -15,7 +15,6 @@ from .logging import add_file_handler, get_logger
 from .relay import (
     DeviceIdentifier,
     DeviceRelay,
-    IdentifierType,
     RelayController,
     list_readable_devices,
 )
