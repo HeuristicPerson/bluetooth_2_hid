@@ -28,11 +28,9 @@ from bluetooth_2_usb.logging import get_logger
 
 _logger = get_logger()
 
-
-class IdentifierType:
-    PATH = "path"
-    MAC = "MAC"
-    NAME = "name"
+PATH = "path"
+MAC = "MAC"
+NAME = "name"
 
 
 class DeviceIdentifier:
@@ -63,25 +61,25 @@ class DeviceIdentifier:
         mac_regex = r"^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"
         path_regex = r"^\/dev\/input\/event.*$"
         if re.match(mac_regex, self.value):
-            return IdentifierType.MAC
+            return MAC
         if re.match(path_regex, self.value):
-            return IdentifierType.PATH
-        return IdentifierType.NAME
+            return PATH
+        return NAME
 
     def _normalize_identifier(self) -> str:
-        if self.type == IdentifierType.PATH:
+        if self.type == PATH:
             return self.value
-        if self.type == IdentifierType.NAME:
+        if self.type == NAME:
             return self.value.lower()
-        if self.type == IdentifierType.MAC:
+        if self.type == MAC:
             return self.value.lower().replace("-", ":")
 
     def matches(self, device: InputDevice) -> bool:
-        if self.type == IdentifierType.PATH:
+        if self.type == PATH:
             return self.value == device.path
-        if self.type == IdentifierType.NAME:
-            return self.normalized_value in str(device.name).lower()
-        if self.type == IdentifierType.MAC:
+        if self.type == NAME:
+            return self.normalized_value in device.name.lower()
+        if self.type == MAC:
             return self.normalized_value == device.uniq
 
 
