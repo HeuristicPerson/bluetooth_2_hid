@@ -4,7 +4,7 @@ from adafruit_hid.consumer_control_code import ConsumerControlCode
 from adafruit_hid.keycode import Keycode, MouseButton
 from evdev import InputEvent, KeyEvent, RelEvent
 
-from bluetooth_2_usb.logging import get_logger
+from .logging import get_logger
 
 
 _logger = get_logger()
