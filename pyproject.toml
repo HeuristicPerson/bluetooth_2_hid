@@ -12,7 +12,7 @@ authors = [
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.11"
-keywords = 
+keywords = [
     "adapter",
     "proxy",
     "relay", 
