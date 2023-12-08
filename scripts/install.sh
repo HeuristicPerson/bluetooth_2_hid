@@ -58,7 +58,7 @@ cleanup() {
 main() {
   # Install prerequisites.
   colored_output "${GREEN}" "Installing bluetooth_2_usb prerequisites..."
-  { apt update && apt install -y git python3.11 python3.11-venv ; } || abort_install "Failed installing prerequisites."
+  { apt-get update && apt-get install -y git python3.11 python3.11-venv ; } || abort_install "Failed installing prerequisites."
 
   # Determine the current script's directory and the parent directory
   scripts_directory=$(dirname $(readlink -f "$0"))
