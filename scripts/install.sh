@@ -26,8 +26,6 @@ colored_output() {
 abort_install() {
   local message="$1"
   colored_output "${RED}" "Aborting installation. ${message}"
-  # Re-enable history expansion
-  set -H
   exit 1
 }
 
@@ -43,14 +41,28 @@ append_if_not_exist() {
   local text="$1"
   local file="$2"
   local backup="${file}.bak"
-
   # Create a backup of the original file
   cp "${file}" "${backup}" || abort_install "Failed creating backup of ${file}."
-
   if ! grep -q "^${text}" "${file}"; then
     echo "${text}" >> "${file}" || abort_install "Failed writing to ${file}."
   fi
 }
+
+# Function to cleanup before exiting
+cleanup() {
+  # Re-enable history expansion
+  set -H
+  # End the script command before exiting
+  script -c exit
+  colored_output "${YELLOW}" "Exiting the script."
+}
+
+# Trap EXIT signal and call cleanup function
+trap cleanup EXIT
+# Create log dir 
+mkdir /var/log/bluetooth_2_usb || colored_output "${YELLOW}" "Failed creating log dir."
+# Start logging to a file
+script -a /var/log/bluetooth_2_usb/install.log
 
 # Install prerequisites.
 colored_output "${GREEN}" "Installing bluetooth_2_usb prerequisites..."
@@ -61,15 +73,11 @@ scripts_directory=$(dirname $(readlink -f "$0"))
 base_directory=$(dirname "${scripts_directory}")
 cd "${base_directory}"
 
-# Initialize submodules.
-colored_output "${GREEN}" "Initializing submodules..."
-git submodule update --init --recursive || abort_install "Failed initializing submodules."
-
 colored_output "${GREEN}" "Creating virtual Python environment..."
 python3.11 -m venv venv || abort_install "Failed creating virtual Python environment."
 
-colored_output "${GREEN}" "Installing submodules in virtual Python environment..."
-venv/bin/pip3.11 install submodules/* || abort_install "Failed installing submodules."
+colored_output "${GREEN}" "Installing dependencies in virtual Python environment..."
+venv/bin/pip3.11 install -r requirements.txt || abort_install "Failed installing dependencies."
 
 # Modify system files.
 colored_output "${GREEN}" "Modifying system files..."
@@ -77,23 +85,18 @@ append_if_not_exist "dtoverlay=dwc2" "/boot/config.txt"
 append_if_not_exist "dwc2" "/etc/modules"
 append_if_not_exist "libcomposite" "/etc/modules"
 
-cp /boot/cmdline.txt /boot/cmdline.txt.bak || colored_output "${RED}" "Failed creating backup of /boot/cmdline.txt."
+cp /boot/cmdline.txt /boot/cmdline.txt.bak || colored_output "${YELLOW}" "Failed creating backup of /boot/cmdline.txt."
 sed -i 's/modules-load=[^[:space:]]* //g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
 sed -i 's/rootwait/rootwait modules-load=dwc2/g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
 
 # Make script executable and create symlinks. 
 chmod 744 "${base_directory}/bluetooth_2_usb.py" || abort_install "Failed making script executable."
-ln -s "${base_directory}/bluetooth_2_usb.py" /usr/bin/bluetooth_2_usb || colored_output "${RED}" "Failed creating symlink."
-ln -s "${base_directory}/bluetooth_2_usb.service" /etc/systemd/system/ || colored_output "${RED}" "Failed creating symlink."
+ln -s "${base_directory}/bluetooth_2_usb.py" /usr/bin/bluetooth_2_usb || colored_output "${YELLOW}" "Failed creating symlink."
+ln -s "${base_directory}/bluetooth_2_usb.service" /etc/systemd/system/ || colored_output "${YELLOW}" "Failed creating symlink."
 
 # Replace placeholder with actual path to venv.
 sed -i "s|{python3.11-venv}|${base_directory}/venv/bin/python3.11|g" "${base_directory}/bluetooth_2_usb.py" || abort_install "Failed writing to bluetooth_2_usb.py."
 
-# Create log dir and enable service. 
-mkdir /var/log/bluetooth_2_usb || colored_output "${RED}" "Failed creating log dir."
+# Enable service.
 systemctl enable bluetooth_2_usb.service || abort_install "Failed enabling service."
-
 colored_output "${GREEN}" "Installation successful."
-
-# Re-enable history expansion
-set -H
