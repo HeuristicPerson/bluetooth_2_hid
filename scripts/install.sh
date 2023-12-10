@@ -65,10 +65,10 @@ main() {
   base_directory=$(dirname "${scripts_directory}")
   cd "${base_directory}"
 
-  colored_output "${GREEN}" "Creating virtual Python environment..."
+  colored_output "${GREEN}" "Creating Python virtual environment \"venv\"..."
   python3.11 -m venv venv || abort_install "Failed creating Python virtual environment."
 
-  colored_output "${GREEN}" "Installing dependencies in Python virtual environment..."
+  colored_output "${GREEN}" "Installing dependencies in venv..."
   venv/bin/pip3.11 install -r requirements.txt -c constraints.txt || abort_install "Failed installing dependencies."
 
   # Modify system files.
