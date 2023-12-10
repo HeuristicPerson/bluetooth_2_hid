@@ -41,8 +41,8 @@ cd "${base_directory}"
 colored_output "${GREEN}" "Updating Bluetooth 2 USB..."
 
 # Capture the current user and group ownership
-current_user=$(stat -c '%U' bluetooth_2_usb)
-current_group=$(stat -c '%G' bluetooth_2_usb)
+current_user=$(stat -c '%U' .)
+current_group=$(stat -c '%G' .)
 
 { 
   sudo scripts/uninstall.sh && 
