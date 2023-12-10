@@ -42,7 +42,7 @@ colored_output "${GREEN}" "Updating Bluetooth 2 USB..."
 
 { sudo scripts/uninstall.sh && cd .. && sudo rm -rf bluetooth_2_usb && git clone https://github.com/quaxalber/bluetooth_2_usb.git && sudo bluetooth_2_usb/scripts/install.sh && service bluetooth_2_usb start ; } || abort_update "Failed updating Bluetooth 2 USB"
 
-colored_output "${GREEN}" "Update successful. Now running $(venv/bin/python3.11 bluetooth_2_usb.py -v)"
+colored_output "${GREEN}" "Update successful. Now running $(/usr/bin/bluetooth_2_usb -v)"
 
 # Re-enable history expansion
 set -H
