@@ -65,25 +65,21 @@ main() {
   base_directory=$(dirname "${scripts_directory}")
   cd "${base_directory}"
 
-  colored_output "${GREEN}" "Creating virtual Python environment..."
-  python3.11 -m venv venv || abort_install "Failed creating virtual Python environment."
+  colored_output "${GREEN}" "Creating Python virtual environment \"venv\"..."
+  python3.11 -m venv venv || abort_install "Failed creating Python virtual environment."
 
-  colored_output "${GREEN}" "Installing dependencies in virtual Python environment..."
-  venv/bin/pip3.11 install -r requirements.txt || abort_install "Failed installing dependencies."
+  colored_output "${GREEN}" "Installing dependencies in venv..."
+  venv/bin/pip3.11 install -r requirements.txt -c constraints.txt || abort_install "Failed installing dependencies."
 
   # Modify system files.
   colored_output "${GREEN}" "Modifying system files..."
   append_if_not_exist "dtoverlay=dwc2" "/boot/config.txt"
   append_if_not_exist "dwc2" "/etc/modules"
   append_if_not_exist "libcomposite" "/etc/modules"
-
   cp /boot/cmdline.txt /boot/cmdline.txt.bak || colored_output "${YELLOW}" "Failed creating backup of /boot/cmdline.txt."
   sed -i 's/modules-load=[^[:space:]]* //g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
   sed -i 's/rootwait/rootwait modules-load=dwc2/g' /boot/cmdline.txt || abort_install "Failed writing to /boot/cmdline.txt."
-
-  # Make script executable and create symlinks. 
-  chmod 744 "${base_directory}/bluetooth_2_usb.py" || abort_install "Failed making script executable."
-  ln -s "${base_directory}/bluetooth_2_usb.py" /usr/bin/bluetooth_2_usb || colored_output "${YELLOW}" "Failed creating symlink."
+  ln -s "${base_directory}/bluetooth_2_usb.sh" /usr/bin/bluetooth_2_usb || colored_output "${YELLOW}" "Failed creating symlink."
   ln -s "${base_directory}/bluetooth_2_usb.service" /etc/systemd/system/ || colored_output "${YELLOW}" "Failed creating symlink."
 
   # Replace placeholder with actual path to venv.

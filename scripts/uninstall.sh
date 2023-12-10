@@ -32,7 +32,6 @@ systemctl disable bluetooth_2_usb.service
 
 colored_output "${YELLOW}" "Removing symlinks and restoring backup files..."
 rm /usr/bin/bluetooth_2_usb
-rm /etc/systemd/system/bluetooth_2_usb.service
 mv /boot/config.txt.bak /boot/config.txt
 mv /etc/modules.bak /etc/modules
 mv /boot/cmdline.txt.bak /boot/cmdline.txt
