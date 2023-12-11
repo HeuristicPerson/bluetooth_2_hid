@@ -60,5 +60,6 @@ current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrievi
   chown -R ${current_user}:${current_group} bluetooth_2_usb && 
   cd bluetooth_2_usb && 
   git checkout "${current_branch}"
-  scripts/install.sh ; 
+  scripts/install.sh &&
+  cd .. ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
