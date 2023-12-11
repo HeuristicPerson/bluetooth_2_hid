@@ -40,18 +40,20 @@ cd "${base_directory}"
 
 colored_output "${GREEN}" "Updating Bluetooth 2 USB..."
 
-# Capture the current user and group ownership
-current_user=$(stat -c '%U' .)
-current_group=$(stat -c '%G' .)
+# Capture the current user and group ownership and branch
+current_user=$(stat -c '%U' .) || abort_update "Failed retrieving current user ownership."
+current_group=$(stat -c '%G' .) || abort_update "Failed retrieving current group ownership."
+current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrieving currently checked out branch."
 
 { 
   sudo scripts/uninstall.sh && 
   cd .. && 
   sudo rm -rf bluetooth_2_usb && 
   git clone https://github.com/quaxalber/bluetooth_2_usb.git && 
-  sudo chown -R $current_user:$current_group bluetooth_2_usb && 
-  sudo bluetooth_2_usb/scripts/install.sh && 
-  service bluetooth_2_usb start ; 
+  sudo chown -R ${current_user}:${current_group} bluetooth_2_usb && 
+  cd bluetooth_2_usb && 
+  git checkout "${current_branch}"
+  sudo scripts/install.sh ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
 
 # Re-enable history expansion
