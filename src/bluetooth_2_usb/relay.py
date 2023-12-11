@@ -28,6 +28,10 @@ from .logging import get_logger
 
 _logger = get_logger()
 
+_keyboard_gadget = Keyboard(usb_hid.devices)
+_mouse_gadget = Mouse(usb_hid.devices)
+_consumer_gadget = ConsumerControl(usb_hid.devices)
+
 PATH = "path"
 MAC = "MAC"
 NAME = "name"
@@ -86,9 +90,6 @@ class DeviceIdentifier:
 class DeviceRelay:
     def __init__(self, input_device: InputDevice):
         self._input_device = input_device
-        self._keyboard_gadget = Keyboard(usb_hid.devices)
-        self._mouse_gadget = Mouse(usb_hid.devices)
-        self._consumer_gadget = ConsumerControl(usb_hid.devices)
 
     @property
     def input_device(self) -> InputDevice:
@@ -107,45 +108,48 @@ class DeviceRelay:
     async def _async_relay_event(self, input_event: InputEvent) -> None:
         event = categorize(input_event)
         _logger.debug(f"Received {event} from {self.input_device.name}")
-        method = None
+        func = None
         if isinstance(event, RelEvent):
-            method = self._move_mouse
+            func = _move_mouse
         elif isinstance(event, KeyEvent):
-            method = self._send_key
-        if method:
+            func = _send_key
+        if func:
             loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, method, event)
+            await loop.run_in_executor(None, func, event)
 
-    def _send_key(self, event: KeyEvent) -> None:
-        key_id, key_name = evdev_to_usb_hid(event)
-        if key_id is None:
-            return
-        device_out = self._get_output_device(event)
-        try:
-            if event.keystate == KeyEvent.key_down:
-                _logger.debug(f"Pressing {key_name} (0x{key_id:02X}) on {device_out}")
-                device_out.press(key_id)
-            elif event.keystate == KeyEvent.key_up:
-                _logger.debug(f"Releasing {key_name} (0x{key_id:02X}) on {device_out}")
-                device_out.release(key_id)
-        except Exception:
-            _logger.exception(f"Failed sending 0x{key_id:02X} to {device_out}")
 
-    def _get_output_device(self, event: KeyEvent) -> ConsumerControl | Keyboard | Mouse:
-        if is_consumer_key(event):
-            return self._consumer_gadget
-        elif is_mouse_button(event):
-            return self._mouse_gadget
-        return self._keyboard_gadget
+def _move_mouse(event: RelEvent) -> None:
+    x, y, mwheel = get_mouse_movement(event)
+    coordinates = f"(x={x}, y={y}, mwheel={mwheel})"
+    try:
+        _logger.debug(f"Moving mouse {_mouse_gadget} {coordinates}")
+        _mouse_gadget.move(x, y, mwheel)
+    except Exception:
+        _logger.exception(f"Failed moving mouse {_mouse_gadget} {coordinates}")
 
-    def _move_mouse(self, event: RelEvent) -> None:
-        x, y, mwheel = get_mouse_movement(event)
-        coordinates = f"(x={x}, y={y}, mwheel={mwheel})"
-        try:
-            _logger.debug(f"Moving mouse {self._mouse_gadget} {coordinates}")
-            self._mouse_gadget.move(x, y, mwheel)
-        except Exception:
-            _logger.exception(f"Failed moving mouse {self._mouse_gadget} {coordinates}")
+
+def _send_key(event: KeyEvent) -> None:
+    key_id, key_name = evdev_to_usb_hid(event)
+    if key_id is None:
+        return
+    device_out = _get_output_device(event)
+    try:
+        if event.keystate == KeyEvent.key_down:
+            _logger.debug(f"Pressing {key_name} (0x{key_id:02X}) on {device_out}")
+            device_out.press(key_id)
+        elif event.keystate == KeyEvent.key_up:
+            _logger.debug(f"Releasing {key_name} (0x{key_id:02X}) on {device_out}")
+            device_out.release(key_id)
+    except Exception:
+        _logger.exception(f"Failed sending 0x{key_id:02X} to {device_out}")
+
+
+def _get_output_device(event: KeyEvent) -> ConsumerControl | Keyboard | Mouse:
+    if is_consumer_key(event):
+        return _consumer_gadget
+    elif is_mouse_button(event):
+        return _mouse_gadget
+    return _keyboard_gadget
 
 
 class RelayController:
@@ -162,7 +166,7 @@ class RelayController:
         self._device_ids = [DeviceIdentifier(id) for id in device_identifiers]
         self._auto_discover = auto_discover
         self._cancelled = False
-        self._device_relay_paths: list[str] =[]
+        self._device_relay_paths: list[str] = []
 
     async def async_relay_devices(self) -> NoReturn:
         try:
