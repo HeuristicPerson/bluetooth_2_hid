@@ -21,9 +21,13 @@ colored_output() {
 abort_update() {
   local message="$1"
   colored_output "${RED}" "Aborting update. ${message}"
+  exit 1
+}
+
+# Function to cleanup before exiting
+cleanup() {
   # Re-enable history expansion
   set -H
-  exit 1
 }
 
 # Check for superuser privileges
@@ -33,12 +37,15 @@ if [[ $EUID -ne 0 ]]; then
   exec sudo bash "$0" "$@"
 fi
 
+# Trap EXIT signal and call cleanup function
+trap cleanup EXIT
+
+colored_output "${GREEN}" "Updating Bluetooth 2 USB..."
+
 # Determine the current script's directory and the parent directory
 scripts_directory=$(dirname $(readlink -f "$0"))
 base_directory=$(dirname "${scripts_directory}")
 cd "${base_directory}"
-
-colored_output "${GREEN}" "Updating Bluetooth 2 USB..."
 
 # Capture the current user and group ownership and branch
 current_user=$(stat -c '%U' .) || abort_update "Failed retrieving current user ownership."
@@ -46,15 +53,12 @@ current_group=$(stat -c '%G' .) || abort_update "Failed retrieving current group
 current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrieving currently checked out branch."
 
 { 
-  sudo scripts/uninstall.sh && 
+  scripts/uninstall.sh && 
   cd .. && 
-  sudo rm -rf bluetooth_2_usb && 
+  rm -rf bluetooth_2_usb && 
   git clone https://github.com/quaxalber/bluetooth_2_usb.git && 
-  sudo chown -R ${current_user}:${current_group} bluetooth_2_usb && 
+  chown -R ${current_user}:${current_group} bluetooth_2_usb && 
   cd bluetooth_2_usb && 
   git checkout "${current_branch}"
-  sudo scripts/install.sh ; 
+  scripts/install.sh ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
-
-# Re-enable history expansion
-set -H
