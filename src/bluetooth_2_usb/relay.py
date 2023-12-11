@@ -162,6 +162,7 @@ class RelayController:
         self._device_ids = [DeviceIdentifier(id) for id in device_identifiers]
         self._auto_discover = auto_discover
         self._cancelled = False
+        self._device_relay_paths: list[str] =[]
 
     async def async_relay_devices(self) -> NoReturn:
         try:
@@ -190,10 +191,10 @@ class RelayController:
             await asyncio.sleep(0.1)
 
     def _should_relay(self, device: InputDevice) -> bool:
-        return not self._has_task(device) and self._matches_criteria(device)
+        return not self._has_relay(device) and self._matches_criteria(device)
 
-    def _has_task(self, device: InputDevice) -> bool:
-        return device.path in [task.get_name() for task in asyncio.all_tasks()]
+    def _has_relay(self, device: InputDevice) -> bool:
+        return device.path in self._device_relay_paths
 
     def _matches_criteria(self, device: InputDevice) -> bool:
         return self._auto_discover or self._matches_any_identifier(device)
@@ -207,6 +208,7 @@ class RelayController:
     async def _async_relay_events(self, device: InputDevice) -> NoReturn:
         try:
             relay = DeviceRelay(device)
+            self._device_relay_paths.append(device.path)
             _logger.info(f"Activated {repr(relay)}")
             await relay.async_relay_events_loop()
         except CancelledError:
@@ -216,7 +218,9 @@ class RelayController:
             _logger.critical(f"Connection to {device.name} lost [{repr(ex)}]")
         except Exception:
             _logger.exception(f"{device.name} failed!")
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(1)
+        finally:
+            self._device_relay_paths.remove(device.path)
 
 
 def list_readable_devices() -> list[InputDevice]:
