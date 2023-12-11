@@ -203,7 +203,9 @@ class RelayController:
         return any(id.matches(device) for id in self._device_ids)
 
     def _create_task(self, device: InputDevice, task_group: TaskGroup) -> None:
+        _logger.debug(f"{device.name} _create_task enter")
         task_group.create_task(self._async_relay_events(device), name=device.path)
+        _logger.debug(f"{device.name} _create_task exit")
 
     async def _async_relay_events(self, device: InputDevice) -> NoReturn:
         try:
