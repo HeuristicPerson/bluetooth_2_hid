@@ -87,7 +87,8 @@ main() {
 
   version=$(/usr/bin/bluetooth_2_usb -v)
   if [[ $version == *"Bluetooth 2 USB"* ]]; then
-    colored_output "${GREEN}" "Installation successful. Now running ${version}. A restart might be required."
+    colored_output "${GREEN}" "Installation successful. Now running ${version}"
+    colored_output "${YELLOW}" "A reboot might be required."
   else
     colored_output "${RED}" "Installation failed. The version information could not be retrieved."
   fi
