@@ -150,8 +150,6 @@ Follow these steps to install and configure the project:
                  ├─1319 bash /usr/bin/bluetooth_2_usb --auto_discover
                  └─1326 python3.11 /home/user/bluetooth_2_usb/bluetooth_2_usb.py --auto_discover
 
-
-
     Dec 02 23:16:37 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID relay.
     Dec 02 23:16:39 pi0w bluetooth_2_usb[1326]: 23-12-02 23:16:39 [INFO] Launching Bluetooth 2 USB v0.6.6
     Dec 02 23:16:39 pi0w bluetooth_2_usb[1326]: 23-12-02 23:16:39 [INFO] Discovering input devices...
