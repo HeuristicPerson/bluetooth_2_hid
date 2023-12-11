@@ -53,7 +53,6 @@ current_group=$(stat -c '%G' .)
   sudo bluetooth_2_usb/scripts/install.sh && 
   service bluetooth_2_usb start ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
-colored_output "${GREEN}" "Update successful. Now running $(/usr/bin/bluetooth_2_usb -v)"
 
 # Re-enable history expansion
 set -H
