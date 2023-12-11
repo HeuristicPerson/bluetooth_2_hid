@@ -187,7 +187,7 @@ class RelayController:
             for device in list_readable_devices():
                 if self._should_relay(device):
                     yield device
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
 
     def _should_relay(self, device: InputDevice) -> bool:
         return not self._has_task(device) and self._matches_criteria(device)
@@ -216,7 +216,7 @@ class RelayController:
             _logger.critical(f"Connection to {device.name} lost [{repr(ex)}]")
         except Exception:
             _logger.exception(f"{device.name} failed!")
-            await asyncio.sleep(2)
+            await asyncio.sleep(0.2)
 
 
 def list_readable_devices() -> list[InputDevice]:
