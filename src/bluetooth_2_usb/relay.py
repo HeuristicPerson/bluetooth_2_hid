@@ -12,11 +12,10 @@ from evdev import (
     KeyEvent,
     RelEvent,
     categorize,
-    list_devices,
 )
 import usb_hid
-from usb_hid import Device
 
+from . import enable_usb_devices, list_readable_devices
 from .evdev import (
     get_mouse_movement,
     is_consumer_key,
@@ -27,7 +26,7 @@ from .logging import get_logger
 
 
 _logger = get_logger()
-
+enable_usb_devices()
 _keyboard_gadget = Keyboard(usb_hid.devices)
 _mouse_gadget = Mouse(usb_hid.devices)
 _consumer_gadget = ConsumerControl(usb_hid.devices)
@@ -160,7 +159,7 @@ class RelayController:
     def __init__(
         self, device_identifiers: list[str] = None, auto_discover: bool = False
     ) -> None:
-        _enable_usb_devices()
+        enable_usb_devices()
         if not device_identifiers:
             device_identifiers = []
         self._device_ids = [DeviceIdentifier(id) for id in device_identifiers]
@@ -227,18 +226,3 @@ class RelayController:
             await asyncio.sleep(1)
         finally:
             self._device_relay_paths.remove(device.path)
-
-
-def list_readable_devices() -> list[InputDevice]:
-    return [InputDevice(path) for path in list_devices()]
-
-
-def _enable_usb_devices():
-    usb_hid.enable(
-        [
-            Device.MOUSE,
-            Device.KEYBOARD,
-            Device.CONSUMER_CONTROL,
-        ]
-    )
-    _logger.debug(f"Available USB devices: {usb_hid.devices}")
