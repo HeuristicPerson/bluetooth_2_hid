@@ -143,18 +143,19 @@ Follow these steps to install and configure the project:
     ● bluetooth_2_usb.service - Bluetooth to USB HID relay
         Loaded: loaded (/etc/systemd/system/bluetooth_2_usb.service; enabled; preset: enabled)
         Active: active (running) since Sat 2023-12-02 23:16:37 CET; 15s ago
-      Main PID: 9424 (bluetooth_2_usb)
-          Tasks: 1 (limit: 389)
-            CPU: 1.891s
+      Main PID: 1319 (bash)
+         Tasks: 2 (limit: 389)
+           CPU: 2.526s
         CGroup: /system.slice/bluetooth_2_usb.service
-                └─9424 /home/user/bluetooth_2_usb/venv/bin/python3.11 /usr/bin/bluetooth_2_usb --auto_discover
+                 ├─1319 bash /usr/bin/bluetooth_2_usb --auto_discover
+                 └─1326 python3.11 /home/user/bluetooth_2_usb/bluetooth_2_usb.py --auto_discover
 
     Dec 02 23:16:37 pi0w systemd[1]: Started bluetooth_2_usb.service - Bluetooth to USB HID relay.
-    Dec 02 23:16:39 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:39 [INFO] Launching Bluetooth 2 USB v0.6.6
-    Dec 02 23:16:39 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:39 [INFO] Discovering input devices...
-    Dec 02 23:16:42 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:42 [INFO] Activated relay for device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
-    Dec 02 23:16:45 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:45 [INFO] Activated relay for device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
-    Dec 02 23:16:48 pi0w bluetooth_2_usb[9424]: 23-12-02 23:16:48 [INFO] Activated relay for device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0"
+    Dec 02 23:16:39 pi0w bluetooth_2_usb[1326]: 23-12-02 23:16:39 [INFO] Launching Bluetooth 2 USB v0.6.6
+    Dec 02 23:16:39 pi0w bluetooth_2_usb[1326]: 23-12-02 23:16:39 [INFO] Discovering input devices...
+    Dec 02 23:16:42 pi0w bluetooth_2_usb[1326]: 23-12-02 23:16:42 [INFO] Activated relay for device /dev/input/event2, name "AceRK Mouse", phys "a1:b2:c3:d4:e5:f6"
+    Dec 02 23:16:45 pi0w bluetooth_2_usb[1326]: 23-12-02 23:16:45 [INFO] Activated relay for device /dev/input/event1, name "AceRK Keyboard", phys "a1:b2:c3:d4:e5:f6"
+    Dec 02 23:16:48 pi0w bluetooth_2_usb[1326]: 23-12-02 23:16:48 [INFO] Activated relay for device /dev/input/event0, name "vc4-hdmi", phys "vc4-hdmi/input0"
     ```
 
 > [!NOTE]
@@ -211,7 +212,7 @@ sudo ~/bluetooth_2_usb/scripts/update.sh
 ```
 
 > [!NOTE]
-> The update script doesn't cover all possible edge cases. In case you experience odd behavior after running the update script, it is recommended to delete the repo folder, clone again and run the install script.
+> The update script performs a clean reinstallation, that is run `uninstall.sh`, delete the repo folder, clone again and run the install script.
 
 ## 7. Uninstallation
 
