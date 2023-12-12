@@ -49,9 +49,7 @@ current_version=$(/usr/bin/bluetooth_2_usb -v)
 latest_vesion=$(git tag -l | sort -V | tail -n1)
 colored_output "${GREEN}" "Updating ${current_version} -> ${latest_vesion}..."
 
-# Capture the current user and group ownership and branch
-current_user=$(stat -c '%U' .) || abort_update "Failed retrieving current user ownership."
-current_group=$(stat -c '%G' .) || abort_update "Failed retrieving current group ownership."
+# Capture the current branch
 current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrieving currently checked out branch."
 
 {
@@ -61,6 +59,5 @@ current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrievi
   git clone https://github.com/quaxalber/bluetooth_2_usb.git &&  
   cd "${base_directory}" && 
   git checkout "${current_branch}" &&
-  scripts/install.sh &&
-  chown -R ${current_user}:${current_group} "${base_directory}" ; 
+  scripts/install.sh ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
