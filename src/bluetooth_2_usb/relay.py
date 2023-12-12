@@ -6,16 +6,10 @@ from typing import AsyncGenerator, NoReturn
 from adafruit_hid.consumer_control import ConsumerControl
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.mouse import Mouse
-from evdev import (
-    InputDevice,
-    InputEvent,
-    KeyEvent,
-    RelEvent,
-    categorize,
-)
+from evdev import InputDevice, InputEvent, KeyEvent, RelEvent, categorize, list_devices
 import usb_hid
+from usb_hid import Device
 
-from . import enable_usb_devices, list_readable_devices
 from .evdev import (
     get_mouse_movement,
     is_consumer_key,
@@ -26,7 +20,16 @@ from .logging import get_logger
 
 
 _logger = get_logger()
-enable_usb_devices()
+
+usb_hid.enable(
+    [
+        Device.MOUSE,
+        Device.KEYBOARD,
+        Device.CONSUMER_CONTROL,
+    ]
+)
+_logger.debug(f"Available USB devices: {usb_hid.devices}")
+
 _keyboard_gadget = Keyboard(usb_hid.devices)
 _mouse_gadget = Mouse(usb_hid.devices)
 _consumer_gadget = ConsumerControl(usb_hid.devices)
@@ -34,6 +37,10 @@ _consumer_gadget = ConsumerControl(usb_hid.devices)
 PATH = "path"
 MAC = "MAC"
 NAME = "name"
+
+
+def list_readable_devices() -> list[InputDevice]:
+    return [InputDevice(path) for path in list_devices()]
 
 
 class DeviceIdentifier:
@@ -159,7 +166,6 @@ class RelayController:
     def __init__(
         self, device_identifiers: list[str] = None, auto_discover: bool = False
     ) -> None:
-        enable_usb_devices()
         if not device_identifiers:
             device_identifiers = []
         self._device_ids = [DeviceIdentifier(id) for id in device_identifiers]
