@@ -64,6 +64,10 @@ main() {
   base_directory=$(dirname "${scripts_directory}")
   cd "${base_directory}"
 
+  # Capture the current user and group ownership 
+  current_user=$(stat -c '%U' .) || abort_update "Failed retrieving current user ownership."
+  current_group=$(stat -c '%G' .) || abort_update "Failed retrieving current group ownership."
+
   colored_output "${GREEN}" "Creating Python virtual environment \"${base_directory}/.venv\"..."
   python3.11 -m venv .venv || abort_install "Failed creating Python virtual environment."
 
@@ -84,6 +88,8 @@ main() {
   # Enable service.
   systemctl enable bluetooth_2_usb.service || abort_install "Failed enabling service."
   systemctl start bluetooth_2_usb.service || abort_install "Failed starting service."
+
+  chown -R ${current_user}:${current_group} "${base_directory}"
 
   version=$(/usr/bin/bluetooth_2_usb -v)
   if [[ $version == *"Bluetooth 2 USB"* ]]; then
