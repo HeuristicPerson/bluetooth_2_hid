@@ -34,6 +34,7 @@ def list_input_devices() -> list[InputDevice]:
 
 
 def init_usb_gadgets() -> None:
+    _logger.debug("Initializing USB gadgets...")
     usb_hid.enable(
         [
             Device.MOUSE,
@@ -41,11 +42,11 @@ def init_usb_gadgets() -> None:
             Device.CONSUMER_CONTROL,
         ]
     )
-    _logger.debug(f"Available USB gadgets: {usb_hid.devices}")
     global _keyboard_gadget, _mouse_gadget, _consumer_gadget
     _keyboard_gadget = Keyboard(usb_hid.devices)
     _mouse_gadget = Mouse(usb_hid.devices)
     _consumer_gadget = ConsumerControl(usb_hid.devices)
+    _logger.debug(f"Enabled USB gadgets: {usb_hid.devices}")
 
 
 def all_gadgets_ready():
