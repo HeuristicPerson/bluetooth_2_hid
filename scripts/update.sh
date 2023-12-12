@@ -40,26 +40,27 @@ fi
 # Trap EXIT signal and call cleanup function
 trap cleanup EXIT
 
-colored_output "${GREEN}" "Updating Bluetooth 2 USB..."
-
 # Determine the current script's directory and the parent directory
 scripts_directory=$(dirname $(readlink -f "$0"))
 base_directory=$(dirname "${scripts_directory}")
 cd "${base_directory}"
+
+current_version=$(/usr/bin/bluetooth_2_usb -v)
+latest_vesion=$(git tag -l | sort -V | tail -n1)
+colored_output "${GREEN}" "Updating ${current_version} -> ${latest_vesion}..."
 
 # Capture the current user and group ownership and branch
 current_user=$(stat -c '%U' .) || abort_update "Failed retrieving current user ownership."
 current_group=$(stat -c '%G' .) || abort_update "Failed retrieving current group ownership."
 current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrieving currently checked out branch."
 
-{ 
+{
   scripts/uninstall.sh && 
-  cd .. && 
-  rm -rf bluetooth_2_usb && 
-  git clone https://github.com/quaxalber/bluetooth_2_usb.git && 
-  chown -R ${current_user}:${current_group} bluetooth_2_usb && 
-  cd bluetooth_2_usb && 
-  git checkout "${current_branch}"
-  scripts/install.sh &&
-  cd .. ; 
+  cd .. &&  
+  rm -rf "${base_directory}" && 
+  git clone https://github.com/quaxalber/bluetooth_2_usb.git &&  
+  cd "${base_directory}" && 
+  git checkout "${current_branch}" &&
+  chown -R ${current_user}:${current_group} "${base_directory}" &&
+  scripts/install.sh ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
