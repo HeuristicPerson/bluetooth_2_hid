@@ -9,7 +9,7 @@ from usb_hid import disable
 
 from src.bluetooth_2_usb.args import parse_args
 from src.bluetooth_2_usb.logging import add_file_handler, get_logger
-from src.bluetooth_2_usb.relay import RelayController, list_readable_devices
+from src.bluetooth_2_usb.relay import RelayController, list_input_devices
 
 
 _logger = get_logger()
@@ -53,7 +53,7 @@ async def _main() -> NoReturn:
 
 
 def _list_devices():
-    for dev in list_readable_devices():
+    for dev in list_input_devices():
         print(f"{dev.name}\t{dev.uniq if dev.uniq else dev.phys}\t{dev.path}")
     _exit_safely()
 

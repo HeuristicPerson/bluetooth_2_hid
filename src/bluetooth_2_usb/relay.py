@@ -29,11 +29,11 @@ MAC = "MAC"
 NAME = "name"
 
 
-def list_readable_devices() -> list[InputDevice]:
+def list_input_devices() -> list[InputDevice]:
     return [InputDevice(path) for path in list_devices()]
 
 
-def init_usb_devices() -> None:
+def init_usb_gadgets() -> None:
     usb_hid.enable(
         [
             Device.MOUSE,
@@ -41,11 +41,17 @@ def init_usb_devices() -> None:
             Device.CONSUMER_CONTROL,
         ]
     )
-    _logger.debug(f"Available USB devices: {usb_hid.devices}")
+    _logger.debug(f"Available USB gadgets: {usb_hid.devices}")
     global _keyboard_gadget, _mouse_gadget, _consumer_gadget
     _keyboard_gadget = Keyboard(usb_hid.devices)
     _mouse_gadget = Mouse(usb_hid.devices)
     _consumer_gadget = ConsumerControl(usb_hid.devices)
+
+
+def all_gadgets_ready():
+    return all(
+        dev is not None for dev in (_keyboard_gadget, _mouse_gadget, _consumer_gadget)
+    )
 
 
 class DeviceIdentifier:
@@ -101,6 +107,8 @@ class DeviceIdentifier:
 class DeviceRelay:
     def __init__(self, input_device: InputDevice):
         self._input_device = input_device
+        if not all_gadgets_ready():
+            init_usb_gadgets()
 
     @property
     def input_device(self) -> InputDevice:
@@ -171,7 +179,6 @@ class RelayController:
     def __init__(
         self, device_identifiers: list[str] = None, auto_discover: bool = False
     ) -> None:
-        init_usb_devices()
         if not device_identifiers:
             device_identifiers = []
         self._device_ids = [DeviceIdentifier(id) for id in device_identifiers]
@@ -200,7 +207,7 @@ class RelayController:
             all_device_ids = " or ".join(repr(id) for id in self._device_ids)
             _logger.debug(f"Relaying devices with matching {all_device_ids}")
         while True:
-            for device in list_readable_devices():
+            for device in list_input_devices():
                 if self._should_relay(device):
                     yield device
             await asyncio.sleep(0.1)
