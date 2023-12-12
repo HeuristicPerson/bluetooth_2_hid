@@ -20,19 +20,9 @@ from .logging import get_logger
 
 
 _logger = get_logger()
-
-usb_hid.enable(
-    [
-        Device.MOUSE,
-        Device.KEYBOARD,
-        Device.CONSUMER_CONTROL,
-    ]
-)
-_logger.debug(f"Available USB devices: {usb_hid.devices}")
-
-_keyboard_gadget = Keyboard(usb_hid.devices)
-_mouse_gadget = Mouse(usb_hid.devices)
-_consumer_gadget = ConsumerControl(usb_hid.devices)
+_keyboard_gadget: Keyboard = None
+_mouse_gadget: Mouse = None
+_consumer_gadget: ConsumerControl = None
 
 PATH = "path"
 MAC = "MAC"
@@ -41,6 +31,21 @@ NAME = "name"
 
 def list_readable_devices() -> list[InputDevice]:
     return [InputDevice(path) for path in list_devices()]
+
+
+def init_usb_devices() -> None:
+    usb_hid.enable(
+        [
+            Device.MOUSE,
+            Device.KEYBOARD,
+            Device.CONSUMER_CONTROL,
+        ]
+    )
+    _logger.debug(f"Available USB devices: {usb_hid.devices}")
+    global _keyboard_gadget, _mouse_gadget, _consumer_gadget
+    _keyboard_gadget = Keyboard(usb_hid.devices)
+    _mouse_gadget = Mouse(usb_hid.devices)
+    _consumer_gadget = ConsumerControl(usb_hid.devices)
 
 
 class DeviceIdentifier:
@@ -166,6 +171,7 @@ class RelayController:
     def __init__(
         self, device_identifiers: list[str] = None, auto_discover: bool = False
     ) -> None:
+        init_usb_devices()
         if not device_identifiers:
             device_identifiers = []
         self._device_ids = [DeviceIdentifier(id) for id in device_identifiers]
