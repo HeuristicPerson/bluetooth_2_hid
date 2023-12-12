@@ -54,13 +54,13 @@ current_user=$(stat -c '%U' .) || abort_update "Failed retrieving current user o
 current_group=$(stat -c '%G' .) || abort_update "Failed retrieving current group ownership."
 current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrieving currently checked out branch."
 
-{ 
+{
   scripts/uninstall.sh && 
-  cd .. && 
-  rm -rf bluetooth_2_usb && 
-  git clone https://github.com/quaxalber/bluetooth_2_usb.git && 
-  chown -R ${current_user}:${current_group} bluetooth_2_usb && 
-  cd bluetooth_2_usb && 
-  git checkout "${current_branch}"
-  scripts/install.sh ; 
+  cd .. &&  
+  rm -rf "${base_directory}" && 
+  git clone https://github.com/quaxalber/bluetooth_2_usb.git &&  
+  cd "${base_directory}" && 
+  git checkout "${current_branch}" &&
+  scripts/install.sh &&
+  chown -R ${current_user}:${current_group} "${base_directory}" ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
