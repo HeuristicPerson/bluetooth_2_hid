@@ -40,14 +40,14 @@ fi
 # Trap EXIT signal and call cleanup function
 trap cleanup EXIT
 
-current_version=$(/usr/bin/bluetooth_2_usb -v)
-latest_vesion=$(git tag -l | sort -V | tail -n1)
-colored_output "${GREEN}" "Updating ${current_version} -> ${latest_vesion}..."
-
 # Determine the current script's directory and the parent directory
 scripts_directory=$(dirname $(readlink -f "$0"))
 base_directory=$(dirname "${scripts_directory}")
 cd "${base_directory}"
+
+current_version=$(/usr/bin/bluetooth_2_usb -v)
+latest_vesion=$(git tag -l | sort -V | tail -n1)
+colored_output "${GREEN}" "Updating ${current_version} -> ${latest_vesion}..."
 
 # Capture the current user and group ownership and branch
 current_user=$(stat -c '%U' .) || abort_update "Failed retrieving current user ownership."
