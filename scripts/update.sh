@@ -40,7 +40,9 @@ fi
 # Trap EXIT signal and call cleanup function
 trap cleanup EXIT
 
-colored_output "${GREEN}" "Updating Bluetooth 2 USB..."
+current_version=$(/usr/bin/bluetooth_2_usb -v)
+latest_vesion=$(git tag -l | sort -V | tail -n1)
+colored_output "${GREEN}" "Updating ${current_version} -> ${latest_vesion}..."
 
 # Determine the current script's directory and the parent directory
 scripts_directory=$(dirname $(readlink -f "$0"))
@@ -60,6 +62,5 @@ current_branch=$(git symbolic-ref --short HEAD) || abort_update "Failed retrievi
   chown -R ${current_user}:${current_group} bluetooth_2_usb && 
   cd bluetooth_2_usb && 
   git checkout "${current_branch}"
-  scripts/install.sh &&
-  cd .. ; 
+  scripts/install.sh ; 
 } || abort_update "Failed updating Bluetooth 2 USB"
