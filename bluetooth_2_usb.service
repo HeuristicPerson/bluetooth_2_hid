@@ -1,0 +1,12 @@
+[Unit]
+Description=Bluetooth to USB HID relay
+After=multi-user.target
+
+[Service]
+User=root
+ExecStart=/usr/bin/bluetooth_2_usb --auto_discover --grab_devices
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
